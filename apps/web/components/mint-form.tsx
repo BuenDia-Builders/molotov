@@ -77,6 +77,29 @@ export function MintForm() {
   const royaltyLabel = royalty.toFixed(1).replace(".", ",") + "%";
   const canSubmit = Boolean(file) && title.trim().length > 0;
 
+  // Helper to get the disabled button hint message
+  const getDisabledHint = () => {
+    if (!file && !title.trim()) {
+      return "Subí una imagen y poné un título.";
+    }
+    if (!file) {
+      return "Subí una imagen para continuar.";
+    }
+    if (!title.trim()) {
+      return "Falta el título de la obra.";
+    }
+    return "";
+  };
+
+  const handleRemoveImage = useCallback(() => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setFile(null);
+    setPreviewUrl(null);
+    setFieldError(null);
+  }, [previewUrl]);
+
   const onSubmit = useCallback(async () => {
     if (!file || !address) return;
     try {
@@ -148,13 +171,28 @@ export function MintForm() {
             }}
           />
           {previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={previewUrl}
-              alt="Vista previa de tu obra"
-              className="w-full rounded-lg border border-white/12 object-contain"
-              onClick={() => inputRef.current?.click()}
-            />
+            <div className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewUrl}
+                alt="Vista previa de tu obra"
+                className="w-full rounded-lg border border-white/12 object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="absolute right-3 top-3 min-h-[44px] min-w-[44px] rounded-md bg-black/60 px-4 py-2 font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED] backdrop-blur-sm transition-colors hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0178DE]"
+              >
+                Cambiar imagen
+              </button>
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="mt-3 font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/60 underline transition-colors hover:text-[#F5F4ED] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0178DE]"
+              >
+                Quitar imagen
+              </button>
+            </div>
           ) : (
             <button
               type="button"
@@ -264,14 +302,21 @@ export function MintForm() {
             </p>
           </div>
 
-          <button
-            type="button"
-            disabled={!canSubmit}
-            onClick={onSubmit}
-            className="mt-2 inline-flex h-14 items-center justify-center rounded-md bg-[#0178DE] px-8 text-base font-medium text-white transition-colors hover:bg-[#3493E5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F4ED] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-[#F5F4ED]/40"
-          >
-            Mintear
-          </button>
+          <div>
+            <button
+              type="button"
+              disabled={!canSubmit}
+              onClick={onSubmit}
+              className="mt-2 inline-flex h-14 items-center justify-center rounded-md bg-[#0178DE] px-8 text-base font-medium text-white transition-colors hover:bg-[#3493E5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F4ED] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-[#F5F4ED]/40"
+            >
+              Mintear
+            </button>
+            {!canSubmit && (
+              <p className="mt-3 font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/60">
+                {getDisabledHint()}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
