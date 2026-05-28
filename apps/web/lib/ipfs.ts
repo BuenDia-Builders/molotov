@@ -3,6 +3,13 @@
 
 export type IpfsResult = { cid: string; gatewayUrl: string };
 
+/** Resolves an `ipfs://` URI to a Pinata gateway URL. Passes through any other URI unchanged. */
+export function ipfsToGateway(uri: string): string {
+  return uri.startsWith("ipfs://")
+    ? `https://gateway.pinata.cloud/ipfs/${uri.slice("ipfs://".length)}`
+    : uri;
+}
+
 async function postFile(file: File): Promise<IpfsResult> {
   const body = new FormData();
   body.append("file", file);
