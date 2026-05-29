@@ -149,7 +149,7 @@ export default function MiObraPage() {
                 </p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="mt-8 inline-flex h-10 items-center rounded-md bg-[#0178DE] px-5 font-[family-name:var(--font-geist-mono)] text-sm text-white transition-colors hover:bg-[#3493E5]"
+                  className="mt-8 inline-flex h-12 items-center justify-center rounded-md bg-[#0178DE] px-6 text-[15px] font-medium text-white transition-colors hover:bg-[#3493E5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F4ED]"
                 >
                   Recargar
                 </button>
