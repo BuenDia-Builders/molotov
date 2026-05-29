@@ -3,6 +3,8 @@ import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/providers/wallet-provider";
 import { ServiceWorkerRegister } from "@/components/sw-register";
+import { I18nProvider } from "@/lib/i18n";
+import { es } from "@/lib/i18n/es";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -23,10 +25,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Molotov",
-  description:
-    "Marketplace de arte digital con regalías on-chain. El ingreso vuelve hacia el artista.",
-  manifest: "/manifest.json",
+  title: es.meta.title,
+  description: es.meta.description,
+  manifest: es.meta.manifest,
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -55,13 +56,15 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="es"
+      lang={es.meta.lang}
       className={`${fraunces.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="relative min-h-full flex flex-col bg-black text-[#F5F4ED] font-[family-name:var(--font-geist-sans)]">
         {/* Grain overlay: sits above the black background, below content (z-10). */}
         <div aria-hidden className="grain pointer-events-none fixed inset-0 z-0 opacity-[0.04]" />
-        <WalletProvider>{children}</WalletProvider>
+        <I18nProvider>
+          <WalletProvider>{children}</WalletProvider>
+        </I18nProvider>
         <ServiceWorkerRegister />
       </body>
     </html>

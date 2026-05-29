@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { ContractEvidence } from "@/components/contract-evidence";
+import { useI18n } from "@/lib/i18n";
 
 export function Hero() {
+  const { t } = useI18n();
+
   return (
     <section className="relative overflow-hidden pt-20 pb-16 md:pt-28 lg:pt-36">
       {/* Eyebrow — aligned to the page rail. Directed at one audience: artists. */}
@@ -11,16 +16,16 @@ export function Hero() {
             aria-hidden
             className="inline-block size-1.5 rounded-full bg-[#0178DE] animate-breathe"
           />
-          Para artistas · Beta abierta · Buenos Aires
+          {t("hero.eyebrow")}
         </p>
       </div>
 
       {/* The h1 breaks the rail: shifted right and bleeding toward the edge. */}
       <div className="px-6 md:px-10 lg:px-16">
         <h1 className="mt-8 font-[family-name:var(--font-fraunces)] text-[clamp(2.75rem,9vw,8.5rem)] font-light leading-[0.95] tracking-[-0.02em] [font-variation-settings:'opsz'_144] md:ml-auto md:max-w-[82%] md:text-right lg:max-w-[70%] lg:-mr-[2vw]">
-          Tu obra te paga{" "}
-          <em className="font-normal italic text-[#0178DE]">cada vez</em> que
-          cambia de manos.
+          {t("hero.titleBeforeEm")}{" "}
+          <em className="font-normal italic text-[#0178DE]">{t("hero.titleEm")}</em>{" "}
+          {t("hero.titleAfterEm")}
         </h1>
       </div>
 
@@ -28,9 +33,7 @@ export function Hero() {
         {/* Left: information — body copy with its trust signal underneath. */}
         <div className="flex flex-col items-start gap-6">
           <p className="max-w-xl text-base leading-relaxed text-[#F5F4ED]/70 md:text-lg">
-            Molotov graba la regalía en el contrato cuando minteás —entre 1 y
-            15%, inmutable. En cada reventa, el contrato te paga antes de cerrar
-            la operación. No es una promesa de la plataforma. Es código.
+            {t("hero.body")}
           </p>
           {/* Soft trust badge: it backs the paragraph, not the CTA. */}
           <div id="contrato" className="scroll-mt-24">
@@ -44,13 +47,13 @@ export function Hero() {
             href="/crear"
             className="inline-flex h-12 items-center justify-center rounded-md bg-[#0178DE] px-6 text-[15px] font-medium text-white transition-colors hover:bg-[#3493E5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F4ED]"
           >
-            Mintear primera obra
+            {t("common.mintFirst")}
           </Link>
           <a
             href="#actividad"
             className="inline-flex h-12 items-center justify-center px-2 font-[family-name:var(--font-geist-mono)] text-[14px] text-[#F5F4ED]/70 underline-offset-4 transition-colors hover:text-[#F5F4ED] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0178DE]"
           >
-            ¿Coleccionás? Ver obras en venta
+            {t("common.collectorsSeeWorks")}
           </a>
         </div>
       </div>

@@ -1,34 +1,36 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 const FLOW = [
   {
-    amount: "10,00",
-    pct: "royalty 10%",
-    label: "al artista",
-    note: "Lo paga el contrato. En la primera venta y en cada reventa.",
+    amountKey: "economy.flow.artist.amount",
+    pctKey: "economy.flow.artist.pct",
+    labelKey: "economy.flow.artist.label",
+    noteKey: "economy.flow.artist.note",
     accent: true,
   },
   {
-    amount: "2,50",
-    pct: "fee 2,5%",
-    label: "a Molotov",
-    note: "Lo único que cobra la plataforma.",
+    amountKey: "economy.flow.molotov.amount",
+    pctKey: "economy.flow.molotov.pct",
+    labelKey: "economy.flow.molotov.label",
+    noteKey: "economy.flow.molotov.note",
     accent: false,
   },
   {
-    amount: "87,50",
-    pct: "resto",
-    label: "al vendedor",
-    note: "Quien posee la obra en este momento.",
+    amountKey: "economy.flow.seller.amount",
+    pctKey: "economy.flow.seller.pct",
+    labelKey: "economy.flow.seller.label",
+    noteKey: "economy.flow.seller.note",
     accent: false,
   },
-];
+] as const;
 
 export function EconomyFlow() {
   const listRef = useRef<HTMLUListElement>(null);
   const [inView, setInView] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     const node = listRef.current;
@@ -55,20 +57,20 @@ export function EconomyFlow() {
         {/* Left: the literal distribution of a single sale. */}
         <div>
           <p className="font-[family-name:var(--font-geist-mono)] text-[13px] uppercase tracking-[0.18em] text-[#F5F4ED]/40">
-            Una venta, repartida
+            {t("economy.eyebrow")}
           </p>
           <p className="mt-4 font-[family-name:var(--font-fraunces)] text-3xl leading-tight tracking-[-0.01em] [font-variation-settings:'opsz'_72] md:text-4xl">
-            Una obra se vende a{" "}
+            {t("economy.saleBefore")}{" "}
             <span className="font-[family-name:var(--font-geist-mono)] text-2xl md:text-3xl">
               100&nbsp;XLM
             </span>
-            .
+            {t("economy.saleAfter")}
           </p>
 
           <ul ref={listRef} className="mt-12 border-t border-white/12">
             {FLOW.map((row, i) => (
               <li
-                key={row.label}
+                key={row.labelKey}
                 style={{ transitionDelay: `${i * 120}ms` }}
                 className={`reveal flex flex-col gap-1 border-b border-white/12 py-6 md:flex-row md:items-baseline md:gap-8 ${
                   inView ? "in" : ""
@@ -76,25 +78,21 @@ export function EconomyFlow() {
               >
                 <div className="flex items-baseline gap-3 md:w-64">
                   <span aria-hidden className="text-[#F5F4ED]/40">
-                    →
+                    {t("economy.arrow")}
                   </span>
                   <span className="font-[family-name:var(--font-geist-mono)] text-2xl text-[#F5F4ED] md:text-3xl">
-                    {row.amount}
-                    <span className="ml-1.5 text-sm text-[#F5F4ED]/40">
-                      XLM
-                    </span>
+                    {t(row.amountKey)}
+                    <span className="ml-1.5 text-sm text-[#F5F4ED]/40">XLM</span>
                   </span>
                 </div>
                 <div className="pl-7 md:pl-0">
                   <p className="text-base text-[#F5F4ED]">
-                    {row.label}
+                    {t(row.labelKey)}
                     <span className="ml-2 font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/40">
-                      {row.pct}
+                      {t(row.pctKey)}
                     </span>
                   </p>
-                  <p className="mt-0.5 max-w-sm text-sm text-[#F5F4ED]/60">
-                    {row.note}
-                  </p>
+                  <p className="mt-0.5 max-w-sm text-sm text-[#F5F4ED]/60">{t(row.noteKey)}</p>
                 </div>
               </li>
             ))}
@@ -104,21 +102,18 @@ export function EconomyFlow() {
         {/* Right: the comparison as a statement, not a stat. */}
         <div className="flex flex-col justify-center">
           <p className="font-[family-name:var(--font-fraunces)] text-2xl leading-snug [font-variation-settings:'opsz'_40] md:text-3xl">
-            En streaming, la plataforma se queda con la mayor parte. Acá la lógica
-            está dada vuelta.
+            {t("economy.comparison")}
           </p>
 
           <dl className="mt-12 space-y-8">
             <div className="flex items-end justify-between border-b border-white/12 pb-4">
-              <dt className="text-base text-[#F5F4ED]/60">
-                Se queda una plataforma de streaming
-              </dt>
+              <dt className="text-base text-[#F5F4ED]/60">{t("economy.streamingKeeps")}</dt>
               <dd className="font-[family-name:var(--font-geist-mono)] text-4xl text-[#F5F4ED]/40 md:text-5xl">
                 ~70%
               </dd>
             </div>
             <div className="flex items-end justify-between border-b border-white/12 pb-4">
-              <dt className="text-base text-[#F5F4ED]">Se queda Molotov</dt>
+              <dt className="text-base text-[#F5F4ED]">{t("economy.molotovKeeps")}</dt>
               <dd className="font-[family-name:var(--font-geist-mono)] text-4xl text-[#0178DE] md:text-5xl">
                 2,5%
               </dd>
@@ -126,8 +121,7 @@ export function EconomyFlow() {
           </dl>
 
           <p className="mt-8 max-w-md text-sm leading-relaxed text-[#F5F4ED]/60">
-            La regalía del artista no sale del fee de Molotov: es una porción
-            aparte, definida por el propio artista y grabada en el contrato.
+            {t("economy.note")}
           </p>
         </div>
       </div>

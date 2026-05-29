@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/use-wallet";
 import { truncateAddress } from "@/lib/stellar";
+import { useI18n } from "@/lib/i18n";
 
 export function WalletButton() {
-  const { address, isConnected, isConnecting, connect, disconnect } =
-    useWallet();
+  const { address, isConnected, isConnecting, connect, disconnect } = useWallet();
+  const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +31,7 @@ export function WalletButton() {
         disabled={isConnecting}
         className="bg-[#0178DE] text-white hover:bg-[#3493E5]"
       >
-        {isConnecting ? "Conectando…" : "Conectar wallet"}
+        {isConnecting ? t("wallet.connecting") : t("wallet.connect")}
       </Button>
     );
   }
@@ -59,7 +60,7 @@ export function WalletButton() {
               void disconnect();
             }}
           >
-            Desconectar
+            {t("wallet.disconnect")}
           </button>
         </div>
       )}

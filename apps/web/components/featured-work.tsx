@@ -1,18 +1,23 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 // Option (b): the empty frame as statement. No placeholder gradients, no fake
 // artworks. The vacancy is the invitation — and it doubles as a preview of the
 // real card anatomy (media on top, metadata below).
 export function FeaturedWork() {
+  const { t } = useI18n();
+
   return (
     <section className="mx-auto max-w-7xl px-6 py-24 md:px-10 md:py-36 lg:px-16">
       <div className="max-w-2xl">
         <h2 className="font-[family-name:var(--font-fraunces)] text-3xl leading-tight tracking-[-0.01em] [font-variation-settings:'opsz'_72] md:text-5xl">
-          El espacio está vacío. <em className="italic text-[#0178DE]">A propósito.</em>
+          {t("featured.titleBefore")}{" "}
+          <em className="italic text-[#0178DE]">{t("featured.titleEm")}</em>
         </h2>
         <p className="mt-6 max-w-md text-base leading-relaxed text-[#F5F4ED]/70">
-          Todavía no hay obras. Cuando minteás, tu obra ocupa este lugar con la
-          regalía ya grabada en el contrato. Así se va a ver.
+          {t("featured.body")}
         </p>
       </div>
 
@@ -22,7 +27,7 @@ export function FeaturedWork() {
           <article key={i} className="bg-[#0A0A0B] p-4">
             <div className="flex aspect-[4/5] items-center justify-center border border-dashed border-white/15">
               <span className="font-[family-name:var(--font-geist-mono)] text-[12px] uppercase tracking-[0.22em] text-[#F5F4ED]/40">
-                Tu obra acá
+                {t("featured.emptySlot")}
               </span>
             </div>
             <div className="mt-4 h-12" aria-hidden />
@@ -33,25 +38,25 @@ export function FeaturedWork() {
         <article className="bg-[#0A0A0B] p-4">
           <div className="relative flex aspect-[4/5] items-center justify-center border border-dashed border-[#0178DE]/50">
             <span className="font-[family-name:var(--font-geist-mono)] text-[12px] uppercase tracking-[0.22em] text-[#0178DE]">
-              Tu obra acá
+              {t("featured.emptySlot")}
             </span>
             <span className="absolute right-3 top-3 rounded-full border border-white/15 px-2 py-0.5 font-[family-name:var(--font-geist-mono)] text-[10px] uppercase tracking-wider text-[#F5F4ED]/60">
-              royalty 10%
+              {t("featured.royaltyBadge")}
             </span>
           </div>
           <div className="mt-4 flex items-baseline justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate font-[family-name:var(--font-fraunces)] text-lg [font-variation-settings:'opsz'_24]">
-                Título de la obra
+                {t("featured.artworkTitle")}
               </p>
-              <p className="truncate text-sm text-[#F5F4ED]/60">Nombre del artista</p>
+              <p className="truncate text-sm text-[#F5F4ED]/60">{t("featured.artistName")}</p>
             </div>
             <div className="shrink-0 text-right">
               <p className="font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED]">
-                — XLM
+                {t("featured.xlmDash")}
               </p>
               <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/40">
-                US$ —
+                {t("featured.usdDash")}
               </p>
             </div>
           </div>
@@ -63,7 +68,7 @@ export function FeaturedWork() {
           href="/crear"
           className="inline-flex h-12 items-center justify-center rounded-md bg-[#0178DE] px-6 text-[15px] font-medium text-white transition-colors hover:bg-[#3493E5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F4ED]"
         >
-          Mintear primera obra
+          {t("common.mintFirst")}
         </Link>
       </div>
     </section>

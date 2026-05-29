@@ -5,28 +5,29 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/use-wallet";
 import { useMint, type MintState } from "@/hooks/use-mint";
 import { truncateAddress } from "@/lib/stellar";
+import { useI18n } from "@/lib/i18n";
 
 const MAX_BYTES = 30 * 1024 * 1024; // 30 MB
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-const PROGRESS_COPY: Record<string, string> = {
-  uploading_image: "Subiendo tu obra a IPFS…",
-  uploading_metadata: "Grabando los datos…",
-  signing: "Firmá la transacción en tu wallet.",
-  confirming: "El contrato está procesando.",
-};
-
 function ProgressView({ state }: { state: MintState }) {
+  const { t } = useI18n();
+
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 text-center">
       <p className="font-[family-name:var(--font-fraunces)] text-3xl leading-tight [font-variation-settings:'opsz'_72] md:text-4xl">
-        {PROGRESS_COPY[state] ?? "Procesando…"}
+        {state === "uploading_image" ||
+        state === "uploading_metadata" ||
+        state === "signing" ||
+        state === "confirming"
+          ? t(`mint.progress.${state}`)
+          : t("mint.progress.fallback")}
       </p>
       <div className="relative mt-10 h-0.5 w-full max-w-sm overflow-hidden bg-white/12">
         <span className="progress-fill" />
       </div>
       <p className="mt-6 font-[family-name:var(--font-geist-mono)] text-[12px] uppercase tracking-[0.18em] text-[#F5F4ED]/40">
-        No cierres esta pantalla
+        {t("mint.progress.dontClose")}
       </p>
     </div>
   );
@@ -36,6 +37,7 @@ export function MintForm() {
   const router = useRouter();
   const { address } = useWallet();
   const { mint, state, errorKind, reset } = useMint();
+  const { locale, t } = useI18n();
 
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -46,22 +48,25 @@ export function MintForm() {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const acceptFile = useCallback((f: File) => {
-    if (!ACCEPTED.includes(f.type)) {
-      setFieldError("Formato no soportado. Usá JPG, PNG, WEBP o GIF.");
-      return;
-    }
-    if (f.size > MAX_BYTES) {
-      setFieldError("La imagen supera los 30 MB.");
-      return;
-    }
-    setFieldError(null);
-    setFile(f);
-    setPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(f);
-    });
-  }, []);
+  const acceptFile = useCallback(
+    (f: File) => {
+      if (!ACCEPTED.includes(f.type)) {
+        setFieldError(t("mint.errors.unsupportedFormat"));
+        return;
+      }
+      if (f.size > MAX_BYTES) {
+        setFieldError(t("mint.errors.tooLarge"));
+        return;
+      }
+      setFieldError(null);
+      setFile(f);
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(f);
+      });
+    },
+    [t],
+  );
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -74,7 +79,8 @@ export function MintForm() {
   );
 
   const royaltyBps = Math.round(royalty * 100);
-  const royaltyLabel = royalty.toFixed(1).replace(".", ",") + "%";
+  const royaltyLabel =
+    (locale === "es" ? royalty.toFixed(1).replace(".", ",") : royalty.toFixed(1)) + "%";
   const canSubmit = Boolean(file) && title.trim().length > 0;
 
   const onSubmit = useCallback(async () => {
@@ -107,10 +113,10 @@ export function MintForm() {
   if (state === "error") {
     const copy =
       errorKind === "upload"
-        ? "No pudimos subir tu obra. Intentá de nuevo."
+        ? t("mint.errors.upload")
         : errorKind === "sign"
-          ? "Cancelaste la firma. Volvé a intentarlo cuando quieras."
-          : "Algo salió mal en la blockchain. No se cobró nada.";
+          ? t("mint.errors.sign")
+          : t("mint.errors.chain");
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 text-center">
         <p className="font-[family-name:var(--font-fraunces)] text-3xl leading-tight [font-variation-settings:'opsz'_72] md:text-4xl">
@@ -121,7 +127,7 @@ export function MintForm() {
           onClick={reset}
           className="mt-10 inline-flex h-12 items-center justify-center rounded-md bg-[#0178DE] px-6 text-[15px] font-medium text-white transition-colors hover:bg-[#3493E5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F4ED]"
         >
-          {errorKind === "upload" ? "Reintentar" : "Volver al form"}
+          {errorKind === "upload" ? t("mint.errors.retry") : t("mint.errors.backToForm")}
         </button>
       </div>
     );
@@ -131,7 +137,7 @@ export function MintForm() {
   return (
     <div className="mx-auto max-w-7xl px-6 py-16 md:px-10 md:py-24 lg:px-16">
       <h1 className="max-w-[16ch] font-[family-name:var(--font-fraunces)] text-[clamp(2.5rem,7vw,5rem)] font-light leading-[0.95] tracking-[-0.02em] [font-variation-settings:'opsz'_144]">
-        Subí tu obra.
+        {t("mint.form.title")}
       </h1>
 
       <div className="mt-12 grid gap-12 lg:grid-cols-2 lg:gap-16">
@@ -151,7 +157,7 @@ export function MintForm() {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={previewUrl}
-              alt="Vista previa de tu obra"
+              alt={t("mint.form.previewAlt")}
               className="w-full rounded-lg border border-white/12 object-contain"
               onClick={() => inputRef.current?.click()}
             />
@@ -172,19 +178,15 @@ export function MintForm() {
               }`}
             >
               <span className="font-[family-name:var(--font-geist-mono)] text-[13px] uppercase tracking-[0.18em] text-[#F5F4ED]/60">
-                Arrastrá tu obra acá
+                {t("mint.form.drop")}
               </span>
-              <span className="mt-2 text-sm text-[#F5F4ED]/40">
-                o hacé click para elegirla
-              </span>
+              <span className="mt-2 text-sm text-[#F5F4ED]/40">{t("mint.form.clickToChoose")}</span>
               <span className="mt-6 font-[family-name:var(--font-geist-mono)] text-[11px] text-[#F5F4ED]/40">
-                JPG · PNG · WEBP · GIF · máx 30 MB
+                {t("mint.form.formats")}
               </span>
             </button>
           )}
-          {fieldError && (
-            <p className="mt-3 text-sm text-[#DC2626]">{fieldError}</p>
-          )}
+          {fieldError && <p className="mt-3 text-sm text-[#DC2626]">{fieldError}</p>}
         </div>
 
         {/* Right: fields */}
@@ -194,13 +196,13 @@ export function MintForm() {
               htmlFor="title"
               className="font-[family-name:var(--font-geist-mono)] text-[12px] uppercase tracking-[0.18em] text-[#F5F4ED]/40"
             >
-              Título
+              {t("mint.form.titleLabel")}
             </label>
             <input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Título de la obra"
+              placeholder={t("mint.form.titlePlaceholder")}
               maxLength={120}
               className="mt-2 w-full border-b border-white/15 bg-transparent pb-2 font-[family-name:var(--font-fraunces)] text-2xl text-[#F5F4ED] placeholder:text-[#F5F4ED]/30 focus:border-[#0178DE] focus:outline-none [font-variation-settings:'opsz'_40] md:text-3xl"
             />
@@ -211,14 +213,15 @@ export function MintForm() {
               htmlFor="description"
               className="font-[family-name:var(--font-geist-mono)] text-[12px] uppercase tracking-[0.18em] text-[#F5F4ED]/40"
             >
-              Descripción <span className="normal-case">(opcional)</span>
+              {t("mint.form.descriptionLabel")}{" "}
+              <span className="normal-case">{t("mint.form.optional")}</span>
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value.slice(0, 1000))}
               rows={4}
-              placeholder="Contá algo sobre la obra…"
+              placeholder={t("mint.form.descriptionPlaceholder")}
               className="mt-2 w-full resize-none border-b border-white/15 bg-transparent pb-2 text-base text-[#F5F4ED] placeholder:text-[#F5F4ED]/30 focus:border-[#0178DE] focus:outline-none"
             />
             <p className="mt-1 text-right font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/40">
@@ -232,7 +235,7 @@ export function MintForm() {
                 htmlFor="royalty"
                 className="font-[family-name:var(--font-geist-mono)] text-[12px] uppercase tracking-[0.18em] text-[#F5F4ED]/40"
               >
-                Royalty
+                {t("mint.form.royaltyLabel")}
               </label>
               <span className="font-[family-name:var(--font-geist-mono)] text-2xl text-[#0178DE]">
                 {royaltyLabel}
@@ -249,18 +252,17 @@ export function MintForm() {
               className="mt-4 w-full accent-[#0178DE]"
             />
             <p className="mt-3 max-w-md text-sm leading-relaxed text-[#F5F4ED]/60">
-              Inmutable después del minteo. Esta es la porción que vas a cobrar
-              en cada reventa, para siempre.
+              {t("mint.form.royaltyNote")}
             </p>
           </div>
 
           <div>
             <p className="font-[family-name:var(--font-geist-mono)] text-[12px] uppercase tracking-[0.18em] text-[#F5F4ED]/40">
-              Recibe la regalía
+              {t("mint.form.receiverLabel")}
             </p>
             <p className="mt-2 font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED]/70">
-              {address ? truncateAddress(address, 6, 6) : "—"} ·{" "}
-              <span className="text-[#F5F4ED]/40">tu wallet (100%)</span>
+              {address ? truncateAddress(address, 6, 6) : t("mint.form.walletFallback")} ·{" "}
+              <span className="text-[#F5F4ED]/40">{t("mint.form.walletReceives")}</span>
             </p>
           </div>
 
@@ -270,7 +272,7 @@ export function MintForm() {
             onClick={onSubmit}
             className="mt-2 inline-flex h-14 items-center justify-center rounded-md bg-[#0178DE] px-8 text-base font-medium text-white transition-colors hover:bg-[#3493E5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F4ED] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-[#F5F4ED]/40"
           >
-            Mintear
+            {t("mint.form.submit")}
           </button>
         </div>
       </div>
