@@ -20,7 +20,7 @@ function getPinata(): PinataSDK {
 export async function POST(request: Request) {
   if (!process.env.PINATA_JWT) {
     return Response.json(
-      { error: "IPFS no está configurado en el servidor." },
+      { error: "IPFS is not configured on the server." },
       { status: 500 },
     );
   }
@@ -34,13 +34,13 @@ export async function POST(request: Request) {
     /* falls through to the 400 below */
   }
   if (!file) {
-    return Response.json({ error: "Falta el archivo." }, { status: 400 });
+    return Response.json({ error: "Missing file." }, { status: 400 });
   }
 
   try {
     const upload = await getPinata().upload.public.file(file);
     const cid = upload.cid;
-    if (!cid) throw new Error("Pinata no devolvió un CID");
+    if (!cid) throw new Error("Pinata did not return a CID");
     return Response.json({
       cid,
       gatewayUrl: `https://gateway.pinata.cloud/ipfs/${cid}`,
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("[ipfs/upload]", err);
     return Response.json(
-      { error: "No se pudo subir el archivo a IPFS." },
+      { error: "Could not upload file to IPFS." },
       { status: 502 },
     );
   }
