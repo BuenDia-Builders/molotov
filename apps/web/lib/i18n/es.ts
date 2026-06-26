@@ -243,4 +243,12 @@ export const es = {
     certificate: "Ver certificado de autenticidad",
     mintAnother: "Mintear otra obra",
   },
+  myWork: {
+    title: "Tus obras",
+    noWorks: "Sin obras todavía",
+    mintFirst: "Minteá tu primera obra",
+    connectWallet: "Conectá tu wallet para ver tus obras",
+    tokensSingular: "token",
+    tokensPlural: "tokens",
+  },
 };

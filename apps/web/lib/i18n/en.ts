@@ -245,4 +245,12 @@ export const en = {
     certificate: "View certificate of authenticity",
     mintAnother: "Mint another work",
   },
+  myWork: {
+    title: "Your Works",
+    noWorks: "No works yet",
+    mintFirst: "Mint your first work",
+    connectWallet: "Connect your wallet to see your works",
+    tokensSingular: "token",
+    tokensPlural: "tokens",
+  },
 } satisfies typeof es;
