@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Geist, Geist_Mono, Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/providers/wallet-provider";
 import { ServiceWorkerRegister } from "@/components/sw-register";
@@ -22,6 +22,20 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const syne = Syne({
+  variable: "--font-syne",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -57,10 +71,10 @@ export default function RootLayout({
   return (
     <html
       lang={es.meta.lang}
-      className={`${fraunces.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${geistSans.variable} ${geistMono.variable} ${syne.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="relative min-h-full flex flex-col bg-black text-[#F5F4ED] font-[family-name:var(--font-geist-sans)]">
-        {/* Grain overlay: sits above the black background, below content (z-10). */}
+        {/* Grain overlay: sits above the black background, below content (z-0). */}
         <div aria-hidden className="grain pointer-events-none fixed inset-0 z-0 opacity-[0.04]" />
         <I18nProvider>
           <WalletProvider>{children}</WalletProvider>

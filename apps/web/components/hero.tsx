@@ -1,60 +1,55 @@
 "use client";
 
 import Link from "next/link";
-import { ContractEvidence } from "@/components/contract-evidence";
-import { useI18n } from "@/lib/i18n";
 
 export function Hero() {
-  const { t } = useI18n();
-
   return (
-    <section className="relative overflow-hidden pt-20 pb-16 md:pt-28 lg:pt-36">
-      {/* Eyebrow — aligned to the page rail. Directed at one audience: artists. */}
-      <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-16">
-        <p className="flex items-center gap-2.5 font-[family-name:var(--font-geist-mono)] text-[13px] uppercase tracking-[0.18em] text-[#F5F4ED]/60">
-          <span
-            aria-hidden
-            className="inline-block size-1.5 rounded-full bg-[#0178DE] animate-breathe"
-          />
-          {t("hero.eyebrow")}
-        </p>
-      </div>
+    <section className="relative flex min-h-screen bg-[var(--carbon)]">
+      {/* Left column: text */}
+      <div className="w-1/2 pt-32 pb-24 pl-16 flex flex-col justify-center">
+        {/* Eyebrow */}
+        <span className="font-mono text-[10px] tracking-[0.3em] text-[var(--smoke)] uppercase">
+          MOLOTOV
+        </span>
 
-      {/* The h1 breaks the rail: shifted right and bleeding toward the edge. */}
-      <div className="px-6 md:px-10 lg:px-16">
-        <h1 className="mt-8 font-[family-name:var(--font-fraunces)] text-[clamp(2.75rem,9vw,8.5rem)] font-light leading-[0.95] tracking-[-0.02em] [font-variation-settings:'opsz'_144] md:ml-auto md:max-w-[82%] md:text-right lg:max-w-[70%] lg:-mr-[2vw]">
-          {t("hero.titleBeforeEm")}{" "}
-          <em className="font-normal italic text-[#0178DE]">{t("hero.titleEm")}</em>{" "}
-          {t("hero.titleAfterEm")}
+        {/* Divider */}
+        <div className="w-full h-px bg-[var(--ember)] mb-8 mt-4" />
+
+        {/* Headline */}
+        <h1 className="font-[family-name:var(--font-syne)] font-black text-[80px] leading-none text-[var(--offwhite)]">
+          The fire is yours.
         </h1>
-      </div>
 
-      <div className="mx-auto mt-12 grid max-w-7xl gap-10 px-6 md:mt-16 md:grid-cols-[1fr_auto] md:items-end md:px-10 lg:px-16">
-        {/* Left: information — body copy with its trust signal underneath. */}
-        <div className="flex flex-col items-start gap-6">
-          <p className="max-w-xl text-base leading-relaxed text-[#F5F4ED]/70 md:text-lg">
-            {t("hero.body")}
-          </p>
-          {/* Soft trust badge: it backs the paragraph, not the CTA. */}
-          <div id="contrato" className="scroll-mt-24">
-            <ContractEvidence />
-          </div>
-        </div>
+        {/* Subline */}
+        <p className="font-[family-name:var(--font-dm-sans)] text-lg text-[var(--smoke)] mt-6 leading-relaxed">
+          Fire is on-chain.
+          <br />
+          So is the royalty.
+        </p>
 
-        {/* Right: action — primary CTA with the secondary path below. */}
-        <div className="flex flex-col gap-3 sm:flex-row md:flex-col md:items-end">
+        {/* CTAs */}
+        <div className="mt-10 flex items-center">
+          <Link
+            href="/"
+            className="inline-block bg-[var(--blue)] text-white font-bold text-xs tracking-widest uppercase px-8 py-3 mr-4"
+          >
+            Explore works
+          </Link>
           <Link
             href="/create"
-            className="inline-flex h-12 items-center justify-center rounded-md bg-[#0178DE] px-6 text-[15px] font-medium text-white transition-colors hover:bg-[#3493E5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5F4ED]"
+            className="inline-block border border-[var(--ember)] text-[var(--offwhite)] font-bold text-xs tracking-widest uppercase px-8 py-3"
           >
-            {t("common.mintFirst")}
+            Mint yours →
           </Link>
-          <a
-            href="#actividad"
-            className="inline-flex h-12 items-center justify-center px-2 font-[family-name:var(--font-geist-mono)] text-[14px] text-[#F5F4ED]/70 underline-offset-4 transition-colors hover:text-[#F5F4ED] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0178DE]"
-          >
-            {t("common.collectorsSeeWorks")}
-          </a>
+        </div>
+      </div>
+
+      {/* Right column: visual placeholder */}
+      <div className="w-1/2 bg-[var(--ember)] h-screen overflow-hidden relative">
+        <div className="w-full h-full flex items-center justify-center">
+          <span className="font-mono text-[10px] tracking-[0.3em] text-[var(--smoke)] uppercase">
+            Live works loading...
+          </span>
         </div>
       </div>
     </section>

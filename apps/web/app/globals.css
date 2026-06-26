@@ -81,6 +81,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Molotov brand tokens — hero section */
+  --carbon: #141414;
+  --ember: #2D43FF;
+  --blue: #2D43FF;
+  --smoke: #6b6b6b;
+  --offwhite: #f5f5f5;
+  --font-syne: var(--font-syne), "Syne", sans-serif;
+  --font-dm-sans: var(--font-dm-sans), "DM Sans", sans-serif;
 }
 
 .dark {
