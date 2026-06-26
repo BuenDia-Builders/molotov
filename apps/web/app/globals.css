@@ -170,6 +170,15 @@
   animation: indeterminate 1.4s ease-in-out infinite;
 }
 
+/* Hide scrollbar while keeping scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-breathe {
     animation: none;
