@@ -49,6 +49,11 @@
 }
 
 :root {
+  --carbon: #141414;
+  --ember: #222222;
+  --smoke: #6b6b6b;
+  --offwhite: #f0efeb;
+  --blue: #1564ff;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
