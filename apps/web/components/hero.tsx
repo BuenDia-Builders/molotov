@@ -16,12 +16,12 @@ export function Hero() {
         <div className="w-full h-px bg-[var(--ember)] mb-8 mt-4" />
 
         {/* Headline */}
-        <h1 className="font-[family-name:var(--font-syne)] font-black text-[80px] leading-none text-[var(--offwhite)]">
+        <h1 className="font-[family-name:var(--font-display)] font-black text-[80px] leading-none text-[var(--offwhite)]">
           The fire is yours.
         </h1>
 
         {/* Subline */}
-        <p className="font-[family-name:var(--font-dm-sans)] text-lg text-[var(--smoke)] mt-6 leading-relaxed">
+        <p className="font-[family-name:var(--font-body)] text-lg text-[var(--smoke)] mt-6 leading-relaxed">
           Fire is on-chain.
           <br />
           So is the royalty.
@@ -45,7 +45,7 @@ export function Hero() {
       </div>
 
       {/* Right column: visual placeholder */}
-      <div className="w-1/2 bg-[var(--ember)] h-screen overflow-hidden relative">
+      <div className="w-1/2 bg-[var(--blue)] h-screen overflow-hidden relative">
         <div className="w-full h-full flex items-center justify-center">
           <span className="font-mono text-[10px] tracking-[0.3em] text-[var(--smoke)] uppercase">
             Live works loading...

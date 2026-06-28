@@ -1,42 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Geist, Geist_Mono, Syne, DM_Sans } from "next/font/google";
+import { Syne, DM_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/providers/wallet-provider";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { I18nProvider } from "@/lib/i18n";
 import { es } from "@/lib/i18n/es";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  display: "swap",
-  style: ["normal", "italic"],
-  axes: ["opsz"],
-});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const syne = Syne({
-  variable: "--font-syne",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500", "700"],
-});
+const syne = Syne({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-display" });
+const dmSans = DM_Sans({ subsets: ["latin"], weight: ["300", "400", "500", "600"], variable: "--font-body" });
+const spaceMono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: es.meta.title,
@@ -57,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#0A0A0A",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -71,10 +43,10 @@ export default function RootLayout({
   return (
     <html
       lang={es.meta.lang}
-      className={`${fraunces.variable} ${geistSans.variable} ${geistMono.variable} ${syne.variable} ${dmSans.variable} h-full antialiased`}
+      className={`${syne.variable} ${dmSans.variable} ${spaceMono.variable} h-full antialiased`}
     >
-      <body className="relative min-h-full flex flex-col bg-black text-[#F5F4ED] font-[family-name:var(--font-geist-sans)]">
-        {/* Grain overlay: sits above the black background, below content (z-0). */}
+      <body className="relative min-h-full flex flex-col bg-black text-offwhite font-[family-name:var(--font-body)]">
+        {/* Grain overlay: sits above the black background, below content (z-10). */}
         <div aria-hidden className="grain pointer-events-none fixed inset-0 z-0 opacity-[0.04]" />
         <I18nProvider>
           <WalletProvider>{children}</WalletProvider>
