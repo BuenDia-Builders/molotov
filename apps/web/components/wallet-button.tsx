@@ -6,7 +6,7 @@ import { useWallet } from "@/hooks/use-wallet";
 import { IS_TESTNET, STELLAR_NETWORK_NAME, truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
 
-export function WalletButton() {
+export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
   const { address, isConnected, isConnecting, connect, disconnect } = useWallet();
   const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -35,17 +35,24 @@ export function WalletButton() {
     );
   }
 
+  const isLight = theme === "light";
   return (
     <div ref={containerRef} className="relative">
       <Button
         variant="outline"
-        className="min-h-[44px] border-white/15 bg-transparent font-[family-name:var(--font-mono)] text-[var(--offwhite)] hover:bg-white/5 hover:text-[var(--offwhite)]"
+        className={`min-h-[44px] bg-transparent font-[family-name:var(--font-mono)] ${
+          isLight
+            ? "border-black/20 text-[var(--black)] hover:bg-black/5 hover:text-[var(--black)]"
+            : "border-white/15 text-[var(--offwhite)] hover:bg-white/5 hover:text-[var(--offwhite)]"
+        }`}
         onClick={() => setMenuOpen((open) => !open)}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
       >
         {IS_TESTNET && (
-          <span className="mr-2 border border-white/15 px-1.5 py-0.5 text-[12px] uppercase text-[var(--offwhite)]/60">
+          <span className={`mr-2 border px-1.5 py-0.5 text-[12px] uppercase ${
+            isLight ? "border-black/15 text-[var(--black)]/60" : "border-white/15 text-[var(--offwhite)]/60"
+          }`}>
             {t("wallet.testnetBadge")}
           </span>
         )}

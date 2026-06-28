@@ -99,7 +99,7 @@ export function Nav() {
             <div className="hidden items-center gap-2 md:flex">
               {localeBtns(true)}
             </div>
-            <WalletButton />
+            <WalletButton theme="light" />
           </div>
 
         </div>
@@ -127,7 +127,8 @@ export function Nav() {
           </div>
 
           {/* Primary links — BIG */}
-          <nav className="flex flex-1 flex-col justify-center overflow-y-auto px-6 md:px-16 lg:px-24">
+          <nav className="flex flex-1 overflow-y-auto px-6 md:px-16 lg:px-24">
+            <div className="flex w-full flex-col justify-center min-h-full py-8">
             <ul className="border-t border-white/10">
               {PRIMARY_LINKS.map(({ href, key }) => (
                 <li key={href}>
@@ -201,6 +202,7 @@ export function Nav() {
             {/* Mobile locale toggle */}
             <div className="mt-8 flex items-center gap-3 md:hidden">
               {localeBtns(false)}
+            </div>
             </div>
           </nav>
 
