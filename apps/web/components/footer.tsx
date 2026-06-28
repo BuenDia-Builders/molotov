@@ -22,7 +22,7 @@ export function Footer() {
 
   return (
     <footer className="mt-auto border-t border-white/12">
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-4 md:px-10 lg:px-16">
+      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 sm:grid-cols-2 md:px-10 lg:grid-cols-4 lg:px-16">
 
         {/* Brand */}
         <div className="md:col-span-1">

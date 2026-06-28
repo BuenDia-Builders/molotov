@@ -187,7 +187,7 @@ export default async function WorksPage() {
         )}
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5">
           {works.map((work) => (
             <div key={work.token_id} className="bg-[var(--black)]">
               <WorkCard work={work} />

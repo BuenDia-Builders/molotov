@@ -42,7 +42,7 @@ export function EconomyFlow() {
           observer.disconnect();
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0.2 },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -51,76 +51,77 @@ export function EconomyFlow() {
   return (
     <section
       id="how"
-      className="mx-auto max-w-7xl scroll-mt-24 px-6 py-24 md:px-10 md:py-36 lg:px-16"
+      className="mx-auto max-w-7xl scroll-mt-24 px-6 py-20 md:px-10 md:py-36 lg:px-16"
     >
-      <div className="grid gap-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-24">
-        {/* Left: the literal distribution of a single sale. */}
+      <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-24">
+
+        {/* Left: sale distribution */}
         <div>
-          <p className="font-[family-name:var(--font-geist-mono)] text-[13px] uppercase tracking-[0.18em] text-[#F5F4ED]/40">
+          <p className="font-[family-name:var(--font-mono)] text-[12px] uppercase tracking-[0.18em] text-[var(--offwhite)]/40">
             {t("economy.eyebrow")}
           </p>
-          <p className="mt-4 font-[family-name:var(--font-fraunces)] text-3xl leading-tight tracking-[-0.01em] [font-variation-settings:'opsz'_72] md:text-4xl">
+          <p className="mt-4 font-[family-name:var(--font-display)] text-3xl leading-tight tracking-[-0.01em] md:text-4xl">
             {t("economy.saleBefore")}{" "}
-            <span className="font-[family-name:var(--font-geist-mono)] text-2xl md:text-3xl">
+            <span className="font-[family-name:var(--font-mono)] text-2xl md:text-3xl">
               100&nbsp;XLM
             </span>
             {t("economy.saleAfter")}
           </p>
 
-          <ul ref={listRef} className="mt-12 border-t border-white/12">
+          <ul ref={listRef} className="mt-10 border-t border-white/12">
             {FLOW.map((row, i) => (
               <li
                 key={row.labelKey}
                 style={{ transitionDelay: `${i * 120}ms` }}
-                className={`reveal flex flex-col gap-1 border-b border-white/12 py-6 md:flex-row md:items-baseline md:gap-8 ${
+                className={`reveal flex flex-col gap-1 border-b border-white/12 py-5 md:flex-row md:items-baseline md:gap-8 ${
                   inView ? "in" : ""
-                } ${row.accent ? "border-l-2 border-l-[#0178DE] pl-5 md:pl-6" : ""}`}
+                } ${row.accent ? "border-l-2 border-l-[var(--blue)] pl-5 md:pl-6" : ""}`}
               >
                 <div className="flex items-baseline gap-3 md:w-64">
-                  <span aria-hidden className="text-[#F5F4ED]/40">
+                  <span aria-hidden className="text-[var(--offwhite)]/40">
                     {t("economy.arrow")}
                   </span>
-                  <span className="font-[family-name:var(--font-geist-mono)] text-2xl text-[#F5F4ED] md:text-3xl">
+                  <span className="font-[family-name:var(--font-mono)] text-2xl text-[var(--offwhite)] md:text-3xl">
                     {t(row.amountKey)}
-                    <span className="ml-1.5 text-sm text-[#F5F4ED]/40">XLM</span>
+                    <span className="ml-1.5 text-sm text-[var(--offwhite)]/40">XLM</span>
                   </span>
                 </div>
                 <div className="pl-7 md:pl-0">
-                  <p className="text-base text-[#F5F4ED]">
+                  <p className="text-base text-[var(--offwhite)]">
                     {t(row.labelKey)}
-                    <span className="ml-2 font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/40">
+                    <span className="ml-2 font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)]/40">
                       {t(row.pctKey)}
                     </span>
                   </p>
-                  <p className="mt-0.5 max-w-sm text-sm text-[#F5F4ED]/60">{t(row.noteKey)}</p>
+                  <p className="mt-0.5 max-w-sm text-sm text-[var(--offwhite)]/60">{t(row.noteKey)}</p>
                 </div>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Right: the comparison as a statement, not a stat. */}
+        {/* Right: comparison */}
         <div className="flex flex-col justify-center">
-          <p className="font-[family-name:var(--font-fraunces)] text-2xl leading-snug [font-variation-settings:'opsz'_40] md:text-3xl">
+          <p className="font-[family-name:var(--font-display)] text-2xl leading-snug md:text-3xl">
             {t("economy.comparison")}
           </p>
 
-          <dl className="mt-12 space-y-8">
+          <dl className="mt-10 space-y-6">
             <div className="flex items-end justify-between border-b border-white/12 pb-4">
-              <dt className="text-base text-[#F5F4ED]/60">{t("economy.streamingKeeps")}</dt>
-              <dd className="font-[family-name:var(--font-geist-mono)] text-4xl text-[#F5F4ED]/40 md:text-5xl">
+              <dt className="text-base text-[var(--offwhite)]/60 max-w-[60%]">{t("economy.streamingKeeps")}</dt>
+              <dd className="font-[family-name:var(--font-mono)] text-4xl text-[var(--offwhite)]/30 md:text-5xl">
                 ~70%
               </dd>
             </div>
             <div className="flex items-end justify-between border-b border-white/12 pb-4">
-              <dt className="text-base text-[#F5F4ED]">{t("economy.molotovKeeps")}</dt>
-              <dd className="font-[family-name:var(--font-geist-mono)] text-4xl text-[#0178DE] md:text-5xl">
-                2,5%
+              <dt className="text-base text-[var(--offwhite)] max-w-[60%]">{t("economy.molotovKeeps")}</dt>
+              <dd className="font-[family-name:var(--font-mono)] text-4xl text-[var(--blue)] md:text-5xl">
+                2.5%
               </dd>
             </div>
           </dl>
 
-          <p className="mt-8 max-w-md text-sm leading-relaxed text-[#F5F4ED]/60">
+          <p className="mt-6 max-w-md text-sm leading-relaxed text-[var(--offwhite)]/60">
             {t("economy.note")}
           </p>
         </div>
