@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Client, networks } from "@molotov/stellar-client/molotov-nft";
 import { Nav } from "@/components/nav";
-import { NFT_CONTRACT_ID, contractExplorerUrl, truncateAddress } from "@/lib/stellar";
+import { NFT_CONTRACT_ID, RPC_URL, contractExplorerUrl, truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
+import { useWallet } from "@/hooks/use-wallet";
+import { useList } from "@/hooks/use-list";
+import { WalletButton } from "@/components/wallet-button";
 
-const RPC_URL = "https://soroban-testnet.stellar.org";
 // A funded testnet account used only as the source for read-only simulation.
 const READ_SOURCE = "GANXCETUVUUILGJPVEZWM7EH66IZM5OICUPMNUWNXKIBRK425MUKZERM";
 
@@ -32,6 +34,9 @@ export default function MyWorkPage() {
   const params = useParams<{ tokenId: string }>();
   const tokenId = Number(params.tokenId);
   const { locale, t } = useI18n();
+  const { address, isConnected } = useWallet();
+  const { list, state: listState, errorKind: listError, listingId, reset: resetList } = useList();
+  const [priceXlm, setPriceXlm] = useState("");
   const [art, setArt] = useState<Artwork | null>(null);
   const [phase, setPhase] = useState<Phase>("chain");
   // timedOut state drives the error-screen copy; timedOutRef gives the async
@@ -232,6 +237,93 @@ export default function MyWorkPage() {
                 >
                   {t("artwork.certificate")} {t("common.externalArrow")}
                 </a>
+
+                {/* Listing form */}
+                <div className="mt-2 border-t border-white/12 pt-6">
+                  <p className="mb-4 font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-[0.18em] text-[#F5F4ED]/50">
+                    List for sale
+                  </p>
+
+                  {!isConnected && (
+                    <WalletButton />
+                  )}
+
+                  {isConnected && listState === "idle" && (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="1"
+                          step="any"
+                          placeholder="Price in XLM"
+                          value={priceXlm}
+                          onChange={(e) => setPriceXlm(e.target.value)}
+                          className="h-12 flex-1 border border-white/20 bg-transparent px-4 font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED] placeholder:text-[#F5F4ED]/30 focus:border-[#0178DE] focus:outline-none"
+                        />
+                        <span className="font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED]/50">
+                          XLM
+                        </span>
+                      </div>
+                      <button
+                        disabled={!priceXlm || Number(priceXlm) <= 0}
+                        onClick={async () => {
+                          try {
+                            await list({ tokenId, priceXlm: Number(priceXlm) });
+                          } catch {
+                            // error state handled by hook
+                          }
+                        }}
+                        className="h-12 bg-[#F5F4ED] px-6 text-[15px] font-medium text-[#0A0A0A] transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        List for sale
+                      </button>
+                    </div>
+                  )}
+
+                  {(listState === "approving" || listState === "listing") && (
+                    <div className="flex flex-col gap-2">
+                      <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/60">
+                        {listState === "approving"
+                          ? "Step 1/2 — Approve marketplace… sign in your wallet"
+                          : "Step 2/2 — Creating listing… sign in your wallet"}
+                      </p>
+                      <div className="relative h-0.5 w-full overflow-hidden bg-white/12">
+                        <span className="progress-fill" />
+                      </div>
+                    </div>
+                  )}
+
+                  {listState === "success" && (
+                    <div className="flex flex-col gap-3">
+                      <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#0178DE]">
+                        Listed — listing #{listingId?.toString()}
+                      </p>
+                      <Link
+                        href="/works"
+                        className="font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED]/70 underline-offset-4 hover:underline"
+                      >
+                        View in marketplace →
+                      </Link>
+                    </div>
+                  )}
+
+                  {listState === "error" && (
+                    <div className="flex flex-col gap-3">
+                      <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-red-400">
+                        {listError === "approve"
+                          ? "Approval failed — the wallet rejected or timed out."
+                          : "Listing failed — transaction not confirmed."}
+                      </p>
+                      <button
+                        onClick={resetList}
+                        className="font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED]/70 underline-offset-4 hover:underline"
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <Link
                   href="/create"
                   className="font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED]/70 underline-offset-4 transition-colors hover:text-[#F5F4ED] hover:underline"

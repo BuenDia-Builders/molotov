@@ -47,9 +47,19 @@ export async function createWalletsKit(): Promise<StellarWalletsKit> {
   });
 }
 
-/** Deployed Molotov NFT contract (Stellar testnet). Evidence, not decoration. */
+/** Deployed Molotov NFT contract (Stellar testnet). */
 export const NFT_CONTRACT_ID =
   "CBS6UQE542PLU54SVUIK76EKWUJ3CNPOQ35IB4WXKF3BU6YDIBEC7XWS";
+
+/** Deployed Molotov Marketplace contract (Stellar testnet). */
+export const MARKETPLACE_CONTRACT_ID =
+  "CB6T6DOYV2JCD36ZE43ESXNGCL2GBDARCZNRVYQWOXGTZNJBWB72K7DU";
+
+/** Native XLM SAC on Stellar testnet — the only allowed payment currency in v1. */
+export const NATIVE_XLM_SAC =
+  "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
+
+export const RPC_URL = "https://soroban-testnet.stellar.org";
 
 /** Builds a stellar.expert explorer URL for a contract on the active network. */
 export function contractExplorerUrl(contractId: string): string {

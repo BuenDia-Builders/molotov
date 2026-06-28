@@ -4,8 +4,7 @@ import { useCallback, useState } from "react";
 import { Client, networks } from "@molotov/stellar-client/molotov-nft";
 import { useWallet } from "@/hooks/use-wallet";
 import { uploadImage, uploadMetadata } from "@/lib/ipfs";
-
-const RPC_URL = "https://soroban-testnet.stellar.org";
+import { RPC_URL } from "@/lib/stellar";
 
 export type MintState =
   | "idle"
