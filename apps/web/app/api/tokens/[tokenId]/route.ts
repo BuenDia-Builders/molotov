@@ -41,7 +41,7 @@ export async function GET(
   const [tokenRes, listingRes] = await Promise.all([
     db
       .from('tokens')
-      .select('token_id, token_uri, owner, artist, royalty_bps, recipients_count, minted_ledger')
+      .select('token_id, token_uri, owner, artist, royalty_bps, recipients_count, minted_at_ledger')
       .eq('token_id', tokenId)
       .single(),
     db
