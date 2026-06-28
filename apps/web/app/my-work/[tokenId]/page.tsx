@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Client, networks } from "@molotov/stellar-client/molotov-nft";
 import { Nav } from "@/components/nav";
-import { NFT_CONTRACT_ID, RPC_URL, contractExplorerUrl, truncateAddress } from "@/lib/stellar";
+import { NFT_CONTRACT_ID, MARKETPLACE_CONTRACT_ID, RPC_URL, contractExplorerUrl, truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
 import { useWallet } from "@/hooks/use-wallet";
 import { useList } from "@/hooks/use-list";
@@ -244,11 +244,33 @@ export default function MyWorkPage() {
                     List for sale
                   </p>
 
+                  {/* Token is in escrow at the marketplace — already listed */}
+                  {art.artist === MARKETPLACE_CONTRACT_ID && (
+                    <div className="flex flex-col gap-2">
+                      <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#0178DE]">
+                        This work is currently listed for sale.
+                      </p>
+                      <Link
+                        href={`/token/${tokenId}`}
+                        className="font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED]/70 underline-offset-4 hover:underline"
+                      >
+                        View listing →
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Not the owner — can't list */}
+                  {art.artist !== MARKETPLACE_CONTRACT_ID && isConnected && address !== art.artist && (
+                    <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/40">
+                      Connect the wallet that owns this token to list it.
+                    </p>
+                  )}
+
                   {!isConnected && (
                     <WalletButton />
                   )}
 
-                  {isConnected && listState === "idle" && (
+                  {isConnected && address === art.artist && listState === "idle" && (
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center gap-2">
                         <input

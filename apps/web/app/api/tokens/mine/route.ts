@@ -15,9 +15,9 @@ export async function GET(req: NextRequest) {
   )
 
   const { data, error } = await db
-    .from('tokens')
-    .select('token_id, token_uri, owner, artist, royalty_bps')
-    .or(`owner.eq.${wallet},artist.eq.${wallet}`)
+    .from('token_effective_owner')
+    .select('token_id, token_uri, owner, artist, royalty_bps, effective_owner, active_listing_id')
+    .or(`effective_owner.eq.${wallet},artist.eq.${wallet}`)
     .order('token_id', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
