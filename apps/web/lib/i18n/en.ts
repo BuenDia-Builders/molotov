@@ -166,6 +166,7 @@ export const en = {
     productLabel: "Product",
     propertiesLabel: "Properties",
     mintWork: "Mint work",
+    artists: "Artists",
     copyright: "© 2026 Molotov · Beta on Stellar testnet",
     contractPrefix: "Contract",
     props: {
