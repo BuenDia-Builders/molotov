@@ -58,7 +58,19 @@ async function getTokenData(tokenId: number) {
   ])
 
   if (tokenRes.error) return null
-  return { token: tokenRes.data, listing: listingRes.data }
+
+  // Fetch IPFS metadata to get the actual image URL
+  let imageUrl = ''
+  const metaUri = tokenRes.data?.token_uri
+  if (metaUri) {
+    try {
+      const metaRes = await fetch(ipfsToGateway(metaUri), { next: { revalidate: 3600 } })
+      const meta = await metaRes.json()
+      if (meta.image) imageUrl = ipfsToGateway(meta.image)
+    } catch { /* fall through to placeholder */ }
+  }
+
+  return { token: tokenRes.data, listing: listingRes.data, imageUrl }
 }
 
 export default async function TokenPage({ params }: { params: Promise<{ tokenId: string }> }) {
@@ -69,8 +81,8 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
   const data = await getTokenData(id)
   if (!data) notFound()
 
-  const { token, listing } = data
-  const imageSrc = ipfsToGateway(token.token_uri || '/placeholder.png')
+  const { token, listing, imageUrl } = data
+  const imageSrc = imageUrl || '/icon-512.png'
 
   return (
     <div className="min-h-screen bg-[var(--black)]">
