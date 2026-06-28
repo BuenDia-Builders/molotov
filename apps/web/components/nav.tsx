@@ -17,9 +17,9 @@ export function Nav() {
             <Image
               src="/brand/logo_sinfondo.png"
               alt="Molotov"
-              width={28}
-              height={28}
-              className="h-7 w-auto"
+              width={120}
+              height={40}
+              className="h-8 w-auto"
               priority
             />
           </Link>

@@ -50,7 +50,7 @@ export function EconomyFlow() {
 
   return (
     <section
-      id="como-cobras"
+      id="how"
       className="mx-auto max-w-7xl scroll-mt-24 px-6 py-24 md:px-10 md:py-36 lg:px-16"
     >
       <div className="grid gap-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-24">

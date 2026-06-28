@@ -61,7 +61,7 @@ function upsertMetaDescription(content: string) {
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("es");
+  const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
