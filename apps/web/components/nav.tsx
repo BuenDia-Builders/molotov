@@ -17,6 +17,7 @@ const PRIMARY_LINKS = [
 const SECONDARY_LINKS = [
   { href: "/#how",      key: "nav.howYouEarn" },
   { href: "/#activity", key: "nav.activity"   },
+  { href: "/about",     key: "nav.about"      },
 ] as const;
 
 export function Nav() {
