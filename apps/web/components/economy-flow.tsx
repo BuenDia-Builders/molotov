@@ -6,47 +6,46 @@ import { useI18n } from "@/lib/i18n";
 const FLOW = [
   {
     amountKey: "economy.flow.artist.amount",
-    pctKey: "economy.flow.artist.pct",
-    labelKey: "economy.flow.artist.label",
-    noteKey: "economy.flow.artist.note",
+    pctKey:    "economy.flow.artist.pct",
+    labelKey:  "economy.flow.artist.label",
+    noteKey:   "economy.flow.artist.note",
     accent: true,
   },
   {
     amountKey: "economy.flow.molotov.amount",
-    pctKey: "economy.flow.molotov.pct",
-    labelKey: "economy.flow.molotov.label",
-    noteKey: "economy.flow.molotov.note",
+    pctKey:    "economy.flow.molotov.pct",
+    labelKey:  "economy.flow.molotov.label",
+    noteKey:   "economy.flow.molotov.note",
     accent: false,
   },
   {
     amountKey: "economy.flow.seller.amount",
-    pctKey: "economy.flow.seller.pct",
-    labelKey: "economy.flow.seller.label",
-    noteKey: "economy.flow.seller.note",
+    pctKey:    "economy.flow.seller.pct",
+    labelKey:  "economy.flow.seller.label",
+    noteKey:   "economy.flow.seller.note",
     accent: false,
   },
 ] as const;
 
 export function EconomyFlow() {
-  const listRef = useRef<HTMLUListElement>(null);
-  const [inView, setInView] = useState(false);
+  const listRef   = useRef<HTMLUListElement>(null);
+  const [inView,      setInView]      = useState(false);
+  const [hoveredRow,  setHoveredRow]  = useState<number | null>(null);
   const { t } = useI18n();
 
   useEffect(() => {
     const node = listRef.current;
     if (!node) return;
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); observer.disconnect(); } },
       { threshold: 0.2 },
     );
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
+
+  const activeRow = (i: number) =>
+    hoveredRow === null ? FLOW[i].accent : hoveredRow === i;
 
   return (
     <section id="how" className="bg-[var(--offwhite)] scroll-mt-24">
@@ -71,9 +70,13 @@ export function EconomyFlow() {
                 <li
                   key={row.labelKey}
                   style={{ transitionDelay: `${i * 120}ms` }}
+                  onMouseEnter={() => setHoveredRow(i)}
+                  onMouseLeave={() => setHoveredRow(null)}
                   className={`reveal flex flex-col gap-1 border-b border-black/10 py-8 md:flex-row md:items-baseline md:gap-8 ${
                     inView ? "in" : ""
-                  } ${row.accent ? "border-l-2 border-l-[var(--blue)] pl-5 md:pl-6" : ""}`}
+                  } border-l-2 pl-5 md:pl-6 transition-colors duration-200 ${
+                    activeRow(i) ? "border-l-[var(--blue)]" : "border-l-transparent"
+                  }`}
                 >
                   <div className="flex items-baseline gap-3 md:w-64">
                     <span aria-hidden className="text-[var(--black)]/30">
@@ -84,14 +87,16 @@ export function EconomyFlow() {
                       <span className="ml-1.5 text-sm text-[var(--black)]/40">XLM</span>
                     </span>
                   </div>
-                  <div className="pl-7 md:pl-0">
+                  <div>
                     <p className="text-base text-[var(--black)]">
                       {t(row.labelKey)}
                       <span className="ml-2 font-[family-name:var(--font-mono)] text-[12px] text-[var(--black)]/40">
                         {t(row.pctKey)}
                       </span>
                     </p>
-                    <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-[var(--black)]/55">{t(row.noteKey)}</p>
+                    <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-[var(--black)]/55">
+                      {t(row.noteKey)}
+                    </p>
                   </div>
                 </li>
               ))}

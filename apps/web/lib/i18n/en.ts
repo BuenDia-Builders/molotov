@@ -167,6 +167,10 @@ export const en = {
     artistName: "Artist name",
     xlmDash: "— XLM",
     usdDash: "US$ —",
+    royaltyStatLabel: "Royalty",
+    networkLabel: "Network",
+    networkValue: "Stellar testnet",
+    editionLabel: "1 of ∞",
   },
   manifesto: {
     title: "Manifesto",

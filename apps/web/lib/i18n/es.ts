@@ -165,6 +165,10 @@ export const es = {
     artistName: "Nombre del artista",
     xlmDash: "— XLM",
     usdDash: "US$ —",
+    royaltyStatLabel: "Royalty",
+    networkLabel: "Red",
+    networkValue: "Stellar testnet",
+    editionLabel: "1 de ∞",
   },
   manifesto: {
     title: "Manifiesto",
