@@ -5,53 +5,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { WalletButton } from "@/components/wallet-button";
 import { contractExplorerUrl, NFT_CONTRACT_ID } from "@/lib/stellar";
+import { useI18n } from "@/lib/i18n";
 
-const FEATURE_CARDS = [
-  {
-    id: "manifesto",
-    title: "Manifesto",
-    body: "We didn't build this for speculation. We built it so an artist can live from their work.",
-    href: "/#manifesto",
-    bar: "var(--smoke)",
-  },
-  {
-    id: "how",
-    title: "How it works",
-    body: "One sale. Three cuts. The royalty is code, not a platform promise.",
-    href: "/#how",
-    bar: "var(--blue)",
-  },
-  {
-    id: "stellar",
-    title: "Built on Stellar",
-    body: "Transaction fees of ~$0.00001. On-chain art accessible to everyone.",
-    href: "https://stellar.org",
-    bar: "var(--blue-deep)",
-    external: true,
-  },
+const MOBILE_LINK_KEYS = [
+  { href: "/works",       key: "nav.discover"  },
+  { href: "/create",      key: "nav.create"    },
+  { href: "/artists",     key: "nav.artists"   },
+  { href: "/#how",        key: "nav.howYouEarn"},
+  { href: "/#activity",   key: "nav.activity"  },
+  { href: "/#manifesto",  key: "nav.manifesto" },
 ] as const;
-
-const QUICK_LINKS = [
-  { label: "How you earn", href: "/#how" },
-  { label: "Activity", href: "/#activity" },
-  { label: "Artists", href: "/artists" },
-  { label: "Contract ↗", href: contractExplorerUrl(NFT_CONTRACT_ID), external: true },
-] as const;
-
-const MOBILE_LINKS = [
-  { href: "/works", label: "Discover" },
-  { href: "/create", label: "Create" },
-  { href: "/artists", label: "Artists" },
-  { href: "/#how", label: "How it works" },
-  { href: "/#activity", label: "Activity" },
-  { href: "/#manifesto", label: "Manifesto" },
-] as const;
-
-const linkClass =
-  "font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)] transition-colors hover:text-[var(--offwhite)]";
 
 export function Nav() {
-  const [moreOpen, setMoreOpen] = useState(false);
+  const { t, locale, setLocale } = useI18n();
+  const [moreOpen,   setMoreOpen]   = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
 
@@ -72,6 +39,41 @@ export function Nav() {
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
+  const linkClass =
+    "font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)] transition-colors hover:text-[var(--offwhite)]";
+
+  const featureCards = [
+    {
+      id: "manifesto",
+      title: t("manifesto.title"),
+      body:  t("nav.megaManifestoBody"),
+      href:  "/#manifesto",
+      bar:   "var(--smoke)",
+    },
+    {
+      id: "how",
+      title: t("nav.howYouEarn"),
+      body:  t("nav.megaHowBody"),
+      href:  "/#how",
+      bar:   "var(--blue)",
+    },
+    {
+      id: "stellar",
+      title: t("nav.megaStellarTitle"),
+      body:  t("nav.megaStellarBody"),
+      href:  "https://stellar.org",
+      bar:   "var(--blue-deep)",
+      external: true,
+    },
+  ];
+
+  const quickLinks = [
+    { label: t("nav.howYouEarn"), href: "/#how" },
+    { label: t("nav.activity"),   href: "/#activity" },
+    { label: t("nav.artists"),    href: "/artists" },
+    { label: t("nav.contract"),   href: contractExplorerUrl(NFT_CONTRACT_ID), external: true },
+  ];
+
   return (
     <header ref={headerRef} className="sticky top-0 z-40 border-b border-[var(--ember)] bg-[var(--carbon)]">
 
@@ -80,7 +82,7 @@ export function Nav() {
 
         {/* Logo */}
         <div className="md:pl-16">
-          <Link href="/" className="flex items-center">
+          <Link href="/" aria-label={t("nav.homeLabel")} className="flex items-center">
             <Image
               src="/brand/logo-wordmark-dark.png"
               alt="Molotov"
@@ -94,9 +96,9 @@ export function Nav() {
 
         {/* Desktop links */}
         <ul className="hidden md:flex items-center justify-center gap-8">
-          <li><Link href="/works" className={linkClass}>Discover</Link></li>
-          <li><Link href="/create" className={linkClass}>Create</Link></li>
-          <li><Link href="/artists" className={linkClass}>Artists</Link></li>
+          <li><Link href="/works"   className={linkClass}>{t("nav.discover")}</Link></li>
+          <li><Link href="/create"  className={linkClass}>{t("nav.create")}</Link></li>
+          <li><Link href="/artists" className={linkClass}>{t("nav.artists")}</Link></li>
           <li>
             <button
               onClick={() => setMoreOpen((v) => !v)}
@@ -104,7 +106,7 @@ export function Nav() {
               aria-haspopup="true"
               className={`${linkClass} flex items-center gap-1.5`}
             >
-              More
+              {t("nav.more")}
               <span
                 aria-hidden
                 className={`text-[8px] transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`}
@@ -115,19 +117,38 @@ export function Nav() {
           </li>
         </ul>
 
-        {/* Right */}
+        {/* Right: locale toggle + wallet + hamburger */}
         <div className="flex items-center gap-4 md:pr-16">
+
+          {/* EN · ES toggle */}
+          <div className="hidden md:flex items-center gap-1.5">
+            {(["en", "es"] as const).map((loc) => (
+              <button
+                key={loc}
+                onClick={() => setLocale(loc)}
+                className={`font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.15em] transition-colors ${
+                  locale === loc
+                    ? "text-[var(--offwhite)]"
+                    : "text-[var(--smoke)] hover:text-[var(--offwhite)]"
+                }`}
+              >
+                {loc}
+              </button>
+            ))}
+          </div>
+
           <div className="hidden md:block">
             <WalletButton />
           </div>
+
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen((v) => !v)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileOpen ? t("nav.closeMenu") : t("nav.openMenu")}
             className="md:hidden flex flex-col justify-center gap-[5px] p-1"
           >
-            <span className={`block h-px w-5 bg-[var(--offwhite)] transition-all duration-200 ${mobileOpen ? "translate-y-[7px] rotate-45" : ""}`} />
-            <span className={`block h-px w-5 bg-[var(--offwhite)] transition-all duration-200 ${mobileOpen ? "opacity-0" : ""}`} />
+            <span className={`block h-px w-5 bg-[var(--offwhite)] transition-all duration-200 ${mobileOpen ? "translate-y-[7px] rotate-45"  : ""}`} />
+            <span className={`block h-px w-5 bg-[var(--offwhite)] transition-all duration-200 ${mobileOpen ? "opacity-0"                      : ""}`} />
             <span className={`block h-px w-5 bg-[var(--offwhite)] transition-all duration-200 ${mobileOpen ? "-translate-y-[7px] -rotate-45" : ""}`} />
           </button>
         </div>
@@ -140,7 +161,7 @@ export function Nav() {
 
             {/* Feature cards */}
             <div className="grid grid-cols-3 gap-px bg-[var(--ember)]">
-              {FEATURE_CARDS.map((card) => (
+              {featureCards.map((card) => (
                 <Link
                   key={card.id}
                   href={card.href}
@@ -162,7 +183,7 @@ export function Nav() {
 
             {/* Quick links */}
             <div className="mt-px grid grid-cols-4 gap-px bg-[var(--ember)]">
-              {QUICK_LINKS.map((link) => (
+              {quickLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
@@ -183,16 +204,34 @@ export function Nav() {
       {/* ── Mobile menu ── */}
       {mobileOpen && (
         <div className="md:hidden border-t border-[var(--ember)] bg-[var(--carbon)]">
-          {MOBILE_LINKS.map((link) => (
+          {MOBILE_LINK_KEYS.map(({ href, key }) => (
             <Link
-              key={link.href}
-              href={link.href}
+              key={href}
+              href={href}
               onClick={() => setMobileOpen(false)}
               className="flex border-b border-[var(--ember)] px-6 py-4 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)] hover:text-[var(--offwhite)]"
             >
-              {link.label}
+              {t(key)}
             </Link>
           ))}
+
+          {/* Mobile locale toggle */}
+          <div className="flex items-center gap-3 border-b border-[var(--ember)] px-6 py-4">
+            {(["en", "es"] as const).map((loc) => (
+              <button
+                key={loc}
+                onClick={() => setLocale(loc)}
+                className={`font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                  locale === loc
+                    ? "text-[var(--offwhite)]"
+                    : "text-[var(--smoke)] hover:text-[var(--offwhite)]"
+                }`}
+              >
+                {loc}
+              </button>
+            ))}
+          </div>
+
           <div className="px-6 py-4">
             <WalletButton />
           </div>
