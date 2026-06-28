@@ -127,8 +127,7 @@ export function Nav() {
           </div>
 
           {/* Primary links — BIG */}
-          <nav className="flex flex-1 overflow-y-auto px-6 md:px-16 lg:px-24">
-            <div className="flex w-full flex-col justify-center min-h-full py-8">
+          <nav className="flex flex-1 flex-col overflow-y-auto px-6 pt-8 pb-4 md:px-16 lg:px-24">
             <ul className="border-t border-white/10">
               {PRIMARY_LINKS.map(({ href, key }) => (
                 <li key={href}>
@@ -202,7 +201,6 @@ export function Nav() {
             {/* Mobile locale toggle */}
             <div className="mt-8 flex items-center gap-3 md:hidden">
               {localeBtns(false)}
-            </div>
             </div>
           </nav>
 
