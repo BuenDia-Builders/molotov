@@ -205,7 +205,7 @@
 }
 @keyframes fire-core {
   0%, 100% { opacity: 0.9; filter: blur(8px)  brightness(1.2); }
-  50%       { opacity: 1;   filter: blur(12px) brightness(1.6); }
+  50%       { opacity: 1;   filter: blur(14px) brightness(1.8); }
 }
 @keyframes loader-fade-out {
   to { opacity: 0; }

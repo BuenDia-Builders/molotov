@@ -34,13 +34,13 @@ export function PageLoader() {
       return;
     }
 
-    const t1 = setTimeout(() => setPhase("tear"),  500);
-    const t2 = setTimeout(() => setPhase("fire"),  800);
-    const t3 = setTimeout(() => setPhase("split"), 1050);
+    const t1 = setTimeout(() => setPhase("tear"),  900);   // logo visible
+    const t2 = setTimeout(() => setPhase("fire"),  1600);  // crack forms
+    const t3 = setTimeout(() => setPhase("split"), 2500);  // fire burns
     const t4 = setTimeout(() => {
       setPhase("done");
       sessionStorage.setItem("mlv_intro", "1");
-    }, 1900);
+    }, 3800);                                               // halves fly off + fade
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, []);
@@ -55,7 +55,7 @@ export function PageLoader() {
     <div
       className="fixed inset-0 z-[200] overflow-hidden"
       aria-hidden
-      style={isSplit ? { animation: "loader-fade-out 0.4s ease-in 0.9s forwards" } : undefined}
+      style={isSplit ? { animation: "loader-fade-out 0.6s ease-in 0.8s forwards" } : undefined}
     >
       {/* Logo — centered over the full overlay */}
       <div
@@ -90,7 +90,7 @@ export function PageLoader() {
               background:
                 "radial-gradient(ellipse 80% 100% at 50% 50%, rgba(21,100,255,0.85) 0%, rgba(74,138,255,0.5) 35%, transparent 70%)",
               filter: "blur(24px)",
-              animation: "fire-pulse 0.25s ease-in-out infinite",
+              animation: "fire-pulse 0.55s ease-in-out infinite",
             }}
           />
           {/* Core bright line */}
@@ -105,7 +105,7 @@ export function PageLoader() {
               background:
                 "radial-gradient(ellipse 100% 100% at 50% 50%, rgba(200,220,255,0.95), rgba(21,100,255,0.7) 40%, transparent 70%)",
               filter: "blur(6px)",
-              animation: "fire-core 0.18s ease-in-out infinite",
+              animation: "fire-core 0.4s ease-in-out infinite",
             }}
           />
         </>
@@ -117,7 +117,7 @@ export function PageLoader() {
         style={{
           height: "54%",
           clipPath: isJagged ? TOP_JAGGED : TOP_FLAT,
-          transition: "clip-path 0.18s ease-out, transform 0.65s cubic-bezier(0.55,0,1,0.45)",
+          transition: "clip-path 0.3s ease-out, transform 0.9s cubic-bezier(0.55,0,1,0.45)",
           transform: isSplit ? "translateY(-110%)" : "translateY(0)",
         }}
       />
@@ -128,7 +128,7 @@ export function PageLoader() {
         style={{
           height: "54%",
           clipPath: isJagged ? BOT_JAGGED : BOT_FLAT,
-          transition: "clip-path 0.18s ease-out, transform 0.65s cubic-bezier(0.55,0,1,0.45)",
+          transition: "clip-path 0.3s ease-out, transform 0.9s cubic-bezier(0.55,0,1,0.45)",
           transform: isSplit ? "translateY(110%)" : "translateY(0)",
         }}
       />
