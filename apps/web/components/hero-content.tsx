@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
@@ -13,93 +12,56 @@ export type FeaturedWork = {
   image?: string;
 };
 
-export function HeroContent({ work }: { work: FeaturedWork }) {
+export function HeroContent({ work: _work }: { work: FeaturedWork }) {
   const { t } = useI18n();
-  const royaltyPct = (work.royalty_bps / 100).toFixed(work.royalty_bps % 100 === 0 ? 0 : 1);
 
   return (
-    <section className="relative flex flex-col md:flex-row md:min-h-screen bg-[var(--carbon)]">
+    <section className="relative flex min-h-screen flex-col bg-[var(--carbon)]">
 
-      {/* Left column — text */}
-      <div className="w-full md:w-1/2 px-6 pt-24 pb-16 md:pt-48 md:pb-40 md:pl-20 md:pr-16 flex flex-col justify-center">
-        <span className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[var(--smoke)] uppercase">
+      {/* Brand label — left, below nav */}
+      <div className="px-6 pt-28 md:px-10 md:pt-36 lg:px-20">
+        <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.4em] text-[var(--offwhite)]/35">
+          MOLOTOV
+        </p>
+        <p className="mt-1 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[var(--offwhite)]/20">
           {t("hero.eyebrow")}
-        </span>
-        <div className="w-16 h-px bg-[var(--ember)] mb-10 mt-6" />
-        <h1 className="font-[family-name:var(--font-display)] font-black text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.92] text-[var(--offwhite)]">
-          {t("hero.titleBeforeEm")}{" "}
-          <em className="not-italic text-[var(--blue)]">{t("hero.titleEm")}</em>{" "}
-          {t("hero.titleAfterEm")}
+        </p>
+      </div>
+
+      {/* HUGE statement headline */}
+      <div className="flex flex-1 flex-col justify-center px-6 pb-20 pt-10 md:px-10 md:pb-28 md:pt-12 lg:px-20">
+        <h1 className="font-[family-name:var(--font-display)] text-[clamp(4.5rem,16vw,15rem)] font-light leading-[0.88] tracking-[-0.03em] text-[var(--offwhite)] [font-variation-settings:'opsz'_144]">
+          {t("hero.headlineMain")}
+          <br />
+          <em className="not-italic text-[var(--blue)]">{t("hero.headlinePlus")}</em>
         </h1>
-        <p className="font-[family-name:var(--font-body)] text-base text-[var(--smoke)] mt-10 leading-[1.75] max-w-sm">
+
+        <p className="mt-12 max-w-sm text-base leading-[1.75] text-[var(--offwhite)]/50">
           {t("hero.body")}
         </p>
-        <div className="mt-14 flex flex-wrap items-center gap-4">
+
+        <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
             href="/works"
-            className="inline-block bg-[var(--blue)] text-white font-[family-name:var(--font-mono)] text-[10px] tracking-widest uppercase px-7 py-3 transition-opacity hover:opacity-80"
+            className="inline-block bg-[var(--blue)] font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-widest text-white px-7 py-3 transition-opacity hover:opacity-80"
           >
             {t("hero.exploreWorks")}
           </Link>
           <Link
             href="/create"
-            className="inline-block border border-[var(--ember)] text-[var(--offwhite)] font-[family-name:var(--font-mono)] text-[10px] tracking-widest uppercase px-7 py-3 transition-colors hover:border-[var(--offwhite)]"
+            className="inline-block border border-[var(--offwhite)]/20 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-widest text-[var(--offwhite)]/60 px-7 py-3 transition-colors hover:border-[var(--offwhite)]/50 hover:text-[var(--offwhite)]"
           >
             {t("hero.mintYours")}
           </Link>
         </div>
       </div>
 
-      {/* Right column — featured work */}
-      <div className="w-full md:w-1/2 h-[70vw] md:h-auto md:min-h-screen overflow-hidden relative bg-gradient-to-br from-[var(--blue-deep)] to-[var(--blue)]">
-        {work.image && (
-          <Image
-            src={work.image}
-            alt={work.title}
-            fill
-            className="object-cover"
-            priority
-            sizes="(max-width: 768px) 100vw, 50vw"
-          />
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-
-        <Link
-          href="/works"
-          className="absolute top-4 right-4 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] uppercase text-white/60 hover:text-white transition-colors"
-        >
-          {t("hero.allWorks")}
-        </Link>
-
-        <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8">
-          <div className="flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <p className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.25em] uppercase text-[var(--blue)] mb-1 truncate">
-                #{String(work.token_id).padStart(4, "0")} · {work.artist_short}
-              </p>
-              <p className="font-[family-name:var(--font-display)] font-black text-xl md:text-[clamp(1.5rem,3vw,2.5rem)] leading-none text-white truncate">
-                {work.title}
-              </p>
-            </div>
-            <div className="text-right shrink-0">
-              {work.price_xlm && (
-                <p className="font-[family-name:var(--font-mono)] text-lg md:text-xl font-bold text-white leading-none">
-                  {work.price_xlm} <span className="text-white/50 text-sm">XLM</span>
-                </p>
-              )}
-              <p className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.2em] uppercase text-[var(--blue)] mt-1">
-                {royaltyPct}{t("hero.royaltySuffix")}
-              </p>
-            </div>
-          </div>
-          <Link
-            href={`/token/${work.token_id}`}
-            className="mt-4 inline-block bg-white text-black font-[family-name:var(--font-mono)] font-bold text-[10px] tracking-widest uppercase px-5 py-2.5 transition-opacity hover:opacity-80"
-          >
-            {t("hero.viewWork")}
-          </Link>
-        </div>
+      {/* Scroll indicator */}
+      <div className="flex flex-col items-start gap-1.5 px-6 pb-12 md:px-10 lg:px-20">
+        <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--offwhite)]/25">
+          {t("hero.scroll")}
+        </p>
+        <span aria-hidden className="text-[var(--offwhite)]/20 text-sm">↓</span>
       </div>
 
     </section>
