@@ -82,9 +82,9 @@ export function Nav() {
               <Image
                 src="/brand/logo_sinfondo.png"
                 alt="Molotov"
-                width={120}
-                height={40}
-                className="logo-flame h-8 w-auto"
+                width={44}
+                height={44}
+                className="logo-flame h-11 w-11"
                 priority
               />
             </Link>

@@ -19,7 +19,7 @@ export function HeroContent({ work: _work }: { work: FeaturedWork }) {
     <section className="relative flex min-h-screen flex-col bg-[var(--offwhite)]">
 
       {/* Brand label — left, below nav */}
-      <div className="px-6 pt-28 md:px-10 md:pt-36 lg:px-20">
+      <div className="px-6 pt-10 md:px-10 md:pt-14 lg:px-20">
         <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.4em] text-[var(--black)]/35">
           MOLOTOV
         </p>
