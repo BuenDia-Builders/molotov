@@ -19,6 +19,7 @@ export const en = {
     manifesto: "Manifesto",
     contract: "Contract ↗",
     about: "About",
+    team: "Team",
     openMenu: "Open menu",
     closeMenu: "Close menu",
     menuLabel: "Menu",

@@ -17,6 +17,7 @@ export const es = {
     manifesto: "Manifiesto",
     contract: "Contrato ↗",
     about: "Sobre nosotros",
+    team: "Equipo",
     openMenu: "Abrir menú",
     closeMenu: "Cerrar menú",
     menuLabel: "Menú",

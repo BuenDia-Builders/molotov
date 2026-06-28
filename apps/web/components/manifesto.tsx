@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
 export function Manifesto() {
@@ -33,6 +34,15 @@ export function Manifesto() {
             <p className="font-[family-name:var(--font-mono)] text-[14px] text-[var(--offwhite)]/40 [font-variation-settings:initial]">
               {t("manifesto.signature")}
             </p>
+
+            <div className="mt-14 flex justify-center">
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 border border-[var(--offwhite)]/20 px-6 py-3 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.25em] text-[var(--offwhite)]/60 transition-colors hover:border-[var(--offwhite)]/60 hover:text-[var(--offwhite)]"
+              >
+                {t("nav.about")} ↗
+              </Link>
+            </div>
           </div>
         </div>
 

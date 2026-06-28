@@ -8,16 +8,17 @@ import { contractExplorerUrl, NFT_CONTRACT_ID } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
 
 const PRIMARY_LINKS = [
-  { href: "/works",      key: "nav.discover"  },
-  { href: "/create",     key: "nav.create"    },
-  { href: "/artists",    key: "nav.artists"   },
-  { href: "/#manifesto", key: "nav.manifesto" },
+  { href: "/works",   key: "nav.discover"  },
+  { href: "/create",  key: "nav.create"    },
+  { href: "/artists", key: "nav.artists"   },
+  { href: "/about",   key: "nav.about"     },
 ] as const;
 
 const SECONDARY_LINKS = [
-  { href: "/#how",      key: "nav.howYouEarn" },
-  { href: "/#activity", key: "nav.activity"   },
-  { href: "/about",     key: "nav.about"      },
+  { href: "/#how",       key: "nav.howYouEarn" },
+  { href: "/#activity",  key: "nav.activity"   },
+  { href: "/#manifesto", key: "nav.manifesto"  },
+  { href: "/team",       key: "nav.team"       },
 ] as const;
 
 export function Nav() {
