@@ -410,6 +410,11 @@ impl MolotovMarketplace {
         if !allowed {
             panic_with_error!(e, MarketError::CurrencyNotAllowed);
         }
+        e.storage().persistent().extend_ttl(
+            &DataKey::AllowedCurrency(currency.clone()),
+            TTL_BUMP_THRESHOLD,
+            TTL_BUMP_AMOUNT,
+        );
 
         let fee_bps: u32 = e.storage().instance().get(&DataKey::FeeBps).unwrap();
         let treasury: Address = e.storage().instance().get(&DataKey::Treasury).unwrap();
@@ -609,6 +614,11 @@ impl MolotovMarketplace {
         if !allowed {
             panic_with_error!(e, MarketError::CurrencyNotAllowed);
         }
+        e.storage().persistent().extend_ttl(
+            &DataKey::AllowedCurrency(listing.currency.clone()),
+            TTL_BUMP_THRESHOLD,
+            TTL_BUMP_AMOUNT,
+        );
 
         // Self-referral → no referral; treasury keeps the full fee, sale proceeds.
         let eff_referrer = match referrer {

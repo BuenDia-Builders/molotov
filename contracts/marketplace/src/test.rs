@@ -1333,3 +1333,114 @@ fn constructor_sets_fee_and_treasury() {
     assert_eq!(client.fee_bps(), FEE_BPS);
     assert_eq!(client.treasury(), c.treasury);
 }
+
+// ================= AllowedCurrency TTL bump on list/buy =================
+
+/// `list` bumps the AllowedCurrency entry TTL on every successful read.
+#[test]
+fn test_list_bumps_allowed_currency_ttl() {
+    use crate::{DataKey, TTL_BUMP_AMOUNT};
+    use soroban_sdk::testutils::storage::Persistent as _;
+    use soroban_sdk::testutils::Ledger as _;
+
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+
+    // Advance close to expiry so the bump is measurable.
+    c.e.ledger().with_mut(|l| l.sequence_number += TTL_BUMP_AMOUNT - 100);
+
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    mkt_client(&c).list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+
+    c.e.as_contract(&c.mkt, || {
+        let ttl = c.e.storage().persistent().get_ttl(&DataKey::AllowedCurrency(c.sac.clone()));
+        assert!(ttl >= TTL_BUMP_AMOUNT - 16, "AllowedCurrency ttl too low after list: {}", ttl);
+    });
+}
+
+/// `buy` bumps the AllowedCurrency entry TTL on every successful read.
+#[test]
+fn test_buy_bumps_allowed_currency_ttl() {
+    use crate::{DataKey, TTL_BUMP_AMOUNT};
+    use soroban_sdk::testutils::storage::Persistent as _;
+    use soroban_sdk::testutils::Ledger as _;
+
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let id = mkt_client(&c).list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+
+    // Advance close to expiry.
+    c.e.ledger().with_mut(|l| l.sequence_number += TTL_BUMP_AMOUNT - 100);
+
+    let no_ref: Option<Address> = None;
+    mkt_client(&c).buy(&c.buyer, &id, &no_ref);
+
+    c.e.as_contract(&c.mkt, || {
+        let ttl = c.e.storage().persistent().get_ttl(&DataKey::AllowedCurrency(c.sac.clone()));
+        assert!(ttl >= TTL_BUMP_AMOUNT - 16, "AllowedCurrency ttl too low after buy: {}", ttl);
+    });
+}
+
+/// The marketplace survives a 30-day gap when list/buy keep the entry bumped.
+#[test]
+fn test_marketplace_survives_30_day_gap() {
+    use crate::TTL_BUMP_AMOUNT;
+    use soroban_sdk::testutils::Ledger as _;
+
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &1u32, &c.artist, &2000u32);
+
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+
+    // Advance most of the way through the initial TTL.
+    c.e.ledger().with_mut(|l| l.sequence_number += TTL_BUMP_AMOUNT - 200);
+    // Bump via list.
+    let id = mkt_client(&c).list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+
+    // Advance again close to the new expiry.
+    c.e.ledger().with_mut(|l| l.sequence_number += TTL_BUMP_AMOUNT - 200);
+    // Second list should still succeed.
+    mkt_client(&c).list(
+        &c.seller, &c.nft, &1u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+
+    // Buy on the first listing should also succeed.
+    let no_ref: Option<Address> = None;
+    mkt_client(&c).buy(&c.buyer, &id, &no_ref);
+    assert_eq!(nft_owner(&c, 0), c.buyer);
+    assert_eq!(bal(&c, &c.treasury), 50_000_000);
+}
+
+/// Without the entry, an absent AllowedCurrency blocks the listing.
+/// (Removing the entry simulates expiry, since the test env does not GC on TTL.)
+#[test]
+fn test_expired_entry_blocks_correctly() {
+    use crate::DataKey;
+
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+
+    // Remove the AllowedCurrency entry to simulate TTL expiry.
+    c.e.as_contract(&c.mkt, || {
+        c.e.storage().persistent().remove(&DataKey::AllowedCurrency(c.sac.clone()));
+    });
+
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let r = mkt_client(&c).try_list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+    assert!(r.is_err());
+}
