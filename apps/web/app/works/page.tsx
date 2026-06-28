@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { ipfsToGateway } from "@/lib/ipfs";
+import { isDbConfigured, getRecentTokens, getActivePricesByTokenId } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Discover — Molotov",
