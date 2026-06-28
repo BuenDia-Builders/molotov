@@ -111,14 +111,22 @@ export function Footer() {
         <p className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/30">
           {t("footer.copyright")}
         </p>
-        <a
-          href={contractExplorerUrl(NFT_CONTRACT_ID)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/40 transition-colors hover:text-[var(--offwhite)]/70"
-        >
-          Contract · {truncateAddress(NFT_CONTRACT_ID, 6, 6)} ↗
-        </a>
+        <div className="flex items-center gap-6">
+          <a
+            href={contractExplorerUrl(NFT_CONTRACT_ID)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/40 transition-colors hover:text-[var(--offwhite)]/70"
+          >
+            Contract · {truncateAddress(NFT_CONTRACT_ID, 6, 6)} ↗
+          </a>
+          <a
+            href="/admin"
+            className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/20 transition-colors hover:text-[var(--offwhite)]/50"
+          >
+            Admin
+          </a>
+        </div>
       </div>
     </footer>
   );
