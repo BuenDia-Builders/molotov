@@ -5,11 +5,27 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Brand palette */
+  --color-black:      #0A0A0A;
+  --color-carbon:     #141414;
+  --color-ember:      #222222;
+  --color-smoke:      #6B6B6B;
+  --color-ash:        #A8A8A8;
+  --color-offwhite:   #F0EFEB;
+  --color-blue:       #1564FF;
+  --color-blue-deep:  #0D3FA8;
+  --color-blue-light: #4A8AFF;
+  --color-blue-muted: #1A3060;
+
+  /* Brand fonts */
+  --font-display: var(--font-display);
+  --font-body:    var(--font-body);
+  --font-mono:    var(--font-mono);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,8 +65,19 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --black:      #0A0A0A;
+  --carbon:     #141414;
+  --ember:      #222222;
+  --smoke:      #6B6B6B;
+  --ash:        #A8A8A8;
+  --offwhite:   #F0EFEB;
+  --blue:       #1564FF;
+  --blue-deep:  #0D3FA8;
+  --blue-light: #4A8AFF;
+  --blue-muted: #1A3060;
+
+  --background: #0A0A0A;
+  --foreground: #F0EFEB;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -170,15 +197,6 @@
   animation: indeterminate 1.4s ease-in-out infinite;
 }
 
-/* Hide scrollbar while keeping scroll functionality */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animate-breathe {
     animation: none;
@@ -198,12 +216,12 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    box-shadow: none;
+    border-radius: 0;
   }
   body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
+    background: var(--black);
+    color: var(--offwhite);
+    font-family: var(--font-body);
   }
 }
