@@ -5,7 +5,7 @@ export const en = {
     lang: "en",
     title: "Molotov",
     description:
-      "Upload your work, set your royalty, and earn every time it sells. Digital art marketplace for LATAM artists on Stellar.",
+      "Digital art marketplace where artists earn royalties automatically every time their work is resold.",
     manifest: "/manifest-en.json",
   },
   nav: {
@@ -34,12 +34,12 @@ export const en = {
     networkLabel: "Network",
   },
   common: {
-    mintFirst: "Mint first work",
+    mintFirst: "Upload your first work",
     collectorsSeeWorks: "Collecting? See works for sale",
     externalArrow: "↗",
   },
   contractEvidence: {
-    label: "Audited on-chain · Verifiable",
+    label: "Verifiable on Stellar",
   },
   hero: {
     eyebrow: "For artists · Open beta · Buenos Aires",
@@ -63,7 +63,7 @@ export const en = {
         amount: "10.00",
         pct: "10% royalty",
         label: "to the artist",
-        note: "Goes to you on the first sale and on every future resale.",
+        note: "Yours on the first sale and on every resale after.",
       },
       molotov: {
         amount: "2.50",
@@ -179,24 +179,24 @@ export const en = {
   },
   footer: {
     description:
-      "A digital art marketplace with royalties written into the contract. Revenue moves back toward the artist.",
+      "Digital art marketplace where artists earn royalties automatically every time their work is resold.",
     productLabel: "Product",
     propertiesLabel: "Properties",
-    mintWork: "Mint work",
+    mintWork: "Upload work",
     artists: "Artists",
     copyright: "© 2026 Molotov · Beta on Stellar testnet",
     contractPrefix: "Contract",
     props: {
-      royalties: "1–15% on-chain royalties",
-      immutable: "Immutable after minting",
-      fee: "2.5% platform fee",
+      royalties: "1–15% royalties, fixed forever",
+      immutable: "Locked in once you upload",
+      fee: "Only 2.5% platform fee",
       noAi: "No AI-generated content",
       stellar: "Stellar · fees ~US$0.00001",
       latam: "Made in LATAM",
     },
   },
   create: {
-    connectPrompt: "To mint your first work, connect your wallet.",
+    connectPrompt: "To upload your first work, connect your wallet.",
   },
   mint: {
     progress: {
@@ -229,11 +229,11 @@ export const en = {
       descriptionPlaceholder: "Say something about the work…",
       royaltyLabel: "Royalty",
       royaltyNote:
-        "Immutable after minting. This is the share you will receive on every resale, forever.",
+        "Fixed forever once you upload. This is the share you will receive on every resale.",
       receiverLabel: "Receives the royalty",
       walletFallback: "—",
       walletReceives: "your wallet (100%)",
-      submit: "Mint",
+      submit: "Upload work",
       hintMissingImage: "Upload an image to continue.",
       hintMissingTitle: "The artwork title is missing.",
       hintMissingBoth: "Upload an image and add a title.",
@@ -250,7 +250,7 @@ export const en = {
     timeoutBody: "Reload the page.",
     reload: "Reload",
     notFound: "We could not find that work.",
-    mintOne: "Mint a work",
+    mintOne: "Upload a work",
     tokenPrefix: "Token",
     successBefore: "Your work is on",
     successEm: "blockchain",
@@ -261,12 +261,12 @@ export const en = {
     network: "Network",
     networkName: "Stellar testnet",
     certificate: "View certificate of authenticity",
-    mintAnother: "Mint another work",
+    mintAnother: "Upload another work",
   },
   myWork: {
     title: "Your Works",
     noWorks: "No works yet",
-    mintFirst: "Mint your first work",
+    mintFirst: "Upload your first work",
     connectWallet: "Connect your wallet to see your works",
     tokensSingular: "token",
     tokensPlural: "tokens",

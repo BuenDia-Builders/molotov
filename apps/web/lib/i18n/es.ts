@@ -3,7 +3,7 @@ export const es = {
     lang: "es-AR",
     title: "Molotov",
     description:
-      "Subí tu obra, fijá tu porcentaje y cobrás cada vez que se vende. Marketplace de arte digital para artistas de LATAM.",
+      "Marketplace de arte digital donde los artistas cobran regalías automáticas cada vez que su obra se revende.",
     manifest: "/manifest-es.json",
   },
   nav: {
@@ -32,12 +32,12 @@ export const es = {
     networkLabel: "Red",
   },
   common: {
-    mintFirst: "Mintear primera obra",
+    mintFirst: "Subir tu primera obra",
     collectorsSeeWorks: "¿Coleccionás? Ver obras en venta",
     externalArrow: "↗",
   },
   contractEvidence: {
-    label: "Auditado on-chain · Verificable",
+    label: "Verificable en Stellar",
   },
   hero: {
     eyebrow: "Para artistas · Beta abierta · Buenos Aires",
@@ -61,7 +61,7 @@ export const es = {
         amount: "10,00",
         pct: "royalty 10%",
         label: "al artista",
-        note: "Te llega en la primera venta y en cada reventa futura.",
+        note: "Te llega en la primera venta y en cada reventa.",
       },
       molotov: {
         amount: "2,50",
@@ -91,7 +91,7 @@ export const es = {
     arrow: "→",
     liveLabel: "EN VIVO · LISTADOS ACTIVOS",
     viewAll: "Ver todos →",
-    noListings: "Sin listados activos aún. Sé el primero en mintear.",
+    noListings: "Sin obras en venta todavía. Sé el primero en subir la tuya.",
     workPlaceholder: "obra",
     items: {
       first: {
@@ -177,24 +177,24 @@ export const es = {
   },
   footer: {
     description:
-      "Marketplace de arte digital con regalías grabadas en el contrato. El ingreso vuelve hacia el artista.",
+      "Marketplace de arte digital donde los artistas cobran regalías automáticas cada vez que su obra se revende.",
     productLabel: "Producto",
     propertiesLabel: "Propiedades",
-    mintWork: "Mintear obra",
+    mintWork: "Subir obra",
     artists: "Artistas",
     copyright: "© 2026 Molotov · Beta en Stellar testnet",
     contractPrefix: "Contrato",
     props: {
-      royalties: "Regalías 1–15% on-chain",
-      immutable: "Inmutables tras el minteo",
-      fee: "Fee de plataforma 2,5%",
+      royalties: "Regalías del 1% al 15%, fijas para siempre",
+      immutable: "Inmutables una vez subida la obra",
+      fee: "Solo 2,5% de comisión de plataforma",
       noAi: "Sin contenido generado por IA",
-      stellar: "Stellar · fees ~US$0,00001",
+      stellar: "Stellar · comisiones ~$0,00001",
       latam: "Hecho en LATAM",
     },
   },
   create: {
-    connectPrompt: "Para mintear tu primera obra necesitás conectar tu wallet.",
+    connectPrompt: "Para subir tu primera obra necesitás conectar tu wallet.",
   },
   mint: {
     progress: {
@@ -227,11 +227,11 @@ export const es = {
       descriptionPlaceholder: "Contá algo sobre la obra…",
       royaltyLabel: "Royalty",
       royaltyNote:
-        "Inmutable después del minteo. Esta es la porción que vas a cobrar en cada reventa, para siempre.",
+        "Queda fija para siempre una vez que subís tu obra. Cobrás ese porcentaje en cada reventa.",
       receiverLabel: "Recibe la regalía",
       walletFallback: "—",
       walletReceives: "tu wallet (100%)",
-      submit: "Mintear",
+      submit: "Subir obra",
       hintMissingImage: "Subí una imagen para continuar.",
       hintMissingTitle: "Falta el título de la obra.",
       hintMissingBoth: "Subí una imagen y poné un título.",
@@ -248,7 +248,7 @@ export const es = {
     timeoutBody: "Recargá la página.",
     reload: "Recargar",
     notFound: "No encontramos esa obra.",
-    mintOne: "Mintear una obra",
+    mintOne: "Subir una obra",
     tokenPrefix: "Token",
     successBefore: "¡Tu obra está en",
     successEm: "blockchain",
@@ -259,12 +259,12 @@ export const es = {
     network: "Red",
     networkName: "Stellar testnet",
     certificate: "Ver certificado de autenticidad",
-    mintAnother: "Mintear otra obra",
+    mintAnother: "Subir otra obra",
   },
   myWork: {
     title: "Tus obras",
     noWorks: "Sin obras todavía",
-    mintFirst: "Minteá tu primera obra",
+    mintFirst: "Subí tu primera obra",
     connectWallet: "Conectá tu wallet para ver tus obras",
     tokensSingular: "token",
     tokensPlural: "tokens",
