@@ -25,31 +25,38 @@ const TOP_FLAT = "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)";
 const BOT_FLAT = "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)";
 
 export function PageLoader() {
-  const [phase, setPhase] = useState<Phase>("show");
+  const [phase, setPhase] = useState<Phase>(() => {
+    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem("mlv_intro")) {
+      return "done";
+    }
+    return "show";
+  });
 
   useEffect(() => {
-    if (typeof sessionStorage !== "undefined" &&
-        sessionStorage.getItem("mlv_intro")) {
-      setPhase("done");
-      return;
-    }
+    if (phase === "done") return;
 
-    const t1 = setTimeout(() => setPhase("tear"),  900);   // logo visible
-    const t2 = setTimeout(() => setPhase("fire"),  1600);  // crack forms
-    const t3 = setTimeout(() => setPhase("split"), 2500);  // fire burns
+    const t1 = setTimeout(() => setPhase("tear"), 900);
+    const t2 = setTimeout(() => setPhase("fire"), 1600);
+    const t3 = setTimeout(() => setPhase("split"), 2500);
     const t4 = setTimeout(() => {
       setPhase("done");
       sessionStorage.setItem("mlv_intro", "1");
-    }, 3800);                                               // halves fly off + fade
+    }, 3800);
 
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (phase === "done") return null;
 
   const isJagged = phase === "tear" || phase === "fire" || phase === "split";
-  const isSplit  = phase === "split";
-  const isFire   = phase === "fire" || phase === "split";
+  const isSplit = phase === "split";
+  const isFire = phase === "fire" || phase === "split";
 
   return (
     <div

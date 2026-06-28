@@ -33,7 +33,15 @@ function Help({ text }: { text: string }) {
 }
 
 // ── Section wrapper ────────────────────────────────────────────────────────────
-function Section({ title, help, children }: { title: string; help: string; children: React.ReactNode }) {
+function Section({
+  title,
+  help,
+  children,
+}: {
+  title: string;
+  help: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="border border-white/10 p-6">
       <div className="flex items-center mb-5">
@@ -82,13 +90,16 @@ export default function AdminPage() {
     const { data } = await db
       .from("artists")
       .select("address, registered_at_ledger")
-      .eq("status", "active")
+      .eq("revoked", false)
       .order("registered_at_ledger", { ascending: false });
     setArtists(data ?? []);
     setArtistsLoading(false);
   }, []);
 
-  useEffect(() => { loadArtists(); }, [loadArtists]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadArtists();
+  }, [loadArtists]);
 
   async function handleRegister() {
     if (!newAddress.trim()) return;
@@ -97,7 +108,9 @@ export default function AdminPage() {
       setNewAddress("");
       reset();
       await loadArtists();
-    } catch { /* error shown via actionError */ }
+    } catch {
+      /* error shown via actionError */
+    }
   }
 
   async function handleRevoke(artistAddr: string) {
@@ -106,14 +119,15 @@ export default function AdminPage() {
       setConfirmRevoke(null);
       reset();
       await loadArtists();
-    } catch { /* error shown via actionError */ }
+    } catch {
+      /* error shown via actionError */
+    }
   }
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#F5F4ED]">
       <Nav />
       <main className="mx-auto max-w-2xl px-6 py-16 flex flex-col gap-6">
-
         {/* Page header */}
         <div className="border-b border-white/10 pb-6">
           <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[#1564FF] mb-2">
@@ -145,7 +159,9 @@ export default function AdminPage() {
             </p>
           ) : (
             <div className="flex items-center gap-3">
-              <span className={`font-[family-name:var(--font-mono)] text-[11px] ${isOwner ? "text-[#1564FF]" : "text-red-400"}`}>
+              <span
+                className={`font-[family-name:var(--font-mono)] text-[11px] ${isOwner ? "text-[#1564FF]" : "text-red-400"}`}
+              >
                 {isOwner ? "✓ Owner confirmed" : "✗ Not the owner — read-only mode"}
               </span>
               {owner && (
@@ -163,7 +179,9 @@ export default function AdminPage() {
           help="Lista de wallets que pueden mintear en Molotov. Solo artistas en esta lista pueden crear obras. El indexer la actualiza cada minuto desde la blockchain."
         >
           {artistsLoading ? (
-            <p className="font-[family-name:var(--font-mono)] text-[11px] text-white/40">Loading…</p>
+            <p className="font-[family-name:var(--font-mono)] text-[11px] text-white/40">
+              Loading…
+            </p>
           ) : artists.length === 0 ? (
             <p className="font-[family-name:var(--font-mono)] text-[11px] text-white/40">
               No artists registered yet.
@@ -171,12 +189,15 @@ export default function AdminPage() {
           ) : (
             <ul className="flex flex-col gap-2">
               {artists.map((a) => (
-                <li key={a.address} className="flex items-center justify-between border-b border-white/5 pb-2">
+                <li
+                  key={a.address}
+                  className="flex items-center justify-between border-b border-white/5 pb-2"
+                >
                   <span className="font-[family-name:var(--font-mono)] text-[11px] text-white/80">
                     {truncateAddress(a.address, 8, 8)}
                   </span>
-                  {isOwner && (
-                    confirmRevoke === a.address ? (
+                  {isOwner &&
+                    (confirmRevoke === a.address ? (
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleRevoke(a.address)}
@@ -199,8 +220,7 @@ export default function AdminPage() {
                       >
                         Revoke
                       </button>
-                    )
-                  )}
+                    ))}
                 </li>
               ))}
             </ul>
@@ -221,7 +241,10 @@ export default function AdminPage() {
               <p className="font-[family-name:var(--font-mono)] text-[11px] text-[#1564FF]">
                 Artist registered successfully.
               </p>
-              <button onClick={reset} className="font-[family-name:var(--font-mono)] text-[10px] text-white/40 hover:text-white/70 underline-offset-2 underline">
+              <button
+                onClick={reset}
+                className="font-[family-name:var(--font-mono)] text-[10px] text-white/40 hover:text-white/70 underline-offset-2 underline"
+              >
                 Register another
               </button>
             </div>
@@ -250,7 +273,6 @@ export default function AdminPage() {
             </div>
           )}
         </Section>
-
       </main>
     </div>
   );

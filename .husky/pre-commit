@@ -1,0 +1,2 @@
+pnpm exec lint-staged
+pnpm turbo run lint --filter=@molotov/web

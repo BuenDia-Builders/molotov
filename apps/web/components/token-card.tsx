@@ -21,7 +21,7 @@ type Metadata = {
   image?: string;
 };
 
-export function TokenCard({ token_id, token_uri, owner, artist, royalty_bps, price }: TokenCardProps) {
+export function TokenCard({ token_id, token_uri, artist, royalty_bps, price }: TokenCardProps) {
   const { locale, t } = useI18n();
   const [metadata, setMetadata] = useState<Metadata | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,9 +52,10 @@ export function TokenCard({ token_id, token_uri, owner, artist, royalty_bps, pri
 
   const title = metadata?.name ?? t("artwork.untitled");
   const imageUrl = metadata?.image ? ipfsToGateway(metadata.image) : "";
-  const displayRoyalty = locale === "es"
-    ? (royalty_bps / 100).toFixed(1).replace(".", ",")
-    : (royalty_bps / 100).toFixed(1);
+  const displayRoyalty =
+    locale === "es"
+      ? (royalty_bps / 100).toFixed(1).replace(".", ",")
+      : (royalty_bps / 100).toFixed(1);
 
   return (
     <Link
