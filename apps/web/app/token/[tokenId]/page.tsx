@@ -1,14 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { isDbConfigured, findTokenById, findActiveListingByToken } from "@/lib/db";
 import { BuyButton } from "@/components/buy-button";
 import { Nav } from "@/components/nav";
 import { ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
 
 async function getTokenData(tokenId: number) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  if (!isDbConfigured()) {
     return {
       token: {
         token_id: tokenId,
@@ -27,37 +27,23 @@ async function getTokenData(tokenId: number) {
         editions_total: 100,
         editions_sold: 42,
         ends_at: null,
+        seller: "",
       },
     };
   }
 
-  const db = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
-
-  const [tokenRes, listingRes] = await Promise.all([
-    db
-      .from("tokens")
-      .select("token_id, token_uri, owner, artist, royalty_bps, recipients_count, minted_at_ledger")
-      .eq("token_id", tokenId)
-      .single(),
-    db
-      .from("listings")
-      .select("listing_id, price, currency, kind, editions_total, editions_sold, ends_at")
-      .eq("token_id", tokenId)
-      .eq("status", "active")
-      .maybeSingle(),
+  const [token, listing] = await Promise.all([
+    findTokenById(tokenId),
+    findActiveListingByToken(tokenId),
   ]);
 
-  if (tokenRes.error) return null;
+  if (!token) return null;
 
   let imageUrl = "";
   let title = "";
-  const metaUri = tokenRes.data?.token_uri;
-  if (metaUri) {
+  if (token.token_uri) {
     try {
-      const metaRes = await fetch(ipfsToGateway(metaUri), { next: { revalidate: 3600 } });
+      const metaRes = await fetch(ipfsToGateway(token.token_uri), { next: { revalidate: 3600 } });
       const meta = await metaRes.json();
       if (meta.image) imageUrl = ipfsToGateway(meta.image);
       if (meta.name) title = meta.name;
@@ -66,7 +52,7 @@ async function getTokenData(tokenId: number) {
     }
   }
 
-  return { token: tokenRes.data, listing: listingRes.data, imageUrl, title };
+  return { token, listing, imageUrl, title };
 }
 
 export default async function TokenPage({ params }: { params: Promise<{ tokenId: string }> }) {

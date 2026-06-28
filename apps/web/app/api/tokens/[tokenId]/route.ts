@@ -1,7 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { tokenId as tokenIdSchema, validationError } from "@/lib/validators";
+import { isDbConfigured, findTokenById, findActiveListingByToken } from "@/lib/db";
 
 const checkLimit = rateLimit({ windowMs: 60_000, max: 60 });
 
@@ -14,8 +14,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ tokenId: 
   if (!parsed.success) return validationError("Invalid token ID");
   const tokenId = parsed.data;
 
-  // If Supabase is not configured yet, return mock data for UI testing
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  if (!isDbConfigured()) {
     return NextResponse.json({
       token: {
         token_id: tokenId,
@@ -34,33 +33,20 @@ export async function GET(req: NextRequest, props: { params: Promise<{ tokenId: 
         editions_total: 100,
         editions_sold: 42,
         ends_at: null,
+        seller: "",
       },
     });
   }
 
-  const db = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
-
-  const [tokenRes, listingRes] = await Promise.all([
-    db
-      .from("tokens")
-      .select("token_id, token_uri, owner, artist, royalty_bps, recipients_count, minted_at_ledger")
-      .eq("token_id", tokenId)
-      .single(),
-    db
-      .from("listings")
-      .select("listing_id, price, currency, kind, editions_total, editions_sold, ends_at")
-      .eq("token_id", tokenId)
-      .eq("status", "active")
-      .maybeSingle(),
+  const [token, listing] = await Promise.all([
+    findTokenById(tokenId),
+    findActiveListingByToken(tokenId),
   ]);
 
-  if (tokenRes.error) return NextResponse.json({ error: tokenRes.error.message }, { status: 404 });
+  if (!token) return NextResponse.json({ error: "Token not found" }, { status: 404 });
 
   return NextResponse.json(
-    { token: tokenRes.data, listing: listingRes.data },
+    { token, listing },
     { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=300" } },
   );
 }

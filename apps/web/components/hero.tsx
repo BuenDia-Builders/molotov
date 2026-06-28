@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { isDbConfigured, getLatestToken } from "@/lib/db";
 import { ipfsToGateway } from "@/lib/ipfs";
 import { HeroContent, type FeaturedWork } from "./hero-content";
 
@@ -12,20 +12,9 @@ const MOCK_FEATURED: FeaturedWork = {
 };
 
 async function getFeatured(): Promise<FeaturedWork> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return MOCK_FEATURED;
-  }
+  if (!isDbConfigured()) return MOCK_FEATURED;
   try {
-    const db = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    );
-    const { data } = await db
-      .from("tokens")
-      .select("token_id, token_uri, artist, royalty_bps")
-      .order("token_id", { ascending: false })
-      .limit(1)
-      .single();
+    const data = await getLatestToken();
     if (!data) return MOCK_FEATURED;
 
     let title = `Token #${String(data.token_id).padStart(4, "0")}`;
@@ -48,7 +37,7 @@ async function getFeatured(): Promise<FeaturedWork> {
       token_id: data.token_id,
       title,
       artist_short: `${data.artist.slice(0, 4)}…${data.artist.slice(-4)}`,
-      royalty_bps: data.royalty_bps,
+      royalty_bps: 1000,
       image,
     };
   } catch {

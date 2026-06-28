@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
+import { isDbConfigured, getActiveArtistAddresses, getAllTokens } from "@/lib/db";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { ipfsToGateway } from "@/lib/ipfs";
@@ -21,34 +21,26 @@ type ArtistCard = {
 };
 
 async function getArtists(): Promise<ArtistCard[]> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return [];
-  }
-  const db = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
+  if (!isDbConfigured()) return [];
 
-  const [artistsRes, tokensRes] = await Promise.all([
-    db.from("artists").select("address").eq("revoked", false),
-    db.from("tokens").select("token_id, token_uri, artist").order("token_id", { ascending: false }),
+  const [artistAddressList, allTokens] = await Promise.all([
+    getActiveArtistAddresses(),
+    getAllTokens(),
   ]);
 
-  if (!artistsRes.data?.length) return [];
+  if (!artistAddressList.length) return [];
 
-  const artistAddresses = new Set(artistsRes.data.map((a) => a.address));
-  const tokens = (tokensRes.data ?? []).filter((t) => artistAddresses.has(t.artist));
+  const artistSet = new Set(artistAddressList);
+  const tokens = allTokens.filter((t) => artistSet.has(t.artist));
 
-  // Group tokens by artist
   const byArtist = new Map<string, typeof tokens>();
   for (const t of tokens) {
     if (!byArtist.has(t.artist)) byArtist.set(t.artist, []);
     byArtist.get(t.artist)!.push(t);
   }
 
-  // Build artist cards with latest token metadata
   const cards = await Promise.all(
-    artistsRes.data.map(async ({ address }) => {
+    artistAddressList.map(async (address) => {
       const artistTokens = byArtist.get(address) ?? [];
       const latest = artistTokens[0] ?? null;
 

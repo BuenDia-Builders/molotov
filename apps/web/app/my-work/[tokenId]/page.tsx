@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
 import { Client, networks } from "@molotov/stellar-client/molotov-nft";
 import { Nav } from "@/components/nav";
 import {
@@ -135,19 +134,17 @@ export default function MyWorkPage() {
 
   useEffect(() => {
     if (!art || art.artist !== MARKETPLACE_CONTRACT_ID) return;
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return;
-
-    const db = createClient(url, key);
-    db.from("listings")
-      .select("listing_id, seller")
-      .eq("token_id", tokenId)
-      .eq("status", "active")
-      .single()
-      .then(({ data }) => {
-        if (data) setActiveListing({ listingId: BigInt(data.listing_id), seller: data.seller });
-      });
+    fetch(`/api/tokens/${tokenId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.listing?.listing_id && d.listing?.seller) {
+          setActiveListing({
+            listingId: BigInt(d.listing.listing_id),
+            seller: d.listing.seller,
+          });
+        }
+      })
+      .catch(() => {});
   }, [art, tokenId]);
 
   const isLoading = phase === "chain" || phase === "ipfs";

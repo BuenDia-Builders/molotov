@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { ipfsToGateway } from "@/lib/ipfs";
@@ -79,35 +78,17 @@ const MOCK_WORKS: Work[] = [
 ];
 
 async function getWorks(): Promise<{ works: Work[]; isMock: boolean }> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return { works: MOCK_WORKS, isMock: true };
-  }
+  if (!isDbConfigured()) return { works: MOCK_WORKS, isMock: true };
 
-  const db = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
-
-  const [tokensRes, listingsRes] = await Promise.all([
-    db
-      .from("tokens")
-      .select("token_id, token_uri, artist, royalty_bps")
-      .order("token_id", { ascending: false })
-      .limit(48),
-    db.from("listings").select("token_id, price").eq("status", "active"),
+  const [tokens, priceByToken] = await Promise.all([
+    getRecentTokens(48),
+    getActivePricesByTokenId(),
   ]);
 
-  if (tokensRes.error || !tokensRes.data?.length) return { works: MOCK_WORKS, isMock: true };
-
-  const priceByToken = new Map<number, string>(
-    (listingsRes.data ?? []).map((l) => [
-      l.token_id,
-      (BigInt(l.price) / BigInt(10_000_000)).toString(),
-    ]),
-  );
+  if (!tokens.length) return { works: MOCK_WORKS, isMock: true };
 
   const works: Work[] = await Promise.all(
-    tokensRes.data.map(async (t) => {
+    tokens.map(async (t) => {
       let title = `Token #${String(t.token_id).padStart(4, "0")}`;
       let image: string | undefined;
 

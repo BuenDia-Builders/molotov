@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
+import { isDbConfigured, getRecentTokens, getActivePricesByTokenId } from "@/lib/db";
 import { ipfsToGateway } from "@/lib/ipfs";
 
 type Work = {
@@ -13,35 +13,16 @@ type Work = {
 };
 
 async function getRecentWorks(): Promise<Work[]> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return [];
-  }
+  if (!isDbConfigured()) return [];
   try {
-    const db = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    );
-
-    const [tokensRes, listingsRes] = await Promise.all([
-      db
-        .from("tokens")
-        .select("token_id, token_uri, artist, royalty_bps")
-        .order("token_id", { ascending: false })
-        .limit(3),
-      db.from("listings").select("token_id, price").eq("status", "active"),
+    const [tokens, priceByToken] = await Promise.all([
+      getRecentTokens(3),
+      getActivePricesByTokenId(),
     ]);
-
-    if (!tokensRes.data?.length) return [];
-
-    const priceByToken = new Map<number, string>(
-      (listingsRes.data ?? []).map((l) => [
-        l.token_id,
-        (BigInt(l.price) / BigInt(10_000_000)).toString(),
-      ]),
-    );
+    if (!tokens.length) return [];
 
     return Promise.all(
-      tokensRes.data.map(async (t) => {
+      tokens.map(async (t) => {
         let title = `Token #${String(t.token_id).padStart(4, "0")}`;
         let image: string | undefined;
         try {
@@ -55,7 +36,6 @@ async function getRecentWorks(): Promise<Work[]> {
         } catch {
           /* fall through */
         }
-
         return {
           token_id: t.token_id,
           title,
