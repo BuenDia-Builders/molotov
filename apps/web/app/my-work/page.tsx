@@ -62,17 +62,17 @@ export default function MyWorksPage() {
   }, [address, isConnected]);
 
   return (
-    <div className="relative z-10 flex flex-1 flex-col min-h-screen bg-black text-[#F5F4ED]">
+    <div className="relative z-10 flex flex-1 flex-col min-h-screen bg-black text-[var(--offwhite)]">
       <Nav />
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-16 md:px-10 md:py-24 lg:px-16">
         
         {/* Section Header Row */}
-        <div className="flex justify-between items-baseline border-b border-[#222222] pb-4 mb-8">
-          <h1 className="font-[family-name:var(--font-display)] text-[40px] font-bold text-[#F5F4ED] uppercase tracking-tight">
+        <div className="flex justify-between items-baseline border-b border-[var(--ember)] pb-4 mb-8">
+          <h1 className="font-[family-name:var(--font-display)] text-[40px] font-bold text-[var(--offwhite)] uppercase tracking-tight">
             {t("myWork.title")}
           </h1>
           {isConnected && address && !loading && !error && (
-            <span className="font-[family-name:var(--font-mono)] text-[10px] text-[#6B6B6B] uppercase tracking-[0.2em]">
+            <span className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--smoke)] uppercase tracking-[0.2em]">
               {tokens.length} {tokens.length === 1 ? t("myWork.tokensSingular") : t("myWork.tokensPlural")}
             </span>
           )}
@@ -82,7 +82,7 @@ export default function MyWorksPage() {
         {!isConnected || !address ? (
           /* Wallet Not Connected State */
           <div className="flex flex-col items-center justify-center py-32">
-            <p className="font-[family-name:var(--font-mono)] text-[10px] text-[#6B6B6B] uppercase tracking-[0.3em] mb-4 text-center">
+            <p className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--smoke)] uppercase tracking-[0.3em] mb-4 text-center">
               {t("myWork.connectWallet")}
             </p>
             <WalletButton />
@@ -91,13 +91,13 @@ export default function MyWorksPage() {
           /* Loading Skeleton */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] bg-[#222222] animate-pulse rounded-none" />
+              <div key={i} className="aspect-[3/4] bg-[var(--ember)] animate-pulse" />
             ))}
           </div>
         ) : error ? (
           /* Error State */
           <div className="flex flex-col items-center justify-center py-32">
-            <p className="font-[family-name:var(--font-mono)] text-[10px] text-[#DC2626] uppercase tracking-[0.3em] mb-4 text-center">
+            <p className="font-[family-name:var(--font-mono)] text-[10px] text-red-500 uppercase tracking-[0.3em] mb-4 text-center">
               {error}
             </p>
             <button
@@ -110,7 +110,7 @@ export default function MyWorksPage() {
         ) : tokens.length === 0 ? (
           /* Empty State */
           <div className="flex flex-col items-center justify-center py-32">
-            <p className="font-[family-name:var(--font-mono)] text-[10px] text-[#6B6B6B] uppercase tracking-[0.3em] mb-6 text-center">
+            <p className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--smoke)] uppercase tracking-[0.3em] mb-6 text-center">
               {t("myWork.noWorks")}
             </p>
             <a

@@ -12,7 +12,6 @@ export function WalletButton() {
   const [menuOpen, setMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close the dropdown when clicking outside of it.
   useEffect(() => {
     if (!menuOpen) return;
     function onClick(event: MouseEvent) {
@@ -29,7 +28,7 @@ export function WalletButton() {
       <Button
         onClick={connect}
         disabled={isConnecting}
-        className="bg-[#0178DE] text-white hover:bg-[#3493E5]"
+        className="bg-[var(--blue)] text-white hover:bg-[var(--blue-light)]"
       >
         {isConnecting ? t("wallet.connecting") : t("wallet.connect")}
       </Button>
@@ -40,13 +39,13 @@ export function WalletButton() {
     <div ref={containerRef} className="relative">
       <Button
         variant="outline"
-        className="min-h-[44px] border-white/15 bg-transparent font-[family-name:var(--font-geist-mono)] text-[#F5F4ED] hover:bg-white/5 hover:text-[#F5F4ED]"
+        className="min-h-[44px] border-white/15 bg-transparent font-[family-name:var(--font-mono)] text-[var(--offwhite)] hover:bg-white/5 hover:text-[var(--offwhite)]"
         onClick={() => setMenuOpen((open) => !open)}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
       >
         {IS_TESTNET && (
-          <span className="mr-2 rounded border border-white/15 px-1.5 py-0.5 text-[12px] uppercase text-[#F5F4ED]/60">
+          <span className="mr-2 border border-white/15 px-1.5 py-0.5 text-[12px] uppercase text-[var(--offwhite)]/60">
             {t("wallet.testnetBadge")}
           </span>
         )}
@@ -55,16 +54,16 @@ export function WalletButton() {
       {menuOpen && (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 min-w-44 rounded-md border border-white/12 bg-[#0A0A0B] p-1 shadow-lg"
+          className="absolute right-0 z-50 mt-2 min-w-44 border border-white/12 bg-[var(--black)] p-1"
         >
           {IS_TESTNET && (
-            <div className="mb-1 border-b border-white/12 px-3 py-2 text-xs text-[#F5F4ED]/60">
+            <div className="mb-1 border-b border-white/12 px-3 py-2 text-xs text-[var(--offwhite)]/60">
               {t("wallet.networkLabel")} · {STELLAR_NETWORK_NAME}
             </div>
           )}
           <button
             role="menuitem"
-            className="w-full rounded-sm px-3 py-2 text-left text-sm text-[#F5F4ED] hover:bg-white/5"
+            className="w-full px-3 py-2 text-left text-sm text-[var(--offwhite)] hover:bg-white/5"
             onClick={() => {
               setMenuOpen(false);
               void disconnect();

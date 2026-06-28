@@ -4,16 +4,16 @@ import "./globals.css";
 import { WalletProvider } from "@/providers/wallet-provider";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { I18nProvider } from "@/lib/i18n";
-import { es } from "@/lib/i18n/es";
+import { en } from "@/lib/i18n/en";
 
 const syne = Syne({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-display" });
 const dmSans = DM_Sans({ subsets: ["latin"], weight: ["300", "400", "500", "600"], variable: "--font-body" });
 const spaceMono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: es.meta.title,
-  description: es.meta.description,
-  manifest: es.meta.manifest,
+  title: en.meta.title,
+  description: en.meta.description,
+  manifest: en.meta.manifest,
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -42,7 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang={es.meta.lang}
+      lang={en.meta.lang}
       className={`${syne.variable} ${dmSans.variable} ${spaceMono.variable} h-full antialiased`}
     >
       <body className="relative min-h-full flex flex-col bg-black text-offwhite font-[family-name:var(--font-body)]">

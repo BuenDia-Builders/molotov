@@ -18,7 +18,7 @@ export function CreateClient() {
           <MintForm />
         ) : (
           <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-6 text-center">
-            <p className="font-[family-name:var(--font-fraunces)] text-3xl leading-tight tracking-[-0.01em] [font-variation-settings:'opsz'_72] md:text-4xl">
+            <p className="font-[family-name:var(--font-display)] text-3xl leading-tight tracking-[-0.01em] [font-variation-settings:'opsz'_72] md:text-4xl">
               {t("create.connectPrompt")}
             </p>
             <div className="mt-10">

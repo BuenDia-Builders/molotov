@@ -11,7 +11,7 @@
   --color-ember:      #222222;
   --color-smoke:      #6B6B6B;
   --color-ash:        #A8A8A8;
-  --color-offwhite:   #F0EFEB;
+  --color-offwhite:   #F5F4ED;
   --color-blue:       #1564FF;
   --color-blue-deep:  #0D3FA8;
   --color-blue-light: #4A8AFF;
@@ -70,14 +70,14 @@
   --ember:      #222222;
   --smoke:      #6B6B6B;
   --ash:        #A8A8A8;
-  --offwhite:   #F0EFEB;
+  --offwhite:   #F5F4ED;
   --blue:       #1564FF;
   --blue-deep:  #0D3FA8;
   --blue-light: #4A8AFF;
   --blue-muted: #1A3060;
 
   --background: #0A0A0A;
-  --foreground: #F0EFEB;
+  --foreground: #F5F4ED;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -99,7 +99,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -193,7 +193,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  background-color: #0178de;
+  background-color: var(--blue);
   animation: indeterminate 1.4s ease-in-out infinite;
 }
 

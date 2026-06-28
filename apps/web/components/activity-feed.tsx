@@ -39,18 +39,18 @@ function ListingCard({ listing }: { listing: Listing }) {
   const isEdition = listing.kind === 'edition' && listing.editions_total != null
 
   return (
-    <article className="min-w-[280px] max-w-[280px] shrink-0 border border-white/12 bg-[#0A0A0B] overflow-hidden flex flex-col">
-      <div className="relative aspect-[4/5] bg-[#111113] flex items-center justify-center border-b border-white/8">
-        <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[#F5F4ED]/20">
+    <article className="min-w-[280px] max-w-[280px] shrink-0 border border-white/12 bg-[var(--black)] overflow-hidden flex flex-col">
+      <div className="relative aspect-[4/5] bg-[var(--carbon)] flex items-center justify-center border-b border-white/8">
+        <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--offwhite)]/20">
           work
         </span>
         {royaltyPct && (
-          <span className="absolute top-3 right-3 border border-white/15 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-[#F5F4ED]/60">
+          <span className="absolute top-3 right-3 border border-white/15 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-[var(--offwhite)]/60">
             royalty {royaltyPct}%
           </span>
         )}
         {isEdition && (
-          <span className="absolute bottom-3 left-3 font-[family-name:var(--font-mono)] text-[10px] text-[#F5F4ED]/40">
+          <span className="absolute bottom-3 left-3 font-[family-name:var(--font-mono)] text-[10px] text-[var(--offwhite)]/40">
             {listing.editions_sold ?? 0}/{listing.editions_total} sold
           </span>
         )}
@@ -58,14 +58,14 @@ function ListingCard({ listing }: { listing: Listing }) {
 
       <div className="p-4 flex flex-col gap-3 flex-1">
         <div className="flex items-baseline justify-between gap-2">
-          <p className="font-[family-name:var(--font-mono)] text-[11px] text-[#F5F4ED]/40 truncate">
+          <p className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/40 truncate">
             #{listing.token_id}
           </p>
-          <p className="font-[family-name:var(--font-mono)] text-sm text-[#F5F4ED] shrink-0">
+          <p className="font-[family-name:var(--font-mono)] text-sm text-[var(--offwhite)] shrink-0">
             {xlm} XLM
           </p>
         </div>
-        <p className="font-[family-name:var(--font-mono)] text-[11px] text-[#F5F4ED]/40 truncate">
+        <p className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/40 truncate">
           {truncate(listing.seller)}
         </p>
       </div>
@@ -80,17 +80,17 @@ export function ActivityFeed() {
 
   return (
     <section
-      id="actividad"
-      className="scroll-mt-24 bg-[#0A0A0A] px-4 py-16 md:px-6 md:py-24"
+      id="activity"
+      className="scroll-mt-24 bg-[var(--black)] px-4 py-16 md:px-6 md:py-24"
     >
       <div className="mb-6 flex items-center justify-between gap-4">
-        <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[#F5F4ED]/60 uppercase flex items-center gap-2">
+        <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[var(--offwhite)]/60 uppercase flex items-center gap-2">
           <span className="inline-block h-1.5 w-1.5 bg-[var(--blue)] animate-pulse" />
           LIVE · ACTIVE LISTINGS
         </p>
         <Link
           href="/works"
-          className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[#F5F4ED]/40 uppercase hover:text-[#F5F4ED]/80 transition-colors"
+          className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[var(--offwhite)]/40 uppercase hover:text-[var(--offwhite)]/80 transition-colors"
         >
           View all →
         </Link>
@@ -101,14 +101,14 @@ export function ActivityFeed() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="min-w-[280px] h-[380px] bg-[#111113] animate-pulse shrink-0"
+              className="min-w-[280px] h-[380px] bg-[var(--carbon)] animate-pulse shrink-0"
             />
           ))}
         </div>
       )}
 
       {!isLoading && (!data || data.length === 0) && (
-        <p className="font-[family-name:var(--font-mono)] text-[10px] text-[#F5F4ED]/40 uppercase tracking-widest py-12 text-center">
+        <p className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--offwhite)]/40 uppercase tracking-widest py-12 text-center">
           No active listings yet. Be the first to mint.
         </p>
       )}
