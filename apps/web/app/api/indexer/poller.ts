@@ -305,11 +305,21 @@ export async function pollOnce(): Promise<PollResult> {
       txEventCount.set(txKey, eventIndex + 1)
 
       const decoded = decodeEvent(raw)
-      await applyDecoded(decoded, {
-        ledger: raw.ledger,
-        txHash: raw.txHash,
-        eventIndex,
-      })
+      try {
+        await applyDecoded(decoded, {
+          ledger: raw.ledger,
+          txHash: raw.txHash,
+          eventIndex,
+        })
+      } catch (err) {
+        console.error('[poller] failed to apply event', {
+          ledger: raw.ledger,
+          txHash: raw.txHash,
+          eventIndex,
+          kind: decoded.kind,
+          err,
+        })
+      }
     }
 
     totalEvents += result.events.length
