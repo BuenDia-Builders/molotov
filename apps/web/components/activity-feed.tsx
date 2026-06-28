@@ -2,6 +2,7 @@
 
 import useSWR from 'swr'
 import Link from 'next/link'
+import { useI18n } from '@/lib/i18n'
 
 interface Listing {
   listing_id: number
@@ -38,6 +39,7 @@ function truncate(addr: string): string {
 }
 
 function ListingCard({ listing }: { listing: Listing }) {
+  const { t } = useI18n()
   const xlm = stroopsToXlm(listing.price)
   const royaltyPct = listing.tokens ? (listing.tokens.royalty_bps / 100).toFixed(0) : null
   const isEdition = listing.kind === 'edition' && listing.editions_total != null
@@ -46,16 +48,16 @@ function ListingCard({ listing }: { listing: Listing }) {
     <article className="min-w-[280px] max-w-[280px] shrink-0 border border-white/12 bg-[var(--black)] overflow-hidden flex flex-col">
       <div className="relative aspect-[4/5] bg-[var(--carbon)] flex items-center justify-center border-b border-white/8">
         <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--offwhite)]/20">
-          work
+          {t('activity.workPlaceholder')}
         </span>
         {royaltyPct && (
           <span className="absolute top-3 right-3 border border-white/15 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-[var(--offwhite)]/60">
-            royalty {royaltyPct}%
+            {t('activity.royalty')} {royaltyPct}%
           </span>
         )}
         {isEdition && (
           <span className="absolute bottom-3 left-3 font-[family-name:var(--font-mono)] text-[10px] text-[var(--offwhite)]/40">
-            {listing.editions_sold ?? 0}/{listing.editions_total} sold
+            {listing.editions_sold ?? 0}/{listing.editions_total} {t('activity.sold')}
           </span>
         )}
       </div>
@@ -78,6 +80,7 @@ function ListingCard({ listing }: { listing: Listing }) {
 }
 
 export function ActivityFeed() {
+  const { t } = useI18n()
   const { data, isLoading } = useSWR<Listing[]>('/api/listings/active', fetcher, {
     refreshInterval: 15_000,
   })
@@ -90,13 +93,13 @@ export function ActivityFeed() {
       <div className="mb-6 flex items-center justify-between gap-4">
         <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[var(--offwhite)]/60 uppercase flex items-center gap-2">
           <span className="inline-block h-1.5 w-1.5 bg-[var(--blue)] animate-pulse" />
-          LIVE · ACTIVE LISTINGS
+          {t('activity.liveLabel')}
         </p>
         <Link
           href="/works"
           className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[var(--offwhite)]/40 uppercase hover:text-[var(--offwhite)]/80 transition-colors"
         >
-          View all →
+          {t('activity.viewAll')}
         </Link>
       </div>
 
@@ -113,7 +116,7 @@ export function ActivityFeed() {
 
       {!isLoading && (!data || data.length === 0) && (
         <p className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--offwhite)]/40 uppercase tracking-widest py-12 text-center">
-          No active listings yet. Be the first to mint.
+          {t('activity.noListings')}
         </p>
       )}
 

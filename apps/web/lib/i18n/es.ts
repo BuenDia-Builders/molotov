@@ -44,7 +44,12 @@ export const es = {
     titleBeforeEm: "Tu obra te paga",
     titleEm: "cada vez",
     titleAfterEm: "que cambia de manos.",
-    body: "Molotov graba la regalía en el contrato cuando minteás —entre 1 y 15%, inmutable. En cada reventa, el contrato te paga antes de cerrar la operación. No es una promesa de la plataforma. Es código.",
+    body: "Molotov graba la regalía en el contrato cuando minteás. En cada reventa, cobrás antes de que se cierre la operación. No es una promesa — es código.",
+    exploreWorks: "Explorar obras",
+    mintYours: "Mintear la tuya →",
+    allWorks: "Todas ↗",
+    viewWork: "Ver obra →",
+    royaltySuffix: "% royalty",
   },
   economy: {
     eyebrow: "Una venta, repartida",
@@ -84,6 +89,10 @@ export const es = {
     to: "a",
     royalty: "royalty",
     arrow: "→",
+    liveLabel: "EN VIVO · LISTADOS ACTIVOS",
+    viewAll: "Ver todos →",
+    noListings: "Sin listados activos aún. Sé el primero en mintear.",
+    workPlaceholder: "obra",
     items: {
       first: {
         when: "hace 3 min",

@@ -46,7 +46,12 @@ export const en = {
     titleBeforeEm: "Your work pays you",
     titleEm: "every time",
     titleAfterEm: "it changes hands.",
-    body: "Molotov writes the royalty into the contract when you mint: 1 to 15%, immutable. On every resale, the contract pays you before the sale closes. It is not a platform promise. It is code.",
+    body: "Molotov writes the royalty into the contract when you mint. On every resale, you get paid before the sale closes. Not a promise — code.",
+    exploreWorks: "Explore works",
+    mintYours: "Mint yours →",
+    allWorks: "All works ↗",
+    viewWork: "View work →",
+    royaltySuffix: "% royalty",
   },
   economy: {
     eyebrow: "One sale, distributed",
@@ -86,6 +91,10 @@ export const en = {
     to: "to",
     royalty: "royalty",
     arrow: "→",
+    liveLabel: "LIVE · ACTIVE LISTINGS",
+    viewAll: "View all →",
+    noListings: "No active listings yet. Be the first to mint.",
+    workPlaceholder: "work",
     items: {
       first: {
         when: "3 min ago",
