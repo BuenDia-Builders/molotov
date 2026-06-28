@@ -88,7 +88,7 @@ export function ActivityFeed() {
   return (
     <section
       id="activity"
-      className="scroll-mt-24 bg-[var(--black)] px-4 py-16 md:px-6 md:py-24"
+      className="scroll-mt-24 bg-[var(--black)] px-4 py-24 md:px-6 md:py-36"
     >
       <div className="mb-6 flex items-center justify-between gap-4">
         <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[var(--offwhite)]/60 uppercase flex items-center gap-2">

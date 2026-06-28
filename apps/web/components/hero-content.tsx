@@ -21,20 +21,20 @@ export function HeroContent({ work }: { work: FeaturedWork }) {
     <section className="relative flex flex-col md:flex-row md:min-h-screen bg-[var(--carbon)]">
 
       {/* Left column — text */}
-      <div className="w-full md:w-1/2 px-6 pt-16 pb-10 md:pt-32 md:pb-24 md:pl-16 md:pr-12 flex flex-col justify-center">
+      <div className="w-full md:w-1/2 px-6 pt-24 pb-16 md:pt-48 md:pb-40 md:pl-20 md:pr-16 flex flex-col justify-center">
         <span className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[var(--smoke)] uppercase">
           {t("hero.eyebrow")}
         </span>
-        <div className="w-16 h-px bg-[var(--ember)] mb-6 mt-4" />
+        <div className="w-16 h-px bg-[var(--ember)] mb-10 mt-6" />
         <h1 className="font-[family-name:var(--font-display)] font-black text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.92] text-[var(--offwhite)]">
           {t("hero.titleBeforeEm")}{" "}
           <em className="not-italic text-[var(--blue)]">{t("hero.titleEm")}</em>{" "}
           {t("hero.titleAfterEm")}
         </h1>
-        <p className="font-[family-name:var(--font-body)] text-base text-[var(--smoke)] mt-5 leading-relaxed max-w-sm">
+        <p className="font-[family-name:var(--font-body)] text-base text-[var(--smoke)] mt-10 leading-[1.75] max-w-sm">
           {t("hero.body")}
         </p>
-        <div className="mt-8 flex flex-wrap items-center gap-3">
+        <div className="mt-14 flex flex-wrap items-center gap-4">
           <Link
             href="/works"
             className="inline-block bg-[var(--blue)] text-white font-[family-name:var(--font-mono)] text-[10px] tracking-widest uppercase px-7 py-3 transition-opacity hover:opacity-80"

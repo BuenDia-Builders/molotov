@@ -51,16 +51,16 @@ export function EconomyFlow() {
   return (
     <section
       id="how"
-      className="mx-auto max-w-7xl scroll-mt-24 px-6 py-20 md:px-10 md:py-36 lg:px-16"
+      className="mx-auto max-w-7xl scroll-mt-24 px-6 py-36 md:px-10 md:py-52 lg:px-20"
     >
-      <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-24">
+      <div className="grid gap-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-36">
 
         {/* Left: sale distribution */}
         <div>
           <p className="font-[family-name:var(--font-mono)] text-[12px] uppercase tracking-[0.18em] text-[var(--offwhite)]/40">
             {t("economy.eyebrow")}
           </p>
-          <p className="mt-4 font-[family-name:var(--font-display)] text-3xl leading-tight tracking-[-0.01em] md:text-4xl">
+          <p className="mt-8 font-[family-name:var(--font-display)] text-3xl leading-tight tracking-[-0.01em] md:text-4xl">
             {t("economy.saleBefore")}{" "}
             <span className="font-[family-name:var(--font-mono)] text-2xl md:text-3xl">
               100&nbsp;XLM
@@ -68,12 +68,12 @@ export function EconomyFlow() {
             {t("economy.saleAfter")}
           </p>
 
-          <ul ref={listRef} className="mt-10 border-t border-white/12">
+          <ul ref={listRef} className="mt-16 border-t border-white/12">
             {FLOW.map((row, i) => (
               <li
                 key={row.labelKey}
                 style={{ transitionDelay: `${i * 120}ms` }}
-                className={`reveal flex flex-col gap-1 border-b border-white/12 py-5 md:flex-row md:items-baseline md:gap-8 ${
+                className={`reveal flex flex-col gap-1 border-b border-white/12 py-8 md:flex-row md:items-baseline md:gap-8 ${
                   inView ? "in" : ""
                 } ${row.accent ? "border-l-2 border-l-[var(--blue)] pl-5 md:pl-6" : ""}`}
               >
@@ -93,7 +93,7 @@ export function EconomyFlow() {
                       {t(row.pctKey)}
                     </span>
                   </p>
-                  <p className="mt-0.5 max-w-sm text-sm text-[var(--offwhite)]/60">{t(row.noteKey)}</p>
+                  <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-[var(--offwhite)]/60">{t(row.noteKey)}</p>
                 </div>
               </li>
             ))}
@@ -106,14 +106,14 @@ export function EconomyFlow() {
             {t("economy.comparison")}
           </p>
 
-          <dl className="mt-10 space-y-6">
-            <div className="flex items-end justify-between border-b border-white/12 pb-4">
+          <dl className="mt-14 space-y-8">
+            <div className="flex items-end justify-between border-b border-white/12 pb-6">
               <dt className="text-base text-[var(--offwhite)]/60 max-w-[60%]">{t("economy.streamingKeeps")}</dt>
               <dd className="font-[family-name:var(--font-mono)] text-4xl text-[var(--offwhite)]/30 md:text-5xl">
                 ~70%
               </dd>
             </div>
-            <div className="flex items-end justify-between border-b border-white/12 pb-4">
+            <div className="flex items-end justify-between border-b border-white/12 pb-6">
               <dt className="text-base text-[var(--offwhite)] max-w-[60%]">{t("economy.molotovKeeps")}</dt>
               <dd className="font-[family-name:var(--font-mono)] text-4xl text-[var(--blue)] md:text-5xl">
                 2.5%
@@ -121,7 +121,7 @@ export function EconomyFlow() {
             </div>
           </dl>
 
-          <p className="mt-6 max-w-md text-sm leading-relaxed text-[var(--offwhite)]/60">
+          <p className="mt-10 max-w-md text-sm leading-[1.8] text-[var(--offwhite)]/60">
             {t("economy.note")}
           </p>
         </div>

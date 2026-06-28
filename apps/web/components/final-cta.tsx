@@ -9,13 +9,13 @@ export function FinalCta() {
   return (
     <section
       id="create"
-      className="mx-auto max-w-7xl scroll-mt-24 px-6 py-28 md:px-10 md:py-44 lg:px-16"
+      className="mx-auto max-w-7xl scroll-mt-24 px-6 py-40 md:px-10 md:py-64 lg:px-20"
     >
       <h2 className="max-w-[16ch] font-[family-name:var(--font-display)] text-[clamp(2.5rem,9vw,8rem)] font-light leading-[0.95] tracking-[-0.02em] [font-variation-settings:'opsz'_144]">
         {t("finalCta.title")}
       </h2>
 
-      <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="mt-16 flex flex-col gap-4 sm:flex-row sm:items-center">
         <Link
           href="/create"
           className="inline-flex h-12 items-center justify-center bg-[var(--blue)] px-7 text-[15px] font-medium text-white transition-colors hover:bg-[var(--blue-light)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--offwhite)]"
