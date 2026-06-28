@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { PinataSDK } from "pinata";
 import { rateLimit } from "@/lib/rate-limit";
 import { uploadFile, validationError } from "@/lib/validators";
+import { env } from "@/lib/env";
 
 // IPFS uploads run server-side so the Pinata JWT never reaches the client.
 // Uses the modern v3 SDK (pinata.upload.public.file). See docs/pinata-setup.md.
@@ -14,8 +15,8 @@ let pinata: PinataSDK | null = null;
 function getPinata(): PinataSDK {
   if (!pinata) {
     pinata = new PinataSDK({
-      pinataJwt: process.env.PINATA_JWT as string,
-      pinataGateway: process.env.PINATA_GATEWAY,
+      pinataJwt: env.pinataJwt,
+      pinataGateway: env.pinataGateway,
     });
   }
   return pinata;
