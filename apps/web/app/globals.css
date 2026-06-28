@@ -239,6 +239,15 @@
   animation: flame-flicker 0.9s ease-in-out infinite;
 }
 
+/* Full-screen menu overlay entrance */
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.menu-enter {
+  animation: menu-in 0.22s ease forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-breathe {
     animation: none;
@@ -257,6 +266,9 @@
   .logo-flame {
     animation: none !important;
     transition: none;
+  }
+  .menu-enter {
+    animation: none;
   }
 }
 

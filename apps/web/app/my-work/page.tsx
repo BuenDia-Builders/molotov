@@ -25,12 +25,7 @@ export default function MyWorksPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isConnected || !address) {
-      setTokens([]);
-      setLoading(false);
-      setError(null);
-      return;
-    }
+    if (!isConnected || !address) return;
 
     let active = true;
     (async () => {
@@ -43,22 +38,19 @@ export default function MyWorksPage() {
           throw new Error(detail?.error ?? "Failed to fetch tokens");
         }
         const data = await res.json();
-        if (active) {
-          setTokens(data);
-        }
+        if (active) setTokens(data);
       } catch (err) {
-        if (active) {
-          setError(err instanceof Error ? err.message : String(err));
-        }
+        if (active) setError(err instanceof Error ? err.message : String(err));
       } finally {
-        if (active) {
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       }
     })();
 
     return () => {
       active = false;
+      setTokens([]);
+      setLoading(false);
+      setError(null);
     };
   }, [address, isConnected]);
 
@@ -66,7 +58,6 @@ export default function MyWorksPage() {
     <div className="relative z-10 flex flex-1 flex-col min-h-screen bg-black text-[var(--offwhite)]">
       <Nav />
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-16 md:px-10 md:py-24 lg:px-16">
-        
         {/* Section Header Row */}
         <div className="flex justify-between items-baseline border-b border-[var(--ember)] pb-4 mb-8">
           <h1 className="font-[family-name:var(--font-display)] text-[40px] font-bold text-[var(--offwhite)] uppercase tracking-tight">
@@ -74,7 +65,8 @@ export default function MyWorksPage() {
           </h1>
           {isConnected && address && !loading && !error && (
             <span className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--smoke)] uppercase tracking-[0.2em]">
-              {tokens.length} {tokens.length === 1 ? t("myWork.tokensSingular") : t("myWork.tokensPlural")}
+              {tokens.length}{" "}
+              {tokens.length === 1 ? t("myWork.tokensSingular") : t("myWork.tokensPlural")}
             </span>
           )}
         </div>

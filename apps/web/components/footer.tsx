@@ -23,7 +23,6 @@ export function Footer() {
   return (
     <footer className="mt-auto border-t border-white/12">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 sm:grid-cols-2 md:px-10 lg:grid-cols-4 lg:px-16">
-
         {/* Brand */}
         <div className="md:col-span-1">
           <p className="font-[family-name:var(--font-display)] text-xl tracking-tight text-[var(--offwhite)]">
@@ -103,7 +102,6 @@ export function Footer() {
             ))}
           </ul>
         </div>
-
       </div>
 
       {/* Bottom bar */}
@@ -119,12 +117,6 @@ export function Footer() {
             className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/40 transition-colors hover:text-[var(--offwhite)]/70"
           >
             Contract · {truncateAddress(NFT_CONTRACT_ID, 6, 6)} ↗
-          </a>
-          <a
-            href="/admin"
-            className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/20 transition-colors hover:text-[var(--offwhite)]/50"
-          >
-            Admin
           </a>
         </div>
       </div>

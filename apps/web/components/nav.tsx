@@ -9,17 +9,17 @@ import { useI18n } from "@/lib/i18n";
 import { useWallet } from "@/hooks/use-wallet";
 
 const PRIMARY_LINKS = [
-  { href: "/works",   key: "nav.discover"  },
-  { href: "/create",  key: "nav.create"    },
-  { href: "/artists", key: "nav.artists"   },
-  { href: "/about",   key: "nav.about"     },
+  { href: "/works", key: "nav.discover" },
+  { href: "/create", key: "nav.create" },
+  { href: "/artists", key: "nav.artists" },
+  { href: "/about", key: "nav.about" },
 ] as const;
 
 const SECONDARY_LINKS = [
-  { href: "/#how",       key: "nav.howYouEarn" },
-  { href: "/#activity",  key: "nav.activity"   },
-  { href: "/#manifesto", key: "nav.manifesto"  },
-  { href: "/team",       key: "nav.team"       },
+  { href: "/#how", key: "nav.howYouEarn" },
+  { href: "/#activity", key: "nav.activity" },
+  { href: "/#manifesto", key: "nav.manifesto" },
+  { href: "/team", key: "nav.team" },
 ] as const;
 
 export function Nav() {
@@ -29,7 +29,9 @@ export function Nav() {
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [menuOpen]);
 
   useEffect(() => {
@@ -66,7 +68,6 @@ export function Nav() {
       {/* ── Nav bar ── */}
       <header className="sticky top-0 z-40 border-b border-black/10 bg-[var(--offwhite)]">
         <div className="grid h-12 grid-cols-3 items-center px-4 md:px-10 lg:px-20">
-
           {/* Left: MENU button */}
           <div>
             <button
@@ -96,19 +97,16 @@ export function Nav() {
 
           {/* Right: locale + wallet */}
           <div className="flex items-center justify-end gap-4">
-            <div className="hidden items-center gap-2 md:flex">
-              {localeBtns(true)}
-            </div>
+            <div className="hidden items-center gap-2 md:flex">{localeBtns(true)}</div>
             <WalletButton theme="light" />
           </div>
-
         </div>
       </header>
 
       {/* ── Full-screen menu overlay ── */}
       {menuOpen && (
         <div
-          className="fixed inset-0 z-50 flex flex-col bg-[var(--black)]"
+          className="menu-enter fixed inset-0 z-50 flex flex-col bg-[var(--black)]"
           role="dialog"
           aria-modal="true"
           aria-label={t("nav.menuLabel")}
@@ -121,9 +119,7 @@ export function Nav() {
             >
               {t("nav.closeMenu")}
             </button>
-            <div className="flex items-center gap-3">
-              {localeBtns(false)}
-            </div>
+            <div className="flex items-center gap-3">{localeBtns(false)}</div>
           </div>
 
           {/* Primary links — BIG */}
@@ -164,7 +160,10 @@ export function Nav() {
                       </span>
                       {t("nav.myWork")}
                     </span>
-                    <span aria-hidden className="font-[family-name:var(--font-mono)] text-sm text-[var(--offwhite)]/20 transition-colors group-hover:text-[var(--blue)] md:text-lg">
+                    <span
+                      aria-hidden
+                      className="font-[family-name:var(--font-mono)] text-sm text-[var(--offwhite)]/20 transition-colors group-hover:text-[var(--blue)] md:text-lg"
+                    >
                       ↗
                     </span>
                   </Link>
@@ -199,9 +198,7 @@ export function Nav() {
             </ul>
 
             {/* Mobile locale toggle */}
-            <div className="mt-8 flex items-center gap-3 md:hidden">
-              {localeBtns(false)}
-            </div>
+            <div className="mt-8 flex items-center gap-3 md:hidden">{localeBtns(false)}</div>
           </nav>
 
           {/* Overlay bottom */}
@@ -212,7 +209,10 @@ export function Nav() {
                   {address ? truncateAddress(address, 6, 6) : ""}
                 </span>
                 <button
-                  onClick={() => { close(); void disconnect(); }}
+                  onClick={() => {
+                    close();
+                    void disconnect();
+                  }}
                   className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-widest text-[var(--offwhite)]/60 underline underline-offset-4 hover:text-[var(--offwhite)]"
                 >
                   {t("wallet.disconnect")}
@@ -225,7 +225,6 @@ export function Nav() {
               MOLOTOV · Buenos Aires · 2026
             </p>
           </div>
-
         </div>
       )}
     </>

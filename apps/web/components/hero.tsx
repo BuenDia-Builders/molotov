@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { ipfsToGateway } from "@/lib/ipfs";
 import { HeroContent, type FeaturedWork } from "./hero-content";
 
 const MOCK_FEATURED: FeaturedWork = {
@@ -21,16 +22,34 @@ async function getFeatured(): Promise<FeaturedWork> {
     );
     const { data } = await db
       .from("tokens")
-      .select("token_id, artist, royalty_bps")
+      .select("token_id, token_uri, artist, royalty_bps")
       .order("token_id", { ascending: false })
       .limit(1)
       .single();
     if (!data) return MOCK_FEATURED;
+
+    let title = `Token #${String(data.token_id).padStart(4, "0")}`;
+    let image: string | undefined;
+    if (data.token_uri) {
+      try {
+        const res = await fetch(ipfsToGateway(data.token_uri), {
+          next: { revalidate: 3600 },
+          signal: AbortSignal.timeout(5000),
+        });
+        const meta = await res.json();
+        if (meta.name) title = meta.name;
+        if (meta.image) image = ipfsToGateway(meta.image);
+      } catch {
+        /* fall through */
+      }
+    }
+
     return {
       token_id: data.token_id,
-      title: `Token #${String(data.token_id).padStart(4, "0")}`,
+      title,
       artist_short: `${data.artist.slice(0, 4)}…${data.artist.slice(-4)}`,
       royalty_bps: data.royalty_bps,
+      image,
     };
   } catch {
     return MOCK_FEATURED;

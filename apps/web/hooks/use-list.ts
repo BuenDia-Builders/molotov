@@ -2,23 +2,15 @@
 
 import { useCallback, useState } from "react";
 import { Client as NftClient, networks as nftNetworks } from "@molotov/stellar-client/molotov-nft";
-import { Client as MarketClient, networks as marketNetworks } from "@molotov/stellar-client/molotov-marketplace";
+import {
+  Client as MarketClient,
+  networks as marketNetworks,
+} from "@molotov/stellar-client/molotov-marketplace";
 import { useWallet } from "@/hooks/use-wallet";
-import { MARKETPLACE_CONTRACT_ID, NATIVE_XLM_SAC, RPC_URL } from "@/lib/stellar";
+import { MARKETPLACE_CONTRACT_ID, NATIVE_XLM_SAC, RPC_URL, isUserRejection } from "@/lib/stellar";
 
 export type ListState = "idle" | "approving" | "listing" | "success" | "error";
 export type ListErrorKind = "approve_rejected" | "approve" | "list" | null;
-
-function isUserRejection(err: unknown): boolean {
-  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-  return (
-    msg.includes("reject") ||
-    msg.includes("denied") ||
-    msg.includes("declined") ||
-    msg.includes("cancel") ||
-    msg.includes("user did not")
-  );
-}
 
 export function useList() {
   const { address, signTransaction } = useWallet();
@@ -45,7 +37,6 @@ export function useList() {
         });
       };
 
-      // Get current ledger to set approve TTL
       const rpcResp = await fetch(RPC_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,7 +44,6 @@ export function useList() {
       }).then((r) => r.json());
       const currentLedger: number = rpcResp.result?.sequence ?? 0;
 
-      // Step 1: approve the marketplace to transfer this token
       try {
         setState("approving");
         const nftClient = new NftClient({
@@ -78,7 +68,6 @@ export function useList() {
         throw err;
       }
 
-      // Step 2: create the fixed-price listing (secondary — royalties always enforced)
       try {
         setState("listing");
         const marketClient = new MarketClient({

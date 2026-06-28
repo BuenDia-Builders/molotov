@@ -88,16 +88,26 @@ async function getWorks(): Promise<{ works: Work[]; isMock: boolean }> {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
 
-  const { data, error } = await db
-    .from("tokens")
-    .select("token_id, token_uri, artist, royalty_bps")
-    .order("token_id", { ascending: false })
-    .limit(48);
+  const [tokensRes, listingsRes] = await Promise.all([
+    db
+      .from("tokens")
+      .select("token_id, token_uri, artist, royalty_bps")
+      .order("token_id", { ascending: false })
+      .limit(48),
+    db.from("listings").select("token_id, price").eq("status", "active"),
+  ]);
 
-  if (error || !data?.length) return { works: MOCK_WORKS, isMock: true };
+  if (tokensRes.error || !tokensRes.data?.length) return { works: MOCK_WORKS, isMock: true };
+
+  const priceByToken = new Map<number, string>(
+    (listingsRes.data ?? []).map((l) => [
+      l.token_id,
+      (BigInt(l.price) / BigInt(10_000_000)).toString(),
+    ]),
+  );
 
   const works: Work[] = await Promise.all(
-    data.map(async (t) => {
+    tokensRes.data.map(async (t) => {
       let title = `Token #${String(t.token_id).padStart(4, "0")}`;
       let image: string | undefined;
 
@@ -109,7 +119,9 @@ async function getWorks(): Promise<{ works: Work[]; isMock: boolean }> {
         const meta = await res.json();
         if (meta.name) title = meta.name;
         if (meta.image) image = ipfsToGateway(meta.image);
-      } catch { /* fall through — show placeholder */ }
+      } catch {
+        /* fall through — show placeholder */
+      }
 
       return {
         token_id: t.token_id,
@@ -117,6 +129,7 @@ async function getWorks(): Promise<{ works: Work[]; isMock: boolean }> {
         artist: t.artist,
         artist_short: `${t.artist.slice(0, 4)}…${t.artist.slice(-4)}`,
         royalty_bps: t.royalty_bps,
+        price_xlm: priceByToken.get(t.token_id),
         image,
       };
     }),
@@ -131,43 +144,47 @@ function WorkCard({ work }: { work: Work }) {
   return (
     <Link
       href={`/token/${work.token_id}`}
-      className="group flex flex-col border border-white/10 bg-[var(--carbon)] overflow-hidden transition-colors hover:border-[var(--blue)]/40"
+      className="group flex flex-col bg-[var(--carbon)] overflow-hidden transition-transform duration-300 hover:-translate-y-0.5"
     >
-      {/* Image / gradient */}
+      {/* Image */}
       <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-[var(--blue-deep)] to-[var(--blue)]">
         {work.image && (
           <Image
             src={work.image}
             alt={work.title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         )}
-        {/* token number watermark */}
-        <span className="absolute bottom-3 right-4 font-[family-name:var(--font-mono)] text-[40px] font-bold text-white/5 leading-none select-none pointer-events-none">
+        {/* subtle token number watermark */}
+        <span className="absolute bottom-3 right-4 font-[family-name:var(--font-mono)] text-[40px] font-bold text-white/4 leading-none select-none pointer-events-none">
           {String(work.token_id).padStart(2, "0")}
-        </span>
-        {/* royalty badge */}
-        <span className="absolute top-3 right-3 border border-white/20 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] tracking-[0.15em] uppercase text-white/60 bg-black/30 backdrop-blur-sm">
-          {royaltyPct}% royalty
         </span>
       </div>
 
-      {/* Body */}
-      <div className="p-4 flex flex-col gap-2">
-        <p className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.2em] uppercase text-[var(--blue)] truncate">
+      {/* Caption */}
+      <div className="px-5 py-5 flex flex-col gap-1.5">
+        <p className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.22em] uppercase text-[var(--smoke)] truncate">
           {work.artist_short}
         </p>
-        <p className="font-[family-name:var(--font-display)] font-bold text-[var(--offwhite)] text-base leading-tight truncate">
+        <p className="font-[family-name:var(--font-display)] font-bold text-[var(--offwhite)] text-[1.05rem] leading-snug truncate">
           {work.title}
         </p>
-        {work.price_xlm && (
-          <p className="font-[family-name:var(--font-mono)] text-sm text-[var(--offwhite)] mt-1">
-            {work.price_xlm}{" "}
-            <span className="text-[var(--smoke)] text-[11px]">XLM</span>
-          </p>
-        )}
+        <div className="flex items-center justify-between mt-2 pt-2.5 border-t border-white/8">
+          <span className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.15em] uppercase text-[var(--smoke)]/60">
+            {royaltyPct}% royalty
+          </span>
+          {work.price_xlm ? (
+            <span className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]">
+              {work.price_xlm} <span className="text-[var(--smoke)]">XLM</span>
+            </span>
+          ) : (
+            <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.12em] text-[var(--smoke)]/35">
+              Not listed
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   );
@@ -180,7 +197,6 @@ export default async function WorksPage() {
     <div className="relative z-10 flex flex-1 flex-col min-h-screen">
       <Nav />
       <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-16 md:px-10 md:py-20 lg:px-16">
-
         {/* Header */}
         <div className="flex items-baseline justify-between border-b border-[var(--ember)] pb-5 mb-10">
           <div>
@@ -206,14 +222,11 @@ export default async function WorksPage() {
         )}
 
         {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
           {works.map((work) => (
-            <div key={work.token_id} className="bg-[var(--black)]">
-              <WorkCard work={work} />
-            </div>
+            <WorkCard key={work.token_id} work={work} />
           ))}
         </div>
-
       </main>
       <Footer />
     </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/use-wallet";
 import { useBuy } from "@/hooks/use-buy";
 import { WalletButton } from "@/components/wallet-button";
@@ -7,11 +9,20 @@ import { WalletButton } from "@/components/wallet-button";
 type Props = {
   listingId: bigint;
   priceXlm: string;
+  tokenId: number;
 };
 
-export function BuyButton({ listingId, priceXlm }: Props) {
+export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
+  const router = useRouter();
   const { isConnected } = useWallet();
   const { buy, state, errorKind, txHash, reset } = useBuy();
+
+  useEffect(() => {
+    if (state === "success") {
+      const timer = setTimeout(() => router.push(`/my-work/${tokenId}`), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [state, router, tokenId]);
 
   if (!isConnected) {
     return (

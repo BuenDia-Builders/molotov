@@ -3,22 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
 import { Client, networks } from "@molotov/stellar-client/molotov-nft";
 import { Nav } from "@/components/nav";
-import { NFT_CONTRACT_ID, MARKETPLACE_CONTRACT_ID, RPC_URL, contractExplorerUrl, truncateAddress } from "@/lib/stellar";
+import {
+  NFT_CONTRACT_ID,
+  MARKETPLACE_CONTRACT_ID,
+  RPC_URL,
+  contractExplorerUrl,
+  truncateAddress,
+  READ_SOURCE,
+} from "@/lib/stellar";
+import { ipfsToGateway } from "@/lib/ipfs";
 import { useI18n } from "@/lib/i18n";
 import { useWallet } from "@/hooks/use-wallet";
 import { useList } from "@/hooks/use-list";
+import { useCancel } from "@/hooks/use-cancel";
 import { WalletButton } from "@/components/wallet-button";
-
-// A funded testnet account used only as the source for read-only simulation.
-const READ_SOURCE = "GANXCETUVUUILGJPVEZWM7EH66IZM5OICUPMNUWNXKIBRK425MUKZERM";
-
-function ipfsToGateway(uri: string): string {
-  return uri.startsWith("ipfs://")
-    ? `https://gateway.pinata.cloud/ipfs/${uri.slice("ipfs://".length)}`
-    : uri;
-}
 
 type Phase = "chain" | "ipfs" | "ready" | "error";
 
@@ -36,8 +37,12 @@ export default function MyWorkPage() {
   const { locale, t } = useI18n();
   const { address, isConnected } = useWallet();
   const { list, state: listState, errorKind: listError, listingId, reset: resetList } = useList();
+  const { cancel, state: cancelState, errorKind: cancelError, reset: resetCancel } = useCancel();
   const [priceXlm, setPriceXlm] = useState("");
   const [art, setArt] = useState<Artwork | null>(null);
+  const [activeListing, setActiveListing] = useState<{ listingId: bigint; seller: string } | null>(
+    null,
+  );
   const [phase, setPhase] = useState<Phase>("chain");
   // timedOut state drives the error-screen copy; timedOutRef gives the async
   // IIFE a non-stale mutable flag to check without closure capture issues.
@@ -122,6 +127,28 @@ export default function MyWorkPage() {
       clearTimeout(timer);
     };
   }, [locale, t, tokenId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveListing(null);
+  }, [tokenId]);
+
+  useEffect(() => {
+    if (!art || art.artist !== MARKETPLACE_CONTRACT_ID) return;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return;
+
+    const db = createClient(url, key);
+    db.from("listings")
+      .select("listing_id, seller")
+      .eq("token_id", tokenId)
+      .eq("status", "active")
+      .single()
+      .then(({ data }) => {
+        if (data) setActiveListing({ listingId: BigInt(data.listing_id), seller: data.seller });
+      });
+  }, [art, tokenId]);
 
   const isLoading = phase === "chain" || phase === "ipfs";
 
@@ -246,7 +273,7 @@ export default function MyWorkPage() {
 
                   {/* Token is in escrow at the marketplace — already listed */}
                   {art.artist === MARKETPLACE_CONTRACT_ID && (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-3">
                       <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#0178DE]">
                         This work is currently listed for sale.
                       </p>
@@ -256,19 +283,72 @@ export default function MyWorkPage() {
                       >
                         View listing →
                       </Link>
+
+                      {/* Cancel listing — only visible to the seller */}
+                      {activeListing && isConnected && address === activeListing.seller && (
+                        <div className="mt-2 border-t border-white/8 pt-4">
+                          {cancelState === "idle" && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await cancel({ listingId: activeListing.listingId });
+                                } catch {
+                                  // error state handled by hook
+                                }
+                              }}
+                              className="font-[family-name:var(--font-geist-mono)] text-[11px] uppercase tracking-[0.15em] text-[#F5F4ED]/50 underline-offset-4 hover:text-[#F5F4ED] hover:underline transition-colors"
+                            >
+                              Cancel listing
+                            </button>
+                          )}
+
+                          {cancelState === "cancelling" && (
+                            <div className="flex flex-col gap-2">
+                              <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/60">
+                                Cancelling… sign in your wallet
+                              </p>
+                              <div className="relative h-0.5 w-full overflow-hidden bg-white/12">
+                                <span className="progress-fill" />
+                              </div>
+                            </div>
+                          )}
+
+                          {cancelState === "success" && (
+                            <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/60">
+                              Listing cancelled — refresh to update status.
+                            </p>
+                          )}
+
+                          {cancelState === "error" && (
+                            <div className="flex flex-col gap-2">
+                              <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-red-400">
+                                {cancelError === "rejected"
+                                  ? "Transaction rejected."
+                                  : "Cancel failed — please try again."}
+                              </p>
+                              <button
+                                onClick={resetCancel}
+                                className="font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED]/70 underline-offset-4 hover:underline"
+                              >
+                                Try again
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {/* Not the owner — can't list */}
-                  {art.artist !== MARKETPLACE_CONTRACT_ID && isConnected && address !== art.artist && (
-                    <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/40">
-                      Connect the wallet that owns this token to list it.
-                    </p>
-                  )}
+                  {art.artist !== MARKETPLACE_CONTRACT_ID &&
+                    isConnected &&
+                    address !== art.artist && (
+                      <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/40">
+                        Connect the wallet that owns this token to list it.
+                      </p>
+                    )}
 
-                  {!isConnected && (
-                    <WalletButton />
-                  )}
+                  {!isConnected && <WalletButton />}
 
                   {isConnected && address === art.artist && listState === "idle" && (
                     <div className="flex flex-col gap-3">

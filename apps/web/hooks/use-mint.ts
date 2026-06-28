@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { Client, networks } from "@molotov/stellar-client/molotov-nft";
 import { useWallet } from "@/hooks/use-wallet";
 import { uploadImage, uploadMetadata } from "@/lib/ipfs";
-import { RPC_URL } from "@/lib/stellar";
+import { RPC_URL, isUserRejection } from "@/lib/stellar";
 
 export type MintState =
   | "idle"
@@ -15,29 +15,17 @@ export type MintState =
   | "success"
   | "error";
 
-/** Where a failure happened — drives the editorial error message + retry CTA. */
 export type MintErrorKind = "upload" | "sign" | "submit" | null;
 
 export type MintParams = {
   imageFile: File;
   title: string;
   description: string;
-  royaltyBps: number; // 100..1500
+  royaltyBps: number;
   royaltyRecipients: Array<{ address: string; shareBps: number }>;
 };
 
 export type MintResult = { tokenId: number; txHash: string };
-
-function isUserRejection(err: unknown): boolean {
-  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-  return (
-    msg.includes("reject") ||
-    msg.includes("denied") ||
-    msg.includes("declined") ||
-    msg.includes("cancel") ||
-    msg.includes("user did not")
-  );
-}
 
 export function useMint() {
   const { address, signTransaction } = useWallet();
@@ -54,7 +42,6 @@ export function useMint() {
       if (!address) throw new Error("No hay wallet conectada");
       setErrorKind(null);
 
-      // 1 + 2 — IPFS uploads.
       let tokenUri: string;
       try {
         setState("uploading_image");
@@ -77,7 +64,6 @@ export function useMint() {
         throw err;
       }
 
-      // 3..6 — build, sign and submit the Soroban transaction via the bindings.
       try {
         const client = new Client({
           contractId: networks.testnet.contractId,
@@ -85,7 +71,6 @@ export function useMint() {
           rpcUrl: RPC_URL,
           publicKey: address,
           signTransaction: async (xdr: string) => {
-            // The wallet popup is open now; once it returns we're waiting on chain.
             const signed = await signTransaction(xdr, {
               networkPassphrase: networks.testnet.networkPassphrase,
             });
@@ -110,8 +95,8 @@ export function useMint() {
 
         const tokenId = Number(sent.result);
         const txHash =
-          (sent as { sendTransactionResponse?: { hash?: string } })
-            .sendTransactionResponse?.hash ?? "";
+          (sent as { sendTransactionResponse?: { hash?: string } }).sendTransactionResponse?.hash ??
+          "";
 
         setState("success");
         return { tokenId, txHash };

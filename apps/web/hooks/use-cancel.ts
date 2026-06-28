@@ -8,27 +8,25 @@ import {
 import { useWallet } from "@/hooks/use-wallet";
 import { RPC_URL, isUserRejection } from "@/lib/stellar";
 
-export type BuyState = "idle" | "buying" | "success" | "error";
+export type CancelState = "idle" | "cancelling" | "success" | "error";
 
-export function useBuy() {
+export function useCancel() {
   const { address, signTransaction } = useWallet();
-  const [state, setState] = useState<BuyState>("idle");
+  const [state, setState] = useState<CancelState>("idle");
   const [errorKind, setErrorKind] = useState<"rejected" | "failed" | null>(null);
-  const [txHash, setTxHash] = useState<string | null>(null);
 
   const reset = useCallback(() => {
     setState("idle");
     setErrorKind(null);
-    setTxHash(null);
   }, []);
 
-  const buy = useCallback(
+  const cancel = useCallback(
     async ({ listingId }: { listingId: bigint }) => {
       if (!address) throw new Error("No wallet connected");
       setErrorKind(null);
 
       try {
-        setState("buying");
+        setState("cancelling");
         const client = new MarketClient({
           contractId: marketNetworks.testnet.contractId,
           networkPassphrase: marketNetworks.testnet.networkPassphrase,
@@ -41,20 +39,11 @@ export function useBuy() {
           },
         });
 
-        const tx = await client.buy({
-          buyer: address,
-          listing_id: listingId,
-          referrer: undefined,
-        });
-        const sent = await tx.signAndSend();
-        const hash =
-          (sent as { sendTransactionResponse?: { hash?: string } }).sendTransactionResponse?.hash ??
-          "";
-        setTxHash(hash);
+        const tx = await client.cancel({ seller: address, listing_id: listingId });
+        await tx.signAndSend();
         setState("success");
-        return { txHash: hash };
       } catch (err) {
-        console.error("[buy] transaction failed", err);
+        console.error("[cancel] transaction failed", err);
         setErrorKind(isUserRejection(err) ? "rejected" : "failed");
         setState("error");
         throw err;
@@ -63,5 +52,5 @@ export function useBuy() {
     [address, signTransaction],
   );
 
-  return { buy, state, errorKind, txHash, reset };
+  return { cancel, state, errorKind, reset };
 }
