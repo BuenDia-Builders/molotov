@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
+
 export function AboutContent() {
   const { t } = useI18n();
 
@@ -57,85 +58,28 @@ export function AboutContent() {
         </div>
       </section>
 
-      {/* What we believe — dark */}
+      {/* What we believe — dark, Team ↗ bottom right */}
       <section className="bg-[var(--black)]">
         <div className="mx-auto max-w-7xl px-6 py-16 md:px-10 md:py-32 lg:px-20">
           <div className="grid gap-10 lg:grid-cols-[220px_1fr] lg:gap-24">
             <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[var(--offwhite)]/30 lg:pt-2">
               {t("about.whatWeBelieveLabel")}
             </p>
-            <div className="space-y-8 font-[family-name:var(--font-display)] text-xl leading-[1.65] [font-variation-settings:'opsz'_24] md:text-2xl">
-              <p className="text-[var(--offwhite)]/70">{t("about.whatWeBelieve1")}</p>
-              <p className="text-[var(--offwhite)]/70">{t("about.whatWeBelieve2")}</p>
-              <p className="text-[var(--blue)]">{t("about.whatWeBelieve3")}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* The creators — offwhite, links to /team */}
-      <section className="bg-[var(--offwhite)]">
-        <div className="mx-auto max-w-7xl px-6 py-16 md:px-10 md:py-32 lg:px-20">
-
-          <div className="mb-14 flex items-baseline justify-between gap-4">
             <div>
-              <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.3em] text-[var(--black)]/40">
-                {t("about.teamLabel")}
-              </p>
-              <p className="mt-4 max-w-lg text-base leading-[1.75] text-[var(--black)]/55">
-                {t("about.teamBody")}
-              </p>
+              <div className="space-y-8 font-[family-name:var(--font-display)] text-xl leading-[1.65] [font-variation-settings:'opsz'_24] md:text-2xl">
+                <p className="text-[var(--offwhite)]/70">{t("about.whatWeBelieve1")}</p>
+                <p className="text-[var(--offwhite)]/70">{t("about.whatWeBelieve2")}</p>
+                <p className="text-[var(--blue)]">{t("about.whatWeBelieve3")}</p>
+              </div>
+              <div className="mt-14 flex justify-end">
+                <Link
+                  href="/team"
+                  className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.25em] text-[var(--offwhite)]/35 transition-colors hover:text-[var(--offwhite)]"
+                >
+                  {t("nav.team")} ↗
+                </Link>
+              </div>
             </div>
-            <Link
-              href="/team"
-              className="shrink-0 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[var(--black)]/35 transition-colors hover:text-[var(--black)]"
-            >
-              {t("about.teamPageLabel")} ↗
-            </Link>
-          </div>
-
-          <div className="grid gap-px bg-black/10 sm:grid-cols-2">
-
-            <article className="bg-[var(--offwhite)] p-8 md:p-12">
-              <p className="mb-8 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--black)]/25">
-                01
-              </p>
-              <p className="font-[family-name:var(--font-display)] text-2xl font-light text-[var(--black)] [font-variation-settings:'opsz'_32] md:text-3xl">
-                {t("about.janiaName")}
-              </p>
-              <p className="mt-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-[var(--black)]/40">
-                {t("about.janiaRole")}
-              </p>
-              <a
-                href="https://www.linkedin.com/in/jania-m%C3%BCller/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-8 inline-block border-b border-[var(--blue)] pb-0.5 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.25em] text-[var(--blue)] transition-opacity hover:opacity-70"
-              >
-                {t("about.linkedinArrow")}
-              </a>
-            </article>
-
-            <article className="bg-[var(--offwhite)] p-8 md:p-12">
-              <p className="mb-8 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--black)]/25">
-                02
-              </p>
-              <p className="font-[family-name:var(--font-display)] text-2xl font-light text-[var(--black)] [font-variation-settings:'opsz'_32] md:text-3xl">
-                {t("about.elisaName")}
-              </p>
-              <p className="mt-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-[var(--black)]/40">
-                {t("about.elisaRole")}
-              </p>
-              <a
-                href="https://www.linkedin.com/in/arayamariaelisa/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-8 inline-block border-b border-[var(--blue)] pb-0.5 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.25em] text-[var(--blue)] transition-opacity hover:opacity-70"
-              >
-                {t("about.linkedinArrow")}
-              </a>
-            </article>
-
           </div>
         </div>
       </section>

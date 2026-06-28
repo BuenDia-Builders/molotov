@@ -215,7 +215,7 @@ export const es = {
     janiaName: "Jania Müller",
     janiaRole: "Co-fundadora · Diseño y Producto",
     elisaName: "María Elisa Araya",
-    elisaRole: "Co-fundadora · Estrategia y Comunidad",
+    elisaRole: "Co-fundadora · Desarrollo",
     linkedinArrow: "LinkedIn ↗",
     teamPageLabel: "Equipo",
   },
