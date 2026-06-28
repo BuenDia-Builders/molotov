@@ -197,6 +197,34 @@
   animation: indeterminate 1.4s ease-in-out infinite;
 }
 
+/* Logo flame: grows upward from the bottle on hover, flickers with blue glow. */
+@keyframes flame-flicker {
+  0%, 100% {
+    transform: scale(1.14) translateY(-4px) rotate(0deg);
+    filter: drop-shadow(0 -6px 18px rgba(21, 100, 255, 0.72));
+  }
+  30% {
+    transform: scale(1.19) translateY(-6px) rotate(-1.2deg);
+    filter: drop-shadow(0 -10px 24px rgba(21, 100, 255, 0.9));
+  }
+  70% {
+    transform: scale(1.15) translateY(-5px) rotate(0.8deg);
+    filter: drop-shadow(0 -8px 20px rgba(21, 100, 255, 0.65));
+  }
+}
+
+.logo-flame {
+  transform-origin: 50% 100%;
+  will-change: transform, filter;
+  transition:
+    transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.35s ease;
+}
+
+.logo-flame:hover {
+  animation: flame-flicker 0.9s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-breathe {
     animation: none;
@@ -211,6 +239,10 @@
     left: 0;
     width: 100%;
     opacity: 0.6;
+  }
+  .logo-flame {
+    animation: none !important;
+    transition: none;
   }
 }
 

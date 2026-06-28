@@ -80,11 +80,11 @@ export function Nav() {
           <div className="flex justify-center">
             <Link href="/" aria-label={t("nav.homeLabel")}>
               <Image
-                src="/brand/logo-wordmark-dark.png"
+                src="/brand/logo_sinfondo.png"
                 alt="Molotov"
                 width={120}
                 height={40}
-                className="h-7 w-auto brightness-0"
+                className="logo-flame h-8 w-auto"
                 priority
               />
             </Link>
