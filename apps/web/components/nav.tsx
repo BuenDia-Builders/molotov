@@ -15,11 +15,11 @@ export function Nav() {
         <div className="md:pl-16">
           <Link href="/" className="flex items-center">
             <Image
-              src="/brand/logo_sinfondo.png"
+              src="/brand/logo-wordmark-dark.png"
               alt="Molotov"
               width={120}
               height={40}
-              className="h-8 w-auto"
+              className="h-8 w-auto brightness-0 invert"
               priority
             />
           </Link>
