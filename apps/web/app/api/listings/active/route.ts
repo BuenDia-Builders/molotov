@@ -19,7 +19,7 @@ export async function GET() {
       tokens(token_uri, royalty_bps, artist)
     `)
     .eq('status', 'active')
-    .order('created_ledger', { ascending: false })
+    .order('created_at_ledger', { ascending: false })
     .limit(12)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
