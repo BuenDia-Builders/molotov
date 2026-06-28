@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { WalletButton } from "@/components/wallet-button";
-import { contractExplorerUrl, NFT_CONTRACT_ID } from "@/lib/stellar";
+import { contractExplorerUrl, NFT_CONTRACT_ID, truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
 import { useWallet } from "@/hooks/use-wallet";
 
@@ -24,7 +24,7 @@ const SECONDARY_LINKS = [
 
 export function Nav() {
   const { t, locale, setLocale } = useI18n();
-  const { isConnected } = useWallet();
+  const { isConnected, address, disconnect } = useWallet();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -206,7 +206,21 @@ export function Nav() {
 
           {/* Overlay bottom */}
           <div className="flex shrink-0 items-center justify-between gap-4 border-t border-white/10 px-6 py-5 md:px-16 lg:px-24">
-            <WalletButton />
+            {isConnected ? (
+              <div className="flex items-center gap-4">
+                <span className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/50">
+                  {address ? truncateAddress(address, 6, 6) : ""}
+                </span>
+                <button
+                  onClick={() => { close(); void disconnect(); }}
+                  className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-widest text-[var(--offwhite)]/60 underline underline-offset-4 hover:text-[var(--offwhite)]"
+                >
+                  {t("wallet.disconnect")}
+                </button>
+              </div>
+            ) : (
+              <WalletButton />
+            )}
             <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.25em] text-[var(--offwhite)]/18">
               MOLOTOV · Buenos Aires · 2026
             </p>
