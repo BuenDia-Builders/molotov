@@ -218,7 +218,6 @@
   * {
     box-shadow: none;
     border-radius: 0;
-    border-color: var(--ember);
   }
   body {
     background: var(--black);
