@@ -3,7 +3,7 @@ import Link from "next/link";
 import { WalletButton } from "@/components/wallet-button";
 
 const NAV_LINKS = [
-  { href: "/", label: "Discover" },
+  { href: "/works", label: "Discover" },
   { href: "/artists", label: "Artists" },
   { href: "/#how", label: "How it works" },
 ] as const;
