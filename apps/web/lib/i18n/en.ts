@@ -12,6 +12,7 @@ export const en = {
     homeLabel: "Molotov, home",
     discover: "Discover",
     create: "Create",
+    myWork: "My works",
     artists: "Artists",
     more: "More",
     howYouEarn: "How you earn",

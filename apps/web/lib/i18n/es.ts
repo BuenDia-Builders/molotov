@@ -10,6 +10,7 @@ export const es = {
     homeLabel: "Molotov, inicio",
     discover: "Descubrir",
     create: "Crear",
+    myWork: "Mis obras",
     artists: "Artistas",
     more: "Más",
     howYouEarn: "Cómo cobrás",

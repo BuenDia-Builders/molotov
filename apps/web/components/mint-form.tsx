@@ -107,7 +107,7 @@ export function MintForm() {
         royaltyBps,
         royaltyRecipients: [{ address, shareBps: 10_000 }],
       });
-      router.push(`/token/${tokenId}`);
+      router.push(`/my-work/${tokenId}`);
     } catch {
       /* state + errorKind are set inside the hook; UI reacts below */
     }

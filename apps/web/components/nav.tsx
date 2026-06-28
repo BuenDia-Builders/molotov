@@ -6,6 +6,7 @@ import Link from "next/link";
 import { WalletButton } from "@/components/wallet-button";
 import { contractExplorerUrl, NFT_CONTRACT_ID } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
+import { useWallet } from "@/hooks/use-wallet";
 
 const PRIMARY_LINKS = [
   { href: "/works",   key: "nav.discover"  },
@@ -23,6 +24,7 @@ const SECONDARY_LINKS = [
 
 export function Nav() {
   const { t, locale, setLocale } = useI18n();
+  const { isConnected } = useWallet();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -149,6 +151,25 @@ export function Nav() {
                   </Link>
                 </li>
               ))}
+              {isConnected && (
+                <li>
+                  <Link
+                    href="/my-work"
+                    onClick={close}
+                    className="group flex items-baseline justify-between border-b border-white/10 py-5 md:py-7"
+                  >
+                    <span className="font-[family-name:var(--font-display)] text-[clamp(2.2rem,6vw,5.5rem)] font-light leading-none tracking-[-0.02em] text-[var(--offwhite)] transition-colors group-hover:text-[var(--blue)] [font-variation-settings:'opsz'_96]">
+                      <span className="mr-3 font-[family-name:var(--font-mono)] text-[1.2rem] text-[var(--offwhite)]/20 group-hover:text-[var(--blue)]/40 md:mr-5 md:text-[1.5rem]">
+                        /
+                      </span>
+                      {t("nav.myWork")}
+                    </span>
+                    <span aria-hidden className="font-[family-name:var(--font-mono)] text-sm text-[var(--offwhite)]/20 transition-colors group-hover:text-[var(--blue)] md:text-lg">
+                      ↗
+                    </span>
+                  </Link>
+                </li>
+              )}
             </ul>
 
             {/* Secondary links */}
