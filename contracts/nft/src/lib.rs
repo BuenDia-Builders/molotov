@@ -303,12 +303,24 @@ impl NonFungibleToken for MolotovNft {
     type ContractType = Base;
 
     /// Override: returns the per-token IPFS URI stored at mint (not base_uri + id).
+    /// Bumps the URI entry TTL on every successful read so it stays alive as long
+    /// as the token is queried.
     fn token_uri(e: &Env, token_id: u32) -> String {
         let _ = Base::owner_of(e, token_id); // panics if the token does not exist
-        e.storage()
+        if let Some(uri) = e
+            .storage()
             .persistent()
             .get(&DataKey::TokenUri(token_id))
-            .unwrap_or_else(|| Base::token_uri(e, token_id))
+        {
+            e.storage().persistent().extend_ttl(
+                &DataKey::TokenUri(token_id),
+                TTL_BUMP_THRESHOLD,
+                TTL_BUMP_AMOUNT,
+            );
+            uri
+        } else {
+            Base::token_uri(e, token_id)
+        }
     }
 }
 

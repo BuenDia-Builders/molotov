@@ -511,6 +511,104 @@ fn test_mint_and_read_extend_persistent_ttl() {
     });
 }
 
+// ================= URI TTL bump on token_uri read =================
+
+/// `token_uri` bumps the URI entry TTL on every read, mirroring what
+/// `get_royalty_info` does for the royalty entry. After a bump the entry
+/// should have ~30 days of life left.
+#[test]
+fn test_token_uri_bumps_ttl_on_read() {
+    use crate::{DataKey, TTL_BUMP_AMOUNT};
+    use soroban_sdk::testutils::storage::Persistent as _;
+    use soroban_sdk::testutils::Ledger as _;
+
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+
+    let artist = Address::generate(&e);
+    let uri = String::from_str(&e, "ipfs://obra-ttl-bump");
+    let token_id = client.mint(&artist, &artist, &uri, &1000u32, &one_recipient(&e, &artist));
+
+    let id = client.address.clone();
+    // Advance close to expiry so the bump is measurable.
+    e.ledger().with_mut(|l| l.sequence_number += TTL_BUMP_AMOUNT - 100);
+
+    // Read — this should bump.
+    let result = client.token_uri(&token_id);
+    assert_eq!(result, uri);
+
+    e.as_contract(&id, || {
+        let ttl = e.storage().persistent().get_ttl(&DataKey::TokenUri(token_id));
+        assert!(ttl >= TTL_BUMP_AMOUNT - 16, "URI ttl too low after bump: {}", ttl);
+    });
+}
+
+/// When the URI entry is bumped before expiry, `token_uri` still returns the
+/// correct IPFS URI rather than the fallback `base_uri + token_id` string.
+#[test]
+fn test_token_uri_survives_expiry_window_when_bumped() {
+    use crate::TTL_BUMP_AMOUNT;
+    use soroban_sdk::testutils::Ledger as _;
+
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+
+    let artist = Address::generate(&e);
+    let uri = String::from_str(&e, "ipfs://obra-survive");
+    let token_id = client.mint(&artist, &artist, &uri, &1000u32, &one_recipient(&e, &artist));
+
+    // Advance most of the way through the initial TTL.
+    e.ledger().with_mut(|l| l.sequence_number += TTL_BUMP_AMOUNT - 200);
+    // Bump via read.
+    let result = client.token_uri(&token_id);
+    assert_eq!(result, uri);
+
+    // Advance again close to the new expiry.
+    e.ledger().with_mut(|l| l.sequence_number += TTL_BUMP_AMOUNT - 200);
+    // Still returns the real URI — not the fallback.
+    let result = client.token_uri(&token_id);
+    assert_eq!(result, uri);
+}
+
+/// The `unwrap_or_else(|| Base::token_uri(...))` fallback is only exercised
+/// when no URI was stored for the token (genuinely absent), not when the
+/// entry expired. After the fix, an expired-but-bumped entry still lives.
+#[test]
+fn test_token_uri_fallback_only_when_genuinely_absent() {
+    use crate::DataKey;
+
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+
+    let artist = Address::generate(&e);
+    let token_id = client.mint(
+        &artist,
+        &artist,
+        &String::from_str(&e, "ipfs://obra-absent"),
+        &1000u32,
+        &one_recipient(&e, &artist),
+    );
+
+    // The stored URI is present — token_uri returns it.
+    assert_eq!(
+        client.token_uri(&token_id),
+        String::from_str(&e, "ipfs://obra-absent"),
+    );
+
+    let id = client.address.clone();
+    // Simulate a token that was minted but we manually remove its URI entry
+    // from storage to test the fallback path.
+    e.as_contract(&id, || {
+        e.storage().persistent().remove(&DataKey::TokenUri(token_id));
+    });
+
+    // Now the fallback kicks in: base_uri is "" so it returns an empty string.
+    assert_eq!(client.token_uri(&token_id), String::from_str(&e, ""));
+}
+
 // ================= Property-based: royalty / split / dust =================
 
 use proptest::prelude::*;
