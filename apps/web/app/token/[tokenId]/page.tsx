@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { BuyButton } from '@/components/buy-button';
+import { Nav } from '@/components/nav';
 
 function ipfsToGateway(uri: string): string {
   if (uri.startsWith('ipfs://')) return uri.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')
@@ -72,7 +73,9 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
   const imageSrc = ipfsToGateway(token.token_uri || '/placeholder.png')
 
   return (
-    <div className="min-h-screen bg-[var(--black)] grid grid-cols-1 md:grid-cols-2">
+    <div className="min-h-screen bg-[var(--black)]">
+      <Nav />
+      <div className="grid grid-cols-1 md:grid-cols-2">
       {/* Left Column */}
       <div className="relative w-full min-h-[50vh] md:min-h-screen">
         <Image
@@ -129,6 +132,7 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
             />
           </div>
         )}
+      </div>
       </div>
     </div>
   )
