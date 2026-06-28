@@ -21,5 +21,30 @@ export async function GET(req: NextRequest) {
     .order('token_id', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  if (!data?.length) return NextResponse.json([])
+
+  // Fetch prices for any active listings
+  const listingIds = data
+    .map((t) => t.active_listing_id)
+    .filter((id): id is string => id != null)
+
+  let priceMap: Record<string, string> = {}
+  if (listingIds.length > 0) {
+    const { data: listings } = await db
+      .from('listings')
+      .select('listing_id, price')
+      .in('listing_id', listingIds)
+    if (listings) {
+      for (const l of listings) {
+        priceMap[l.listing_id] = (BigInt(l.price) / 10_000_000n).toString()
+      }
+    }
+  }
+
+  const result = data.map((t) => ({
+    ...t,
+    price_xlm: t.active_listing_id ? priceMap[t.active_listing_id] : undefined,
+  }))
+
+  return NextResponse.json(result)
 }

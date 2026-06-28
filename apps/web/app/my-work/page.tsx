@@ -14,6 +14,7 @@ type Token = {
   owner: string;
   artist: string;
   royalty_bps: number;
+  price_xlm?: string;
 };
 
 export default function MyWorksPage() {
@@ -131,6 +132,7 @@ export default function MyWorksPage() {
                 owner={token.owner}
                 artist={token.artist}
                 royalty_bps={token.royalty_bps}
+                price={token.price_xlm}
               />
             ))}
           </div>

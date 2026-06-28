@@ -7,7 +7,7 @@ import { useWallet } from "@/hooks/use-wallet";
 import { MARKETPLACE_CONTRACT_ID, NATIVE_XLM_SAC, RPC_URL } from "@/lib/stellar";
 
 export type ListState = "idle" | "approving" | "listing" | "success" | "error";
-export type ListErrorKind = "approve" | "list" | null;
+export type ListErrorKind = "approve_rejected" | "approve" | "list" | null;
 
 function isUserRejection(err: unknown): boolean {
   const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
@@ -73,7 +73,7 @@ export function useList() {
         await approveTx.signAndSend();
       } catch (err) {
         console.error("[list] approve failed", err);
-        setErrorKind(isUserRejection(err) ? "approve" : "approve");
+        setErrorKind(isUserRejection(err) ? "approve_rejected" : "approve");
         setState("error");
         throw err;
       }

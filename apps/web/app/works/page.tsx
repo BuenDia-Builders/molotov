@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
+import { ipfsToGateway } from "@/lib/ipfs";
 
 export const metadata: Metadata = {
   title: "Discover — Molotov",
@@ -95,13 +96,31 @@ async function getWorks(): Promise<{ works: Work[]; isMock: boolean }> {
 
   if (error || !data?.length) return { works: MOCK_WORKS, isMock: true };
 
-  const works: Work[] = data.map((t) => ({
-    token_id: t.token_id,
-    title: `Token #${String(t.token_id).padStart(4, "0")}`,
-    artist: t.artist,
-    artist_short: `${t.artist.slice(0, 4)}…${t.artist.slice(-4)}`,
-    royalty_bps: t.royalty_bps,
-  }));
+  const works: Work[] = await Promise.all(
+    data.map(async (t) => {
+      let title = `Token #${String(t.token_id).padStart(4, "0")}`;
+      let image: string | undefined;
+
+      try {
+        const res = await fetch(ipfsToGateway(t.token_uri), {
+          next: { revalidate: 3600 },
+          signal: AbortSignal.timeout(5000),
+        });
+        const meta = await res.json();
+        if (meta.name) title = meta.name;
+        if (meta.image) image = ipfsToGateway(meta.image);
+      } catch { /* fall through — show placeholder */ }
+
+      return {
+        token_id: t.token_id,
+        title,
+        artist: t.artist,
+        artist_short: `${t.artist.slice(0, 4)}…${t.artist.slice(-4)}`,
+        royalty_bps: t.royalty_bps,
+        image,
+      };
+    }),
+  );
 
   return { works, isMock: false };
 }

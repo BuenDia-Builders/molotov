@@ -332,9 +332,11 @@ export default function MyWorkPage() {
                   {listState === "error" && (
                     <div className="flex flex-col gap-3">
                       <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-red-400">
-                        {listError === "approve"
-                          ? "Approval failed — the wallet rejected or timed out."
-                          : "Listing failed — transaction not confirmed."}
+                        {listError === "approve_rejected"
+                          ? "You rejected the approval — try again when ready."
+                          : listError === "approve"
+                            ? "Approval failed — transaction not confirmed."
+                            : "Listing failed — transaction not confirmed."}
                       </p>
                       <button
                         onClick={resetList}

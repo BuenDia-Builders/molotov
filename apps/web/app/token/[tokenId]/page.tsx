@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { BuyButton } from '@/components/buy-button';
@@ -59,18 +60,20 @@ async function getTokenData(tokenId: number) {
 
   if (tokenRes.error) return null
 
-  // Fetch IPFS metadata to get the actual image URL
+  // Fetch IPFS metadata to get the actual image URL and title
   let imageUrl = ''
+  let title = ''
   const metaUri = tokenRes.data?.token_uri
   if (metaUri) {
     try {
       const metaRes = await fetch(ipfsToGateway(metaUri), { next: { revalidate: 3600 } })
       const meta = await metaRes.json()
       if (meta.image) imageUrl = ipfsToGateway(meta.image)
+      if (meta.name) title = meta.name
     } catch { /* fall through to placeholder */ }
   }
 
-  return { token: tokenRes.data, listing: listingRes.data, imageUrl }
+  return { token: tokenRes.data, listing: listingRes.data, imageUrl, title }
 }
 
 export default async function TokenPage({ params }: { params: Promise<{ tokenId: string }> }) {
@@ -81,7 +84,7 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
   const data = await getTokenData(id)
   if (!data) notFound()
 
-  const { token, listing, imageUrl } = data
+  const { token, listing, imageUrl, title } = data
   const imageSrc = imageUrl || '/icon-512.png'
 
   return (
@@ -104,6 +107,12 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
           #{String(token.token_id).padStart(4, '0')}
         </p>
 
+        {title && (
+          <h1 className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,4vw,3rem)] font-light leading-tight tracking-[-0.02em] text-[var(--offwhite)] mb-4 [font-variation-settings:'opsz'_72]">
+            {title}
+          </h1>
+        )}
+
         <div className="w-12 h-px bg-[var(--ember)] mb-6" />
 
         <div className="space-y-2">
@@ -125,6 +134,18 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
             {token.recipients_count} {token.recipients_count === 1 ? 'recipient' : 'recipients'}
           </p>
         </div>
+
+        {/* Manage link — shown when not already listed */}
+        {!listing && (
+          <div className="mt-4">
+            <Link
+              href={`/my-work/${token.token_id}`}
+              className="font-mono text-[10px] text-[var(--smoke)] uppercase tracking-[0.2em] underline-offset-4 hover:text-[var(--offwhite)] hover:underline transition-colors"
+            >
+              List for sale →
+            </Link>
+          </div>
+        )}
 
         {/* Active Listing Block */}
         {listing && (
