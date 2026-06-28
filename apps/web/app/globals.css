@@ -197,6 +197,20 @@
   animation: indeterminate 1.4s ease-in-out infinite;
 }
 
+/* Page loader: blue fire erupts from the tear line. */
+@keyframes fire-pulse {
+  0%   { opacity: 0.6; transform: translateX(-50%) scaleX(0.85) scaleY(0.7); }
+  50%  { opacity: 1;   transform: translateX(-50%) scaleX(1.1)  scaleY(1.3); }
+  100% { opacity: 0.8; transform: translateX(-50%) scaleX(0.95) scaleY(0.9); }
+}
+@keyframes fire-core {
+  0%, 100% { opacity: 0.9; filter: blur(8px)  brightness(1.2); }
+  50%       { opacity: 1;   filter: blur(12px) brightness(1.6); }
+}
+@keyframes loader-fade-out {
+  to { opacity: 0; }
+}
+
 /* Logo flame: grows upward from the bottle on hover, flickers with blue glow. */
 @keyframes flame-flicker {
   0%, 100% {

@@ -5,6 +5,7 @@ import { WalletProvider } from "@/providers/wallet-provider";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { I18nProvider } from "@/lib/i18n";
 import { en } from "@/lib/i18n/en";
+import { PageLoader } from "@/components/page-loader";
 
 const syne = Syne({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-display" });
 const dmSans = DM_Sans({ subsets: ["latin"], weight: ["300", "400", "500", "600"], variable: "--font-body" });
@@ -48,6 +49,7 @@ export default function RootLayout({
       <body className="relative min-h-full flex flex-col bg-black text-offwhite font-[family-name:var(--font-body)]">
         {/* Grain overlay: sits above the black background, below content (z-10). */}
         <div aria-hidden className="grain pointer-events-none fixed inset-0 z-0 opacity-[0.04]" />
+        <PageLoader />
         <I18nProvider>
           <WalletProvider>{children}</WalletProvider>
         </I18nProvider>
