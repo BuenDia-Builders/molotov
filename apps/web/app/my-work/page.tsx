@@ -68,11 +68,11 @@ export default function MyWorksPage() {
         
         {/* Section Header Row */}
         <div className="flex justify-between items-baseline border-b border-[#222222] pb-4 mb-8">
-          <h1 className="font-[family-name:var(--font-fraunces)] text-[40px] font-bold text-[#F5F4ED] uppercase tracking-tight">
+          <h1 className="font-[family-name:var(--font-display)] text-[40px] font-bold text-[#F5F4ED] uppercase tracking-tight">
             {t("myWork.title")}
           </h1>
           {isConnected && address && !loading && !error && (
-            <span className="font-[family-name:var(--font-geist-mono)] text-[10px] text-[#6B6B6B] uppercase tracking-[0.2em]">
+            <span className="font-[family-name:var(--font-mono)] text-[10px] text-[#6B6B6B] uppercase tracking-[0.2em]">
               {tokens.length} {tokens.length === 1 ? t("myWork.tokensSingular") : t("myWork.tokensPlural")}
             </span>
           )}
@@ -82,7 +82,7 @@ export default function MyWorksPage() {
         {!isConnected || !address ? (
           /* Wallet Not Connected State */
           <div className="flex flex-col items-center justify-center py-32">
-            <p className="font-[family-name:var(--font-geist-mono)] text-[10px] text-[#6B6B6B] uppercase tracking-[0.3em] mb-4 text-center">
+            <p className="font-[family-name:var(--font-mono)] text-[10px] text-[#6B6B6B] uppercase tracking-[0.3em] mb-4 text-center">
               {t("myWork.connectWallet")}
             </p>
             <WalletButton />
@@ -97,12 +97,12 @@ export default function MyWorksPage() {
         ) : error ? (
           /* Error State */
           <div className="flex flex-col items-center justify-center py-32">
-            <p className="font-[family-name:var(--font-geist-mono)] text-[10px] text-[#DC2626] uppercase tracking-[0.3em] mb-4 text-center">
+            <p className="font-[family-name:var(--font-mono)] text-[10px] text-[#DC2626] uppercase tracking-[0.3em] mb-4 text-center">
               {error}
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-[#0178DE] text-white font-bold text-xs tracking-widest uppercase px-8 py-3 transition-colors hover:bg-[#3493E5]"
+              className="bg-[var(--blue)] text-white font-bold text-xs tracking-widest uppercase px-8 py-3 transition-colors hover:opacity-80"
             >
               {t("artwork.reload")}
             </button>
@@ -110,12 +110,12 @@ export default function MyWorksPage() {
         ) : tokens.length === 0 ? (
           /* Empty State */
           <div className="flex flex-col items-center justify-center py-32">
-            <p className="font-[family-name:var(--font-geist-mono)] text-[10px] text-[#6B6B6B] uppercase tracking-[0.3em] mb-6 text-center">
+            <p className="font-[family-name:var(--font-mono)] text-[10px] text-[#6B6B6B] uppercase tracking-[0.3em] mb-6 text-center">
               {t("myWork.noWorks")}
             </p>
             <a
               href="/create"
-              className="bg-[#0178DE] text-white font-bold text-xs tracking-widest uppercase px-8 py-3 transition-colors hover:bg-[#3493E5]"
+              className="bg-[var(--blue)] text-white font-bold text-xs tracking-widest uppercase px-8 py-3 transition-colors hover:opacity-80"
             >
               {t("myWork.mintFirst")}
             </a>
