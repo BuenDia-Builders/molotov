@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
+import { BuyButton } from '@/components/buy-button';
 
 function ipfsToGateway(uri: string): string {
   if (uri.startsWith('ipfs://')) return uri.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')
@@ -122,9 +123,10 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
                 {listing.editions_sold}/{listing.editions_total} editions sold
               </p>
             )}
-            <button disabled className="w-full bg-[var(--blue)] text-white font-bold text-xs tracking-widest uppercase px-8 py-4 opacity-50 cursor-not-allowed">
-              Buy now — coming soon
-            </button>
+            <BuyButton
+              listingId={BigInt(listing.listing_id)}
+              priceXlm={(BigInt(listing.price) / BigInt(10_000_000)).toString()}
+            />
           </div>
         )}
       </div>
