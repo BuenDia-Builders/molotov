@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import { CreateClient } from "./create-client";
 
-// Per-route metadata is static (SSR snapshot). The I18nProvider may update
-// document.title on locale switch from the layout dictionary; for now we ship
-// the ES copy as the canonical title — same trade-off as the root layout.
 export const metadata: Metadata = {
-  title: "Mintear obra — Molotov",
+  title: "Mint your work — Molotov",
   description:
-    "Subí tu obra a Stellar con regalías inmutables grabadas en el contrato.",
+    "Upload your work to Stellar with immutable royalties written into the contract.",
 };
 
 export default function CreatePage() {
