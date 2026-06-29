@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { isDbConfigured, getRecentTokens, getActivePricesByTokenId } from "@/lib/db";
-import { ipfsToGateway } from "@/lib/ipfs";
+import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 
 type Work = {
   token_id: number;
@@ -26,10 +26,7 @@ async function getRecentWorks(): Promise<Work[]> {
         let title = `Token #${String(t.token_id).padStart(4, "0")}`;
         let image: string | undefined;
         try {
-          const res = await fetch(ipfsToGateway(t.token_uri), {
-            next: { revalidate: 3600 },
-            signal: AbortSignal.timeout(5000),
-          });
+          const res = await fetchIpfs(t.token_uri, { signal: AbortSignal.timeout(5000) });
           const meta = await res.json();
           if (meta.name) title = meta.name;
           if (meta.image) image = ipfsToGateway(meta.image);

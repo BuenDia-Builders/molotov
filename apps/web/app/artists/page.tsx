@@ -4,7 +4,7 @@ import Link from "next/link";
 import { isDbConfigured, getActiveArtistAddresses, getAllTokens } from "@/lib/db";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import { ipfsToGateway } from "@/lib/ipfs";
+import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 
 export const metadata: Metadata = {
   title: "Artists — Molotov",
@@ -49,10 +49,7 @@ async function getArtists(): Promise<ArtistCard[]> {
 
       if (latest?.token_uri) {
         try {
-          const res = await fetch(ipfsToGateway(latest.token_uri), {
-            next: { revalidate: 3600 },
-            signal: AbortSignal.timeout(4000),
-          });
+          const res = await fetchIpfs(latest.token_uri, { signal: AbortSignal.timeout(4000) });
           const meta = await res.json();
           if (meta.image) latestImage = ipfsToGateway(meta.image);
           if (meta.name) latestTitle = meta.name;
@@ -72,8 +69,8 @@ async function getArtists(): Promise<ArtistCard[]> {
     }),
   );
 
-  // Sort: artists with tokens first, then by token count desc
-  return cards.sort((a, b) => b.tokenCount - a.tokenCount);
+  // Only show artists that have at least one work, sorted by token count desc
+  return cards.filter((c) => c.tokenCount > 0).sort((a, b) => b.tokenCount - a.tokenCount);
 }
 
 function ArtistCard({ artist }: { artist: ArtistCard }) {
@@ -92,7 +89,7 @@ function ArtistCard({ artist }: { artist: ArtistCard }) {
         ) : (
           <div className="flex h-full items-center justify-center">
             <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-white/20">
-              No works yet
+              {artist.tokenCount > 0 ? "Preview unavailable" : "No works yet"}
             </span>
           </div>
         )}

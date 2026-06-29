@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { isDbConfigured, findTokenById, findActiveListingByToken } from "@/lib/db";
 import { BuyButton } from "@/components/buy-button";
 import { Nav } from "@/components/nav";
-import { ipfsToGateway } from "@/lib/ipfs";
+import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
 
 async function getTokenData(tokenId: number) {
@@ -43,7 +43,7 @@ async function getTokenData(tokenId: number) {
   let title = "";
   if (token.token_uri) {
     try {
-      const metaRes = await fetch(ipfsToGateway(token.token_uri), { next: { revalidate: 3600 } });
+      const metaRes = await fetchIpfs(token.token_uri, { revalidate: 3600 });
       const meta = await metaRes.json();
       if (meta.image) imageUrl = ipfsToGateway(meta.image);
       if (meta.name) title = meta.name;

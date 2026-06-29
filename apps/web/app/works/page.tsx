@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import { ipfsToGateway } from "@/lib/ipfs";
+import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { isDbConfigured, getRecentTokens, getActivePricesByTokenId } from "@/lib/db";
 
 export const metadata: Metadata = {
@@ -94,10 +94,7 @@ async function getWorks(): Promise<{ works: Work[]; isMock: boolean }> {
       let image: string | undefined;
 
       try {
-        const res = await fetch(ipfsToGateway(t.token_uri), {
-          next: { revalidate: 3600 },
-          signal: AbortSignal.timeout(5000),
-        });
+        const res = await fetchIpfs(t.token_uri, { signal: AbortSignal.timeout(5000) });
         const meta = await res.json();
         if (meta.name) title = meta.name;
         if (meta.image) image = ipfsToGateway(meta.image);
