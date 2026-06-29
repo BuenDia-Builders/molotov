@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Molotov — Brand Identity System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black:      #0A0A0A;
+      --carbon:     #141414;
+      --ember:      #222222;
+      --smoke:      #6B6B6B;
+      --ash:        #A8A8A8;
+      --offwhite:   #F0EFEB;
+      --white:      #FAFAF8;
+      --blue:       #1564FF;
+      --blue-deep:  #0D3FA8;
+      --blue-light: #4A8AFF;
+      --blue-muted: #1A3060;
+
+      --font-display: 'Syne', sans-serif;
+      --font-body:    'DM Sans', sans-serif;
+      --font-mono:    'Space Mono', monospace;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { background: #050505; }
+
+    body {
+      background: var(--black);
+      color: var(--offwhite);
+      font-family: var(--font-body);
+      width: 1440px;
+      margin: 0 auto;
+      overflow-x: hidden;
+    }
+
+    /* ── UTILITIES ── */
+    .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--smoke);
+    }
+    .rule {
+      width: 100%;
+      height: 1px;
+      background: var(--ember);
+    }
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 32px;
+    }
+
+    /* ── COVER ── */
+    .cover {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      border-bottom: 1px solid var(--ember);
+    }
+    .cover-left {
+      padding: 80px 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-right: 1px solid var(--ember);
+    }
+    .cover-right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--carbon);
+      position: relative;
+      overflow: hidden;
+    }
+    .cover-right::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 60% 50%, rgba(21,100,255,0.12) 0%, transparent 70%);
+    }
+    .cover-logo-display {
+      width: 480px;
+      position: relative;
+      z-index: 1;
+    }
+    .cover-logo-display img {
+      width: 100%;
+      height: auto;
+    }
+    .cover-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+    .cover-title {
+      font-family: var(--font-display);
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      margin-top: 24px;
+    }
+    .cover-sub {
+      font-family: var(--font-display);
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: var(--smoke);
+    }
+    .cover-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .cover-meta span {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--smoke);
+    }
+    .cover-meta strong {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--offwhite);
+    }
+    .cover-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .cover-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--ember);
+    }
+    .cover-nav-num {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--blue);
+      letter-spacing: 0.1em;
+      width: 20px;
+    }
+    .cover-nav-name {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ash);
+    }
+
+    /* ── BRAND ANALYSIS ── */
+    .analysis {
+      padding: 96px 72px;
+      border-bottom: 1px solid var(--ember);
+    }
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 80px;
+      margin-top: 56px;
+    }
+    .analysis-statement {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+    .analysis-statement em {
+      font-style: normal;
+      color: var(--blue);
+    }
+    .analysis-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 48px;
+    }
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border: 1px solid var(--ember);
+      color: var(--ash);
+    }
+    .pill-blue {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+    .pill-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--smoke);
+      margin-bottom: 8px;
+    }
+    .analysis-attrs {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .attr-block {}
+    .attr-name {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 6px;
+    }
+    .attr-val {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--offwhite);
+      letter-spacing: -0.01em;
+    }
+    .attr-bar {
+      height: 2px;
+      background: var(--ember);
+      margin-top: 8px;
+      position: relative;
+    }
+    .attr-bar-fill {
+      position: absolute;
+      top: 0; left: 0;
+      height: 2px;
+      background: var(--blue);
+    }
+
+    /* ── LOGO SYSTEM ── */
+    .logos {
+      padding: 96px 72px;
+      border-bottom: 1px solid var(--ember);
+    }
+    .logos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .logo-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      position: relative;
+    }
+    .logo-cell img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .lc-dark  { background: var(--carbon); }
+    .lc-black { background: #050505; }
+    .lc-blue  { background: var(--blue); }
+    .lc-white { background: var(--offwhite); }
+    .logo-cell-label {
+      position: absolute;
+      bottom: 16px;
+      left: 20px;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .lc-dark .logo-cell-label,
+    .lc-black .logo-cell-label,
+    .lc-blue .logo-cell-label { color: rgba(255,255,255,0.3); }
+    .lc-white .logo-cell-label { color: rgba(0,0,0,0.3); }
+
+    /* flame-only mark */
+    .flame-mark {
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+    .flame-svg { width: 80px; height: 80px; }
+
+    /* logomark grid */
+    .logos-bottom {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 2px;
+      margin-top: 2px;
+    }
+    .logo-cell-wide {
+      background: var(--ember);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 64px;
+      position: relative;
+    }
+    .logo-cell-wide img { max-width: 100%; height: auto; }
+    .spacing-demo {
+      background: var(--carbon);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      gap: 16px;
+    }
+    .spacing-box {
+      position: relative;
+      display: inline-block;
+    }
+    .spacing-box img { height: 48px; width: auto; }
+    .spacing-line {
+      position: absolute;
+      border: 1px dashed rgba(21,100,255,0.4);
+    }
+    .dont-use {
+      background: var(--carbon);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px;
+      gap: 20px;
+    }
+    .dont-title {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #FF4444;
+    }
+    .dont-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .dont-x {
+      width: 14px;
+      height: 14px;
+      border: 1px solid #FF4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: #FF4444;
+      flex-shrink: 0;
+    }
+    .dont-text {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--smoke);
+      line-height: 1.4;
+    }
+
+    /* ── COLOR SYSTEM ── */
+    .colors {
+      padding: 96px 72px;
+      border-bottom: 1px solid var(--ember);
+    }
+    .color-swatches {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .swatch {
+      display: flex;
+      flex-direction: column;
+    }
+    .swatch-color {
+      aspect-ratio: 1;
+    }
+    .swatch-info {
+      padding: 12px 0 0;
+    }
+    .swatch-name {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--offwhite);
+      letter-spacing: 0.02em;
+    }
+    .swatch-hex {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--smoke);
+      margin-top: 2px;
+    }
+    .swatch-role {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-top: 6px;
+    }
+
+    /* color usage */
+    .color-usage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 2px;
+    }
+    .cu-block {
+      padding: 40px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 160px;
+      justify-content: flex-end;
+    }
+    .cu-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .cu-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.5;
+    }
+
+    /* ── TYPOGRAPHY ── */
+    .typography {
+      padding: 96px 72px;
+      border-bottom: 1px solid var(--ember);
+    }
+    .type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .type-block {
+      background: var(--carbon);
+      padding: 48px;
+    }
+    .type-specimen {
+      font-family: var(--font-display);
+      font-size: 64px;
+      font-weight: 800;
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      color: var(--white);
+    }
+    .type-name {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 24px;
+    }
+    .type-meta {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--smoke);
+      margin-top: 24px;
+    }
+    .type-scale {
+      grid-column: span 2;
+      background: var(--ember);
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .scale-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 120px;
+      align-items: baseline;
+      gap: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .scale-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .scale-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--smoke);
+    }
+    .scale-text {
+      color: var(--offwhite);
+      line-height: 1.2;
+    }
+    .scale-spec {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--smoke);
+      text-align: right;
+    }
+    .type-mono-block {
+      background: var(--carbon);
+      padding: 48px;
+    }
+    .type-mono-specimen {
+      font-family: var(--font-mono);
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      line-height: 1;
+    }
+    .mono-sample {
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .mono-row {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--smoke);
+      letter-spacing: 0.05em;
+    }
+    .mono-row span { color: var(--blue); }
+
+    /* ── VISUAL LANGUAGE ── */
+    .visual {
+      padding: 96px 72px;
+      border-bottom: 1px solid var(--ember);
+    }
+    .visual-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .vis-block {
+      background: var(--carbon);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .vis-label {
+      position: absolute;
+      bottom: 16px;
+      left: 20px;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--smoke);
+    }
+
+    /* flame pattern tile */
+    .flame-pattern {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      padding: 32px;
+    }
+    .fp-tile {
+      width: 32px;
+      height: 32px;
+      opacity: 0.15;
+    }
+    .fp-tile.lit { opacity: 0.7; }
+
+    /* motion lines */
+    .motion-lines {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    /* grid system visual */
+    .grid-vis {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    /* ── MOCKUPS ── */
+    .mockups {
+      padding: 96px 72px;
+      border-bottom: 1px solid var(--ember);
+    }
+    .mockups-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .mockup-card {
+      background: var(--carbon);
+      aspect-ratio: 3/4;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Token card mockup */
+    .token-card {
+      padding: 28px;
+      gap: 0;
+    }
+    .tc-image {
+      flex: 1;
+      background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-muted) 100%);
+      position: relative;
+      overflow: hidden;
+      margin: -28px -28px 0;
+    }
+    .tc-image-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 30% 20%, rgba(21,100,255,0.3) 0%, transparent 60%);
+    }
+    .tc-image-num {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      font-family: var(--font-mono);
+      font-size: 48px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.08);
+      letter-spacing: -0.04em;
+    }
+    .tc-body {
+      padding-top: 20px;
+    }
+    .tc-artist {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 6px;
+    }
+    .tc-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .tc-footer {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--ember);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tc-price {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .tc-royalty {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--smoke);
+    }
+
+    /* Mobile mockup */
+    .mobile-mockup {
+      background: var(--black);
+      padding: 0;
+    }
+    .mm-header {
+      background: var(--carbon);
+      padding: 16px 20px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--ember);
+    }
+    .mm-logo {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+    .mm-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+    .mm-content {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .mm-section-title {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--smoke);
+      margin-bottom: 4px;
+    }
+    .mm-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--ember);
+    }
+    .mm-item-left {}
+    .mm-item-name {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: -0.01em;
+    }
+    .mm-item-artist {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      color: var(--smoke);
+      letter-spacing: 0.1em;
+      margin-top: 2px;
+    }
+    .mm-item-price {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--blue);
+    }
+    .mm-thumb {
+      width: 36px;
+      height: 36px;
+      background: var(--blue-deep);
+      margin-right: 10px;
+    }
+    .mm-item-row { display: flex; align-items: center; }
+    .mm-btn {
+      background: var(--blue);
+      color: var(--white);
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 10px 20px;
+      border: none;
+      width: 100%;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* Artist card mockup */
+    .artist-card {
+      background: var(--ember);
+    }
+    .ac-header {
+      height: 140px;
+      background: linear-gradient(160deg, var(--blue-muted) 0%, #050520 100%);
+      position: relative;
+    }
+    .ac-avatar {
+      width: 56px;
+      height: 56px;
+      border: 2px solid var(--blue);
+      background: var(--blue-deep);
+      position: absolute;
+      bottom: -28px;
+      left: 24px;
+    }
+    .ac-body {
+      padding: 44px 24px 24px;
+    }
+    .ac-name {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+    .ac-handle {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--blue);
+      margin-top: 4px;
+    }
+    .ac-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      margin-top: 20px;
+      background: var(--ember);
+    }
+    .ac-stat {
+      background: var(--carbon);
+      padding: 12px;
+      text-align: center;
+    }
+    .ac-stat-val {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+    .ac-stat-key {
+      font-family: var(--font-mono);
+      font-size: 7px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--smoke);
+      margin-top: 2px;
+    }
+    .ac-works {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+      margin-top: 16px;
+    }
+    .ac-work-thumb {
+      aspect-ratio: 1;
+      background: var(--blue-deep);
+      position: relative;
+      overflow: hidden;
+    }
+    .ac-work-thumb::after {
+      content: attr(data-n);
+      position: absolute;
+      bottom: 4px; right: 4px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.2);
+    }
+    .ac-royalty-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 12px;
+      border: 1px solid var(--blue);
+      padding: 4px 8px;
+    }
+    .ac-rb-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+    .ac-rb-text {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+
+    /* ── MOCKUPS ROW 2 ── */
+    .mockups-bottom {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2px;
+      margin-top: 2px;
+    }
+    .web-mockup {
+      background: var(--carbon);
+      padding: 0;
+      overflow: hidden;
+      min-height: 360px;
+      position: relative;
+    }
+    .wm-bar {
+      background: var(--black);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--ember);
+    }
+    .wm-dots { display: flex; gap: 6px; }
+    .wm-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .wm-url {
+      flex: 1;
+      background: var(--ember);
+      height: 20px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+    }
+    .wm-url-text {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      color: var(--smoke);
+      letter-spacing: 0.05em;
+    }
+    .wm-content {
+      padding: 28px 32px;
+    }
+    .wm-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    .wm-nav-logo {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+    .wm-nav-links {
+      display: flex;
+      gap: 24px;
+    }
+    .wm-nav-link {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--smoke);
+    }
+    .wm-nav-cta {
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--white);
+      background: var(--blue);
+      padding: 6px 16px;
+    }
+    .wm-hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+    .wm-headline {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 0.95;
+      color: var(--white);
+    }
+    .wm-headline em {
+      font-style: normal;
+      color: var(--blue);
+    }
+    .wm-sub {
+      font-family: var(--font-body);
+      font-size: 10px;
+      color: var(--smoke);
+      line-height: 1.6;
+      margin-top: 12px;
+      max-width: 260px;
+    }
+    .wm-image-area {
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, var(--blue-deep) 0%, #050520 100%);
+      position: relative;
+    }
+    .wm-image-area::after {
+      content: '♦';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: rgba(21,100,255,0.2);
+    }
+
+    /* Business card mockup */
+    .bizcard-mockup {
+      background: var(--black);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 32px;
+      min-height: 360px;
+    }
+    .bizcard {
+      width: 100%;
+      aspect-ratio: 1.75;
+      background: var(--carbon);
+      border: 1px solid var(--ember);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .bizcard-front {}
+    .bizcard-logo {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+    .bizcard-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .bizcard-info {}
+    .bizcard-name {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--white);
+    }
+    .bizcard-title-text {
+      font-family: var(--font-mono);
+      font-size: 7px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-top: 2px;
+    }
+    .bizcard-mark {
+      width: 24px;
+      height: 24px;
+    }
+    .bizcard-back {
+      background: var(--blue);
+    }
+    .bizcard-back .bizcard-logo { color: rgba(255,255,255,0.2); font-size: 32px; }
+
+    /* ── BRAND VOICE ── */
+    .voice {
+      padding: 96px 72px;
+      border-bottom: 1px solid var(--ember);
+    }
+    .voice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 56px;
+    }
+    .voice-block {
+      background: var(--carbon);
+      padding: 48px;
+    }
+    .voice-block-title {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 32px;
+    }
+    .voice-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .voice-item {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--ember);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .voice-item:last-child { border-bottom: none; }
+    .voice-item-word {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+    .voice-item-def {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--smoke);
+      line-height: 1.5;
+    }
+    .voice-not .voice-item-word { color: var(--smoke); text-decoration: line-through; }
+
+    /* manifesto */
+    .voice-manifesto {
+      background: var(--blue);
+      padding: 48px;
+      grid-column: span 2;
+    }
+    .manifesto-text {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      color: rgba(255,255,255,0.95);
+      max-width: 900px;
+    }
+    .manifesto-text em {
+      font-style: normal;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ── SPACING SYSTEM ── */
+    .spacing {
+      padding: 96px 72px;
+      border-bottom: 1px solid var(--ember);
+    }
+    .spacing-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 24px;
+      margin-top: 56px;
+      align-items: flex-end;
+    }
+    .sp-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .sp-bar {
+      background: var(--blue);
+      width: 100%;
+      opacity: 0.6;
+    }
+    .sp-val {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: var(--smoke);
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding: 48px 72px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--white);
+    }
+    .footer-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .footer-meta span {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--smoke);
+    }
+    .footer-version {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--blue);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     COVER
+══════════════════════════════════════════════ -->
+<section class="cover">
+  <div class="cover-left">
+    <div>
+      <div class="cover-eyebrow">Brand Identity System</div>
+      <div style="margin-top: 20px;">
+        <div class="cover-title">MOLOTOV</div>
+        <div class="cover-sub">Identity</div>
+      </div>
+    </div>
+
+    <div class="cover-nav">
+      <div class="cover-nav-item">
+        <span class="cover-nav-num">01</span>
+        <span class="cover-nav-name">Brand Analysis</span>
+      </div>
+      <div class="cover-nav-item">
+        <span class="cover-nav-num">02</span>
+        <span class="cover-nav-name">Logo System</span>
+      </div>
+      <div class="cover-nav-item">
+        <span class="cover-nav-num">03</span>
+        <span class="cover-nav-name">Color Palette</span>
+      </div>
+      <div class="cover-nav-item">
+        <span class="cover-nav-num">04</span>
+        <span class="cover-nav-name">Typography</span>
+      </div>
+      <div class="cover-nav-item">
+        <span class="cover-nav-num">05</span>
+        <span class="cover-nav-name">Visual Language</span>
+      </div>
+      <div class="cover-nav-item">
+        <span class="cover-nav-num">06</span>
+        <span class="cover-nav-name">Mockups</span>
+      </div>
+      <div class="cover-nav-item">
+        <span class="cover-nav-num">07</span>
+        <span class="cover-nav-name">Brand Voice</span>
+      </div>
+    </div>
+
+    <div class="cover-meta">
+      <span>Client — <strong>Molotov</strong></span>
+      <span>Sector — <strong>Creator Economy · Web3 · NFT</strong></span>
+      <span>Version — <strong>1.0</strong></span>
+      <span>Year — <strong>2026</strong></span>
+    </div>
+  </div>
+
+  <div class="cover-right">
+    <div class="cover-logo-display">
+      <img src="logo_sinfondo.png" alt="Molotov Logo" />
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     01 — BRAND ANALYSIS
+══════════════════════════════════════════════ -->
+<section class="analysis">
+  <div class="section-tag">01 — Brand Analysis</div>
+
+  <div class="analysis-grid">
+    <div>
+      <div class="analysis-statement">
+        A marketplace where <em>artists own</em> their fire.<br />
+        Royalties enforced on-chain. <em>Zero compromise.</em><br />
+        Built for the creators the old system burned.
+      </div>
+
+      <div class="analysis-pills" style="margin-top: 48px;">
+        <div>
+          <div class="pill-label">Sector</div>
+          <div class="pill-row">
+            <span class="pill pill-blue">Creator Economy</span>
+            <span class="pill pill-blue">Web3</span>
+            <span class="pill pill-blue">NFT Marketplace</span>
+            <span class="pill pill-blue">Stellar Blockchain</span>
+          </div>
+        </div>
+        <div style="margin-top: 20px;">
+          <div class="pill-label">Audience</div>
+          <div class="pill-row">
+            <span class="pill">Independent Artists</span>
+            <span class="pill">Digital Creators</span>
+            <span class="pill">Web3 Natives</span>
+            <span class="pill">Collectors</span>
+            <span class="pill">Curators</span>
+          </div>
+        </div>
+        <div style="margin-top: 20px;">
+          <div class="pill-label">Emotional tone</div>
+          <div class="pill-row">
+            <span class="pill">Subversive</span>
+            <span class="pill">Precise</span>
+            <span class="pill">Urgent</span>
+            <span class="pill">Empowering</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="analysis-attrs">
+      <div class="attr-block">
+        <div class="attr-name">Sophistication</div>
+        <div class="attr-val">Premium Indie</div>
+        <div class="attr-bar"><div class="attr-bar-fill" style="width:75%"></div></div>
+      </div>
+      <div class="attr-block">
+        <div class="attr-name">Technological Edge</div>
+        <div class="attr-val">High Precision</div>
+        <div class="attr-bar"><div class="attr-bar-fill" style="width:90%"></div></div>
+      </div>
+      <div class="attr-block">
+        <div class="attr-name">Human Warmth</div>
+        <div class="attr-val">Creator-First</div>
+        <div class="attr-bar"><div class="attr-bar-fill" style="width:80%"></div></div>
+      </div>
+      <div class="attr-block">
+        <div class="attr-name">Authority</div>
+        <div class="attr-val">Trustless by Design</div>
+        <div class="attr-bar"><div class="attr-bar-fill" style="width:85%"></div></div>
+      </div>
+      <div class="attr-block">
+        <div class="attr-name">Disruption</div>
+        <div class="attr-val">Systemic</div>
+        <div class="attr-bar"><div class="attr-bar-fill" style="width:95%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     02 — LOGO SYSTEM
+══════════════════════════════════════════════ -->
+<section class="logos">
+  <div class="section-tag">02 — Logo System</div>
+
+  <div class="logos-grid">
+    <div class="logo-cell lc-dark">
+      <img src="logo_sinfondo.png" alt="Logo on dark" style="filter: none;" />
+      <span class="logo-cell-label">Primary · Dark</span>
+    </div>
+    <div class="logo-cell lc-black">
+      <img src="logo_sinfondo.png" alt="Logo on black" />
+      <span class="logo-cell-label">Primary · Black</span>
+    </div>
+    <div class="logo-cell lc-blue">
+      <img src="logo_sinfondo.png" alt="Logo on blue" style="filter: brightness(0) invert(1);" />
+      <span class="logo-cell-label">Reversed · Blue</span>
+    </div>
+    <div class="logo-cell lc-white">
+      <img src="logo.png" alt="Logo on light" />
+      <span class="logo-cell-label">Primary · Light</span>
+    </div>
+  </div>
+
+  <div class="logos-bottom">
+    <div class="logo-cell-wide">
+      <img src="logo-wordmark-dark.png" alt="Wordmark dark" style="max-height: 80px; width: auto;" />
+      <span class="logo-cell-label" style="font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; position: absolute; bottom: 16px; left: 20px; color: rgba(255,255,255,0.3);">Wordmark variant</span>
+    </div>
+    <div class="spacing-demo">
+      <div class="label" style="position: absolute; top: 16px; left: 20px;">Clear Space</div>
+      <div style="position: relative; display: inline-block; padding: 24px; border: 1px dashed rgba(21,100,255,0.3);">
+        <img src="logo_sinfondo.png" style="height: 56px; width: auto;" alt="spacing" />
+        <!-- top line -->
+        <div style="position: absolute; top: 0; left: 24px; right: 24px; height: 1px; background: rgba(21,100,255,0.4);"></div>
+        <!-- bottom line -->
+        <div style="position: absolute; bottom: 0; left: 24px; right: 24px; height: 1px; background: rgba(21,100,255,0.4);"></div>
+        <!-- left line -->
+        <div style="position: absolute; top: 24px; bottom: 24px; left: 0; width: 1px; background: rgba(21,100,255,0.4);"></div>
+        <!-- right line -->
+        <div style="position: absolute; top: 24px; bottom: 24px; right: 0; width: 1px; background: rgba(21,100,255,0.4);"></div>
+        <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 7px; color: var(--blue);">x</div>
+        <div style="position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 7px; color: var(--blue);">x</div>
+      </div>
+      <div class="label" style="margin-top: 8px; text-align: center;">Min. clear space = cap-height × 1</div>
+    </div>
+    <div class="dont-use">
+      <div class="dont-title">Do not</div>
+      <div class="dont-item">
+        <div class="dont-x">×</div>
+        <span class="dont-text">Stretch or distort the mark</span>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">×</div>
+        <span class="dont-text">Use on low-contrast backgrounds</span>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">×</div>
+        <span class="dont-text">Recolor the flame to non-brand colors</span>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">×</div>
+        <span class="dont-text">Add drop shadows or outer glows</span>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">×</div>
+        <span class="dont-text">Use below 24px display size</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     03 — COLOR SYSTEM
+══════════════════════════════════════════════ -->
+<section class="colors">
+  <div class="section-tag">03 — Color Palette</div>
+
+  <div class="color-swatches">
+    <div class="swatch">
+      <div class="swatch-color" style="background: #0A0A0A; outline: 1px solid #222;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Molotov Black</div>
+        <div class="swatch-hex">#0A0A0A</div>
+        <div class="swatch-role">Primary BG</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: #141414;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Carbon</div>
+        <div class="swatch-hex">#141414</div>
+        <div class="swatch-role">Surface</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: #222222;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Ember</div>
+        <div class="swatch-hex">#222222</div>
+        <div class="swatch-role">Border / Divider</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: #6B6B6B;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Smoke</div>
+        <div class="swatch-hex">#6B6B6B</div>
+        <div class="swatch-role">Muted Text</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: #F0EFEB;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Ash White</div>
+        <div class="swatch-hex">#F0EFEB</div>
+        <div class="swatch-role">Body Text</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: #1564FF;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Ignition Blue</div>
+        <div class="swatch-hex">#1564FF</div>
+        <div class="swatch-role">Primary Accent</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: #0D3FA8;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Deep Flame</div>
+        <div class="swatch-hex">#0D3FA8</div>
+        <div class="swatch-role">Accent Depth</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="color-usage">
+    <div class="cu-block" style="background: #0A0A0A; border: 1px solid #222;">
+      <div class="cu-title" style="color: #F0EFEB; font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.02em;">Primary Usage</div>
+      <div class="cu-sub" style="color: rgba(240,239,235,0.4);">Molotov Black · Ash White · Ignition Blue</div>
+    </div>
+    <div class="cu-block" style="background: #1564FF;">
+      <div class="cu-title" style="color: #fff; font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.02em;">Accent Usage</div>
+      <div class="cu-sub" style="color: rgba(255,255,255,0.5);">CTA · Active states · Data highlights</div>
+    </div>
+    <div class="cu-block" style="background: #F0EFEB;">
+      <div class="cu-title" style="color: #0A0A0A; font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.02em;">Light Surface</div>
+      <div class="cu-sub" style="color: rgba(10,10,10,0.4);">Docs · Print · Light mode contexts</div>
+    </div>
+    <div class="cu-block" style="background: #141414; border: 1px solid #222;">
+      <div class="cu-title" style="color: #F0EFEB; font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.02em;">Card Surface</div>
+      <div class="cu-sub" style="color: rgba(240,239,235,0.3);">Listings · Token cards · Panels</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     04 — TYPOGRAPHY
+══════════════════════════════════════════════ -->
+<section class="typography">
+  <div class="section-tag">04 — Typography</div>
+
+  <div class="type-grid">
+    <div class="type-block">
+      <div class="type-name">Display — Syne</div>
+      <div class="type-specimen">Burn<br/>the<br/>system.</div>
+      <div class="type-meta">Weights: 600 · 700 · 800 &nbsp;|&nbsp; Use: Headlines, brand statements, large UI text</div>
+    </div>
+    <div class="type-mono-block">
+      <div class="type-name">Data — Space Mono</div>
+      <div class="type-mono-specimen">0.15<br/>XLM</div>
+      <div class="mono-sample">
+        <div class="mono-row"><span>ROYALTY</span> · 15.00%</div>
+        <div class="mono-row"><span>RECIPIENTS</span> · 3</div>
+        <div class="mono-row"><span>EDITIONS</span> · 1/1</div>
+        <div class="mono-row"><span>TX</span> · CBS6UQE5…</div>
+        <div class="mono-row"><span>LEDGER</span> · 2847193</div>
+      </div>
+      <div class="type-meta" style="margin-top: 16px;">Weights: 400 · 700 &nbsp;|&nbsp; Use: Prices, hashes, metadata, labels</div>
+    </div>
+
+    <div class="type-scale">
+      <div class="type-name">Type Scale</div>
+      <div class="scale-row">
+        <span class="scale-label">Display</span>
+        <span class="scale-text" style="font-family: var(--font-display); font-size: 56px; font-weight: 800; letter-spacing: -0.04em; color: var(--white);">Artists first.</span>
+        <span class="scale-spec">Syne 800 · 56px · –0.04em</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">H1</span>
+        <span class="scale-text" style="font-family: var(--font-display); font-size: 36px; font-weight: 700; letter-spacing: -0.03em; color: var(--white);">Your royalties. Forever.</span>
+        <span class="scale-spec">Syne 700 · 36px · –0.03em</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">H2</span>
+        <span class="scale-text" style="font-family: var(--font-display); font-size: 24px; font-weight: 600; letter-spacing: -0.02em; color: var(--offwhite);">Featured works this week</span>
+        <span class="scale-spec">Syne 600 · 24px · –0.02em</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">Body</span>
+        <span class="scale-text" style="font-family: var(--font-body); font-size: 15px; font-weight: 400; color: var(--ash); line-height: 1.6;">Royalties locked on-chain at mint. No platform, no intermediary, no compromise.</span>
+        <span class="scale-spec">DM Sans 400 · 15px · 1.6lh</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">Label</span>
+        <span class="scale-text" style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--smoke);">Token ID · 0042</span>
+        <span class="scale-spec">Space Mono 400 · 10px · 0.2em</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     05 — VISUAL LANGUAGE
+══════════════════════════════════════════════ -->
+<section class="visual">
+  <div class="section-tag">05 — Visual Language</div>
+
+  <div class="visual-grid">
+
+    <!-- Flame pattern -->
+    <div class="vis-block">
+      <svg width="100%" height="100%" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="position:absolute; inset:0;">
+        <defs>
+          <pattern id="fp" x="0" y="0" width="48" height="60" patternUnits="userSpaceOnUse">
+            <path d="M24 52 C16 40 10 30 16 18 C18 13 22 8 24 4 C26 8 30 13 32 18 C38 30 32 40 24 52Z" fill="#1564FF" opacity="0.15"/>
+          </pattern>
+          <pattern id="fp2" x="24" y="30" width="48" height="60" patternUnits="userSpaceOnUse">
+            <path d="M24 52 C16 40 10 30 16 18 C18 13 22 8 24 4 C26 8 30 13 32 18 C38 30 32 40 24 52Z" fill="#1564FF" opacity="0.08"/>
+          </pattern>
+        </defs>
+        <rect width="400" height="400" fill="url(#fp)"/>
+        <rect width="400" height="400" fill="url(#fp2)"/>
+        <!-- highlight random flames -->
+        <path d="M120 196 C112 184 106 174 112 162 C114 157 118 152 120 148 C122 152 126 157 128 162 C134 174 128 184 120 196Z" fill="#1564FF" opacity="0.8"/>
+        <path d="M216 136 C208 124 202 114 208 102 C210 97 214 92 216 88 C218 92 222 97 224 102 C230 114 224 124 216 136Z" fill="#1564FF" opacity="0.6"/>
+        <path d="M312 256 C304 244 298 234 304 222 C306 217 310 212 312 208 C314 212 318 217 320 222 C326 234 320 244 312 256Z" fill="#1564FF" opacity="0.7"/>
+        <path d="M72 316 C64 304 58 294 64 282 C66 277 70 272 72 268 C74 272 78 277 80 282 C86 294 80 304 72 316Z" fill="#1564FF" opacity="0.5"/>
+      </svg>
+      <span class="vis-label">Flame repeat pattern</span>
+    </div>
+
+    <!-- Grid system -->
+    <div class="vis-block">
+      <svg width="100%" height="100%" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="position:absolute; inset:0;">
+        <!-- grid lines -->
+        <line x1="0" y1="50" x2="400" y2="50" stroke="#222" stroke-width="1"/>
+        <line x1="0" y1="100" x2="400" y2="100" stroke="#222" stroke-width="1"/>
+        <line x1="0" y1="150" x2="400" y2="150" stroke="#222" stroke-width="1"/>
+        <line x1="0" y1="200" x2="400" y2="200" stroke="#222" stroke-width="1"/>
+        <line x1="0" y1="250" x2="400" y2="250" stroke="#222" stroke-width="1"/>
+        <line x1="0" y1="300" x2="400" y2="300" stroke="#222" stroke-width="1"/>
+        <line x1="0" y1="350" x2="400" y2="350" stroke="#222" stroke-width="1"/>
+        <line x1="50" y1="0" x2="50" y2="400" stroke="#222" stroke-width="1"/>
+        <line x1="100" y1="0" x2="100" y2="400" stroke="#222" stroke-width="1"/>
+        <line x1="150" y1="0" x2="150" y2="400" stroke="#222" stroke-width="1"/>
+        <line x1="200" y1="0" x2="200" y2="400" stroke="#222" stroke-width="1"/>
+        <line x1="250" y1="0" x2="250" y2="400" stroke="#222" stroke-width="1"/>
+        <line x1="300" y1="0" x2="300" y2="400" stroke="#222" stroke-width="1"/>
+        <line x1="350" y1="0" x2="350" y2="400" stroke="#222" stroke-width="1"/>
+        <!-- accent cells -->
+        <rect x="100" y="150" width="100" height="100" fill="#1564FF" opacity="0.15"/>
+        <rect x="200" y="50" width="50" height="50" fill="#1564FF" opacity="0.3"/>
+        <rect x="250" y="250" width="100" height="50" fill="#1564FF" opacity="0.2"/>
+        <rect x="50" y="300" width="50" height="50" fill="#1564FF" opacity="0.25"/>
+        <!-- cross marks at intersections -->
+        <circle cx="200" cy="200" r="3" fill="#1564FF"/>
+        <circle cx="100" cy="100" r="2" fill="#1564FF" opacity="0.5"/>
+        <circle cx="300" cy="300" r="2" fill="#1564FF" opacity="0.5"/>
+      </svg>
+      <span class="vis-label">8pt grid system</span>
+    </div>
+
+    <!-- Motion lines / velocity -->
+    <div class="vis-block">
+      <svg width="100%" height="100%" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="position:absolute; inset:0;">
+        <!-- velocity lines, diagonal, representing speed/fire -->
+        <line x1="0" y1="400" x2="200" y2="100" stroke="#1564FF" stroke-width="1" opacity="0.6"/>
+        <line x1="40" y1="400" x2="240" y2="100" stroke="#1564FF" stroke-width="1" opacity="0.4"/>
+        <line x1="80" y1="400" x2="280" y2="100" stroke="#1564FF" stroke-width="1" opacity="0.25"/>
+        <line x1="120" y1="400" x2="320" y2="100" stroke="#1564FF" stroke-width="1" opacity="0.15"/>
+        <line x1="160" y1="400" x2="360" y2="100" stroke="#1564FF" stroke-width="1" opacity="0.1"/>
+        <line x1="200" y1="400" x2="400" y2="100" stroke="#1564FF" stroke-width="1" opacity="0.06"/>
+        <!-- single bright vector -->
+        <line x1="0" y1="380" x2="180" y2="80" stroke="#4A8AFF" stroke-width="2" opacity="0.9"/>
+        <circle cx="180" cy="80" r="4" fill="#1564FF"/>
+        <!-- labels -->
+        <text x="20" y="360" fill="#6B6B6B" font-family="Space Mono" font-size="8" letter-spacing="2">VELOCITY</text>
+        <text x="140" y="72" fill="#1564FF" font-family="Space Mono" font-size="8" letter-spacing="2">ORIGIN</text>
+      </svg>
+      <span class="vis-label">Motion direction system</span>
+    </div>
+
+    <!-- Bottle mark as icon -->
+    <div class="vis-block">
+      <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; padding: 40px;">
+        <!-- icon set derived from mark -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <svg width="40" height="48" viewBox="0 0 40 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 44 C12 34 6 24 10 12 C12 7 16 3 20 1 C24 3 28 7 30 12 C34 24 28 34 20 44Z" fill="#1564FF"/>
+          </svg>
+          <span style="font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--smoke);">Flame</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="0" width="12" height="6" rx="2" fill="#1564FF" opacity="0.6"/>
+            <rect x="6" y="8" width="20" height="28" rx="8" fill="#1564FF"/>
+            <rect x="12" y="16" width="2" height="12" rx="1" fill="rgba(0,0,0,0.3)"/>
+          </svg>
+          <span style="font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--smoke);">Bottle</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="16" cy="16" r="15" stroke="#1564FF" stroke-width="1.5"/>
+            <path d="M16 22 C12 17 10 13 12 8 C13 6 15 4 16 3 C17 4 19 6 20 8 C22 13 20 17 16 22Z" fill="#1564FF"/>
+          </svg>
+          <span style="font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--smoke);">Badge</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="32" height="32" fill="#1564FF"/>
+            <path d="M16 26 C10 18 6 12 10 4 C11 2 13 1 16 0 C19 1 21 2 22 4 C26 12 22 18 16 26Z" fill="rgba(255,255,255,0.9)"/>
+          </svg>
+          <span style="font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--smoke);">App icon</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 30 L16 2 L30 30Z" stroke="#1564FF" stroke-width="1.5" fill="none"/>
+            <path d="M16 20 C14 17 13 14 14 10 C14.5 8 15 7 16 6 C17 7 17.5 8 18 10 C19 14 18 17 16 20Z" fill="#1564FF"/>
+          </svg>
+          <span style="font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--smoke);">Alert</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="30" height="30" stroke="#222" stroke-width="1"/>
+            <path d="M16 26 C10 18 6 12 10 4 C11 2 13 1 16 0 C19 1 21 2 22 4 C26 12 22 18 16 26Z" fill="#1564FF" opacity="0.4"/>
+            <text x="4" y="28" fill="#6B6B6B" font-family="Space Mono" font-size="7">ROY</text>
+          </svg>
+          <span style="font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--smoke);">Royalty</span>
+        </div>
+      </div>
+      <span class="vis-label">Icon system — flame derivatives</span>
+    </div>
+
+    <!-- Texture / noise -->
+    <div class="vis-block" style="background: #080808;">
+      <svg width="100%" height="100%" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="position:absolute; inset:0; opacity: 0.6;">
+        <!-- Simulated noise/grain via random rects -->
+        <filter id="noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
+          <feColorMatrix type="saturate" values="0"/>
+          <feBlend in="SourceGraphic" mode="overlay" result="blend"/>
+          <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+        </filter>
+        <rect width="400" height="400" filter="url(#noise)" opacity="0.15" fill="#fff"/>
+      </svg>
+      <div style="position: relative; z-index: 1; padding: 40px; width: 100%;">
+        <div style="font-family: var(--font-display); font-size: 80px; font-weight: 800; letter-spacing: -0.05em; color: rgba(255,255,255,0.04); line-height: 0.9; user-select: none;">MOLO<br/>TOV</div>
+        <div style="margin-top: 24px; border-top: 1px solid var(--ember); padding-top: 16px;">
+          <div style="font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--blue);">Texture · Film grain overlay</div>
+          <div style="font-family: var(--font-mono); font-size: 8px; color: var(--smoke); margin-top: 4px;">Opacity: 8–12% · fixed position</div>
+        </div>
+      </div>
+      <span class="vis-label">Grain texture system</span>
+    </div>
+
+    <!-- Color gradient system -->
+    <div class="vis-block">
+      <div style="width: 100%; height: 100%; padding: 40px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--blue);">Gradient vocabulary</div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <div style="height: 32px; background: linear-gradient(90deg, #0A0A0A 0%, #1564FF 100%);"></div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--smoke); margin-top: 4px;">#0A0A0A → #1564FF · 90°</div>
+          </div>
+          <div>
+            <div style="height: 32px; background: linear-gradient(135deg, #0D3FA8 0%, #1564FF 50%, #4A8AFF 100%);"></div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--smoke); margin-top: 4px;">#0D3FA8 → #4A8AFF · 135°</div>
+          </div>
+          <div>
+            <div style="height: 32px; background: radial-gradient(ellipse at 30% 50%, rgba(21,100,255,0.4) 0%, transparent 70%), #141414;"></div>
+            <div style="font-family: var(--font-mono); font-size: 8px; color: var(--smoke); margin-top: 4px;">Radial glow · Surface depth</div>
+          </div>
+        </div>
+      </div>
+      <span class="vis-label">Gradient system</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     06 — MOCKUPS
+══════════════════════════════════════════════ -->
+<section class="mockups">
+  <div class="section-tag">06 — Brand in Application</div>
+
+  <div class="mockups-grid">
+
+    <!-- Token Card -->
+    <div class="mockup-card token-card">
+      <div class="tc-image">
+        <div class="tc-image-overlay"></div>
+        <div class="tc-image-num">01</div>
+        <svg width="100%" height="100%" viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg" style="position:absolute; inset:0; opacity:0.4;">
+          <path d="M150 200 C120 160 100 120 110 70 C115 50 130 30 150 10 C170 30 185 50 190 70 C200 120 180 160 150 200Z" fill="#4A8AFF"/>
+          <path d="M150 180 C130 150 120 120 128 82 C132 65 140 50 150 38 C160 50 168 65 172 82 C180 120 170 150 150 180Z" fill="#1564FF" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="tc-body">
+        <div class="tc-artist">Valentina Cruz</div>
+        <div class="tc-title">Carta de Fuego No. 3</div>
+        <div class="tc-footer">
+          <div>
+            <div class="tc-price">12.5 XLM</div>
+            <div class="tc-royalty">Royalty · 12%</div>
+          </div>
+          <div style="background: var(--blue); padding: 8px 16px; font-family: var(--font-display); font-size: 11px; font-weight: 700; color: #fff; letter-spacing: 0.05em; cursor: pointer;">BUY</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile App -->
+    <div class="mockup-card mobile-mockup">
+      <div class="mm-header">
+        <div class="mm-logo">molotov</div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <div class="mm-dot"></div>
+          <div style="font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--smoke);">TESTNET</div>
+        </div>
+      </div>
+      <div class="mm-content">
+        <div class="mm-section-title">Live Listings</div>
+        <div class="mm-item">
+          <div class="mm-item-row">
+            <div class="mm-thumb"></div>
+            <div class="mm-item-left">
+              <div class="mm-item-name">Noche Sin Luz</div>
+              <div class="mm-item-artist">@mauro.proto</div>
+            </div>
+          </div>
+          <div class="mm-item-price">8.0 XLM</div>
+        </div>
+        <div class="mm-item">
+          <div class="mm-item-row">
+            <div class="mm-thumb" style="background: #0D3FA8;"></div>
+            <div class="mm-item-left">
+              <div class="mm-item-name">Señal Rota</div>
+              <div class="mm-item-artist">@halfof8</div>
+            </div>
+          </div>
+          <div class="mm-item-price">24.0 XLM</div>
+        </div>
+        <div class="mm-item">
+          <div class="mm-item-row">
+            <div class="mm-thumb" style="background: #1A3060;"></div>
+            <div class="mm-item-left">
+              <div class="mm-item-name">Fuego Azul v2</div>
+              <div class="mm-item-artist">@v.arroyo</div>
+            </div>
+          </div>
+          <div class="mm-item-price">55.0 XLM</div>
+        </div>
+        <div style="margin-top: auto; padding-top: 16px;">
+          <div class="mm-btn">Connect Wallet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Artist Profile -->
+    <div class="mockup-card artist-card">
+      <div class="ac-header">
+        <div class="ac-avatar"></div>
+      </div>
+      <div class="ac-body">
+        <div class="ac-name">Valentina Cruz</div>
+        <div class="ac-handle">@valentina · Registered Artist</div>
+        <div class="ac-royalty-badge">
+          <div class="ac-rb-dot"></div>
+          <div class="ac-rb-text">On-chain royalties active</div>
+        </div>
+        <div class="ac-stats">
+          <div class="ac-stat">
+            <div class="ac-stat-val">14</div>
+            <div class="ac-stat-key">Works</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-val">847</div>
+            <div class="ac-stat-key">XLM earned</div>
+          </div>
+          <div class="ac-stat">
+            <div class="ac-stat-val">12%</div>
+            <div class="ac-stat-key">Avg. royalty</div>
+          </div>
+        </div>
+        <div class="ac-works">
+          <div class="ac-work-thumb" data-n="01"></div>
+          <div class="ac-work-thumb" data-n="02" style="background: #0D3FA8;"></div>
+          <div class="ac-work-thumb" data-n="03" style="background: #1A3060;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockups-bottom">
+    <!-- Web mockup -->
+    <div class="web-mockup">
+      <div class="wm-bar">
+        <div class="wm-dots">
+          <div class="wm-dot" style="background: #FF5F57;"></div>
+          <div class="wm-dot" style="background: #FFBD2E;"></div>
+          <div class="wm-dot" style="background: #28C840;"></div>
+        </div>
+        <div class="wm-url">
+          <span class="wm-url-text">molotov.app</span>
+        </div>
+      </div>
+      <div class="wm-content">
+        <div class="wm-nav">
+          <div class="wm-nav-logo">molotov</div>
+          <div class="wm-nav-links">
+            <span class="wm-nav-link">Discover</span>
+            <span class="wm-nav-link">Artists</span>
+            <span class="wm-nav-link">How it works</span>
+          </div>
+          <div class="wm-nav-cta">Connect</div>
+        </div>
+        <div class="wm-hero">
+          <div>
+            <div class="wm-headline">The<br/><em>fire</em><br/>is yours.</div>
+            <div class="wm-sub">Royalties enforced on-chain. Every sale, forever. Built on Stellar.</div>
+            <div style="display: flex; gap: 8px; margin-top: 16px;">
+              <div style="background: var(--blue); padding: 8px 16px; font-family: var(--font-display); font-size: 10px; font-weight: 700; color: #fff;">Mint your work</div>
+              <div style="border: 1px solid var(--ember); padding: 8px 16px; font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--smoke);">Explore</div>
+            </div>
+          </div>
+          <div class="wm-image-area"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business card -->
+    <div class="bizcard-mockup">
+      <div class="label" style="position: absolute; top: 16px; left: 20px;">Business card</div>
+      <div class="bizcard bizcard-front">
+        <div class="bizcard-logo">molotov</div>
+        <div class="bizcard-bottom">
+          <div class="bizcard-info">
+            <div class="bizcard-name">Valentina Cruz</div>
+            <div class="bizcard-title-text">Artist · Creator</div>
+          </div>
+          <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 22 C6 16 3 11 5 5 C6 3 7 1 10 0 C13 1 14 3 15 5 C17 11 14 16 10 22Z" fill="#1564FF"/>
+          </svg>
+        </div>
+      </div>
+      <div class="bizcard bizcard-back" style="background: var(--blue); margin-top: 8px;">
+        <div style="font-family: var(--font-display); font-size: 28px; font-weight: 800; letter-spacing: -0.04em; color: rgba(255,255,255,0.15);">molotov</div>
+        <div style="display: flex; justify-content: flex-end;">
+          <div style="font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.5);">molotov.app</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     07 — BRAND VOICE
+══════════════════════════════════════════════ -->
+<section class="voice">
+  <div class="section-tag">07 — Brand Voice</div>
+
+  <div class="voice-grid">
+    <div class="voice-block">
+      <div class="voice-block-title">The brand IS</div>
+      <div class="voice-list">
+        <div class="voice-item">
+          <div class="voice-item-word">Precise</div>
+          <div class="voice-item-def">Every royalty, every fee, every split — enforced on-chain. No ambiguity, no intermediaries.</div>
+        </div>
+        <div class="voice-item">
+          <div class="voice-item-word">Explosive</div>
+          <div class="voice-item-def">Not decorative disruption. Real systemic change for creators who were burned by the old model.</div>
+        </div>
+        <div class="voice-item">
+          <div class="voice-item-word">Uncompromising</div>
+          <div class="voice-item-def">The contract is the law. No overrides, no admin keys on royalties. Your fire, forever.</div>
+        </div>
+        <div class="voice-item">
+          <div class="voice-item-word">Human</div>
+          <div class="voice-item-def">Behind every token is an artist. Behind every royalty is a livelihood. We build for people.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="voice-block voice-not">
+      <div class="voice-block-title" style="color: #FF4444;">The brand is NOT</div>
+      <div class="voice-list">
+        <div class="voice-item">
+          <div class="voice-item-word">Corporate</div>
+          <div class="voice-item-def">No grey suits, no VC decks, no "leverage synergies."</div>
+        </div>
+        <div class="voice-item">
+          <div class="voice-item-word">Hype-driven</div>
+          <div class="voice-item-def">No floor prices, no "GM", no speculative pump culture.</div>
+        </div>
+        <div class="voice-item">
+          <div class="voice-item-word">Luxury-for-luxury</div>
+          <div class="voice-item-def">Premium because it works, not because it's expensive.</div>
+        </div>
+        <div class="voice-item">
+          <div class="voice-item-word">Abstract</div>
+          <div class="voice-item-def">No vague promises. Concrete functions, visible on-chain.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="voice-manifesto">
+      <div class="manifesto-text">
+        The old system took <em>everything</em> and gave back <em>nothing</em>.<br />
+        Molotov puts the royalty in the contract — not in a promise.<br />
+        <em>Every sale. Every time. No exceptions.</em>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SPACING SYSTEM
+══════════════════════════════════════════════ -->
+<section class="spacing">
+  <div class="section-tag">Spacing & Grid</div>
+
+  <div class="spacing-grid">
+    <div class="sp-item">
+      <div class="sp-bar" style="height: 4px;"></div>
+      <div class="sp-val">4px</div>
+    </div>
+    <div class="sp-item">
+      <div class="sp-bar" style="height: 8px;"></div>
+      <div class="sp-val">8px</div>
+    </div>
+    <div class="sp-item">
+      <div class="sp-bar" style="height: 12px;"></div>
+      <div class="sp-val">12px</div>
+    </div>
+    <div class="sp-item">
+      <div class="sp-bar" style="height: 16px;"></div>
+      <div class="sp-val">16px</div>
+    </div>
+    <div class="sp-item">
+      <div class="sp-bar" style="height: 24px;"></div>
+      <div class="sp-val">24px</div>
+    </div>
+    <div class="sp-item">
+      <div class="sp-bar" style="height: 32px;"></div>
+      <div class="sp-val">32px</div>
+    </div>
+    <div class="sp-item">
+      <div class="sp-bar" style="height: 48px;"></div>
+      <div class="sp-val">48px</div>
+    </div>
+    <div class="sp-item">
+      <div class="sp-bar" style="height: 72px;"></div>
+      <div class="sp-val">72px</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 48px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;">
+    <div>
+      <div class="label" style="margin-bottom: 12px;">Border radius</div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <div style="width: 40px; height: 40px; background: var(--blue); border-radius: 0;"></div>
+        <div style="width: 40px; height: 40px; background: var(--blue); border-radius: 2px;"></div>
+        <div style="width: 40px; height: 40px; background: var(--blue); border-radius: 4px;"></div>
+        <div style="width: 40px; height: 40px; background: var(--blue); border-radius: 8px;"></div>
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 8px; color: var(--smoke); margin-top: 8px; letter-spacing: 0.1em;">0 · 2 · 4 · 8 — Default: 0 (sharp)</div>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom: 12px;">Stroke weights</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 4px;">
+        <div style="height: 1px; background: var(--ember);"></div>
+        <div style="height: 1px; background: var(--smoke);"></div>
+        <div style="height: 1px; background: var(--offwhite);"></div>
+        <div style="height: 2px; background: var(--blue);"></div>
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 8px; color: var(--smoke); margin-top: 8px; letter-spacing: 0.1em;">1px — Standard stroke</div>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom: 12px;">Animation easing</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: var(--font-mono); font-size: 9px; color: var(--ash); letter-spacing: 0.05em;">cubic-bezier(0.16, 1, 0.3, 1)</div>
+        <div style="font-family: var(--font-mono); font-size: 9px; color: var(--smoke); letter-spacing: 0.05em;">Duration: 240ms – 400ms</div>
+        <div style="font-family: var(--font-mono); font-size: 9px; color: var(--blue); letter-spacing: 0.05em;">Spring: stiffness 100 · damping 20</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-logo">molotov</div>
+  <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--smoke);">
+    Brand Identity System · v1.0 · 2026
+  </div>
+  <div class="footer-meta">
+    <span>Fonts: Syne · DM Sans · Space Mono</span>
+    <span class="footer-version">Ignition Blue #1564FF</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Client, networks } from "@molotov/stellar-client/molotov-nft";
 import { Nav } from "@/components/nav";
 import {
@@ -32,6 +32,8 @@ type Artwork = {
 
 export default function MyWorkPage() {
   const params = useParams<{ tokenId: string }>();
+  const searchParams = useSearchParams();
+  const justMinted = searchParams.get("minted") === "1";
   const tokenId = Number(params.tokenId);
   const { locale, t } = useI18n();
   const { address, isConnected } = useWallet();
@@ -207,13 +209,21 @@ export default function MyWorkPage() {
               {t("artwork.tokenPrefix")} #{tokenId}
             </p>
             <h1 className="mt-4 max-w-[18ch] font-[family-name:var(--font-fraunces)] text-[clamp(2.25rem,6vw,4.5rem)] font-light leading-[0.98] tracking-[-0.02em] [font-variation-settings:'opsz'_144]">
-              {t("artwork.successBefore")}{" "}
-              <em className="italic text-[#0178DE]">{t("artwork.successEm")}</em>
-              {t("artwork.successAfter")}
+              {justMinted ? (
+                <>
+                  {t("artwork.successBefore")}{" "}
+                  <em className="italic text-[#0178DE]">{t("artwork.successEm")}</em>
+                  {t("artwork.successAfter")}
+                </>
+              ) : (
+                art?.title
+              )}
             </h1>
-            <p className="mt-4 font-[family-name:var(--font-fraunces)] text-2xl text-[#F5F4ED]/80 [font-variation-settings:'opsz'_40]">
-              {art.title}
-            </p>
+            {justMinted && (
+              <p className="mt-4 font-[family-name:var(--font-fraunces)] text-2xl text-[#F5F4ED]/80 [font-variation-settings:'opsz'_40]">
+                {art.title}
+              </p>
+            )}
 
             <div className="mt-12 grid gap-10 md:grid-cols-2 md:gap-16">
               <div>
