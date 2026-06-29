@@ -65,7 +65,6 @@ This is where Molotov touches Stellar — not superficially, but as **load-beari
 | **alfredpay / BlindPay**          | Artists withdraw royalties directly to their Argentine bank account (ARS or USD) |
 | **Anchor Platform**               | USDC-denominated listings — artists price in dollars, Stellar is invisible       |
 | **Blend v2**                      | Royalties parked in a yield pool between sales — idle money earns                |
-| **Soroswap / Aquarius**           | Auto-swap XLM → USDC at point of sale, no manual conversion needed               |
 | **CCTP / Allbridge**              | Cross-chain collectors (Ethereum, Base) buy with their native stablecoins        |
 | **Stellar Disbursement Platform** | Batch royalty drops to artists at the end of each period                         |
 
