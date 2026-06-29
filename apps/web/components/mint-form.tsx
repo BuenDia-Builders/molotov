@@ -8,7 +8,7 @@ import { truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
 
 const MAX_BYTES = 30 * 1024 * 1024; // 30 MB
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
 
 function ProgressView({ state }: { state: MintState }) {
   const { t } = useI18n();
@@ -107,7 +107,7 @@ export function MintForm() {
         royaltyBps,
         royaltyRecipients: [{ address, shareBps: 10_000 }],
       });
-      router.push(`/my-work/${tokenId}`);
+      router.push(`/my-work/${tokenId}?minted=1`);
     } catch {
       /* state + errorKind are set inside the hook; UI reacts below */
     }
@@ -209,7 +209,9 @@ export function MintForm() {
               <span className="font-[family-name:var(--font-mono)] text-[13px] uppercase tracking-[0.18em] text-[var(--offwhite)]/60">
                 {t("mint.form.drop")}
               </span>
-              <span className="mt-2 text-sm text-[var(--offwhite)]/40">{t("mint.form.clickToChoose")}</span>
+              <span className="mt-2 text-sm text-[var(--offwhite)]/40">
+                {t("mint.form.clickToChoose")}
+              </span>
               <span className="mt-6 font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/40">
                 {t("mint.form.formats")}
               </span>

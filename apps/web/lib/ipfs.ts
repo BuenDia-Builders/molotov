@@ -3,11 +3,31 @@
 
 export type IpfsResult = { cid: string; gatewayUrl: string };
 
-/** Resolves an `ipfs://` URI to a Pinata gateway URL. Passes through any other URI unchanged. */
+/**
+ * Client-side: resolves ipfs:// to our own proxy (/api/ipfs/{cid}) so the
+ * browser never hits the rate-limited public Pinata gateway directly.
+ */
 export function ipfsToGateway(uri: string): string {
-  return uri.startsWith("ipfs://")
+  return uri.startsWith("ipfs://") ? `/api/ipfs/${uri.slice("ipfs://".length)}` : uri;
+}
+
+/**
+ * Server-side: fetch IPFS content directly from Pinata with JWT auth.
+ * Use this in React Server Components instead of ipfsToGateway().
+ */
+export function fetchIpfs(
+  uri: string,
+  opts?: { revalidate?: number; signal?: AbortSignal },
+): Promise<Response> {
+  const url = uri.startsWith("ipfs://")
     ? `https://gateway.pinata.cloud/ipfs/${uri.slice("ipfs://".length)}`
     : uri;
+  const jwt = process.env.PINATA_JWT ?? "";
+  return fetch(url, {
+    headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
+    next: { revalidate: opts?.revalidate ?? 3600 },
+    signal: opts?.signal,
+  });
 }
 
 const MAX_ATTEMPTS = 3;

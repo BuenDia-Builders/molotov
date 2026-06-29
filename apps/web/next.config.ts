@@ -6,13 +6,16 @@ const IPFS_GATEWAYS = [
   "https://cloudflare-ipfs.com",
 ];
 
+const PRIVY_HOSTS = ["https://auth.privy.io", "https://*.privy.io", "wss://*.privy.io"];
+
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-eval in dev
   `img-src 'self' data: blob: ${IPFS_GATEWAYS.join(" ")} https://images.unsplash.com`,
-  `connect-src 'self' ${IPFS_GATEWAYS.join(" ")} https://*.supabase.co wss://*.supabase.co https://horizon-testnet.stellar.org https://soroban-testnet.stellar.org`,
-  "font-src 'self'",
-  "style-src 'self' 'unsafe-inline'", // Tailwind requires unsafe-inline
+  `connect-src 'self' ${IPFS_GATEWAYS.join(" ")} https://*.supabase.co wss://*.supabase.co https://horizon-testnet.stellar.org https://soroban-testnet.stellar.org https://friendbot.stellar.org ${PRIVY_HOSTS.join(" ")}`,
+  "font-src 'self' https://fonts.gstatic.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  `frame-src 'self' ${PRIVY_HOSTS.join(" ")}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -31,11 +34,16 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   transpilePackages: ["@molotov/stellar-client"],
   images: {
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       { protocol: "https", hostname: "gateway.pinata.cloud" },
       { protocol: "https", hostname: "ipfs.io" },
       { protocol: "https", hostname: "cloudflare-ipfs.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
+      // local dev (Next.js Image with src="/api/ipfs/..." routes through self)
+      { protocol: "http", hostname: "localhost" },
     ],
   },
   async headers() {

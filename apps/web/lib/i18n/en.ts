@@ -183,7 +183,7 @@ export const en = {
       previewAlt: "Preview of your work",
       drop: "Drag your work here",
       clickToChoose: "or click to choose it",
-      formats: "JPG · PNG · WEBP · GIF · max 30 MB",
+      formats: "JPG · PNG · WEBP · GIF · SVG · max 30 MB",
       titleLabel: "Title",
       titlePlaceholder: "Artwork title",
       descriptionLabel: "Description",

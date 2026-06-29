@@ -181,7 +181,7 @@ export const es = {
       previewAlt: "Vista previa de tu obra",
       drop: "Arrastrá tu obra acá",
       clickToChoose: "o hacé click para elegirla",
-      formats: "JPG · PNG · WEBP · GIF · máx 30 MB",
+      formats: "JPG · PNG · WEBP · GIF · SVG · máx 30 MB",
       titleLabel: "Título",
       titlePlaceholder: "Título de la obra",
       descriptionLabel: "Descripción",
