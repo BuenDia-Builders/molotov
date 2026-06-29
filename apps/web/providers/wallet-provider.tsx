@@ -15,6 +15,7 @@ import {
   type ISupportedWallet,
   type StellarWalletsKit,
 } from "@/lib/stellar";
+import { WalletSelectModal } from "@/components/wallet-select-modal";
 
 const SELECTED_WALLET_KEY = "molotov:selectedWalletId";
 
@@ -39,8 +40,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const privySignerRef = useRef<((xdr: string) => Promise<string>) | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [modalWallets, setModalWallets] = useState<ISupportedWallet[]>([]);
+  const walletCallbackRef = useRef<((wallet: ISupportedWallet) => void) | null>(null);
 
-  // Lazily create the kit, once, in the browser only.
   const ensureKit = useCallback(() => {
     if (!kitPromiseRef.current) kitPromiseRef.current = createWalletsKit();
     return kitPromiseRef.current;
@@ -59,19 +61,36 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       .catch(() => window.localStorage.removeItem(SELECTED_WALLET_KEY));
   }, [ensureKit]);
 
+  const handleWalletSelected = useCallback(
+    async (option: ISupportedWallet) => {
+      setModalWallets([]);
+      walletCallbackRef.current = null;
+      try {
+        const kit = await ensureKit();
+        kit.setWallet(option.id);
+        window.localStorage.setItem(SELECTED_WALLET_KEY, option.id);
+        const { address } = await kit.getAddress();
+        setAddress(address);
+      } finally {
+        setIsConnecting(false);
+      }
+    },
+    [ensureKit],
+  );
+
+  const handleModalClose = useCallback(() => {
+    setModalWallets([]);
+    walletCallbackRef.current = null;
+    setIsConnecting(false);
+  }, []);
+
   const connect = useCallback(async () => {
     setIsConnecting(true);
     try {
       const kit = await ensureKit();
-      await kit.openModal({
-        onWalletSelected: async (option: ISupportedWallet) => {
-          kit.setWallet(option.id);
-          window.localStorage.setItem(SELECTED_WALLET_KEY, option.id);
-          const { address } = await kit.getAddress();
-          setAddress(address);
-        },
-      });
-    } finally {
+      const wallets = await kit.getSupportedWallets();
+      setModalWallets(wallets);
+    } catch {
       setIsConnecting(false);
     }
   }, [ensureKit]);
@@ -123,6 +142,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      {modalWallets.length > 0 && (
+        <WalletSelectModal
+          wallets={modalWallets}
+          onSelect={handleWalletSelected}
+          onClose={handleModalClose}
+        />
+      )}
     </WalletContext.Provider>
   );
 }
