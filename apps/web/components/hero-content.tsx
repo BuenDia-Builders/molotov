@@ -1,47 +1,15 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
-export type FeaturedWork = {
-  token_id: number;
-  title: string;
-  artist_short: string;
-  royalty_bps: number;
-  price_xlm?: string;
-  image?: string;
-};
-
-export function HeroContent({ work }: { work: FeaturedWork }) {
+export function HeroContent() {
   const { t } = useI18n();
 
   return (
-    <section className="relative flex min-h-screen flex-col md:flex-row bg-[var(--offwhite)]">
-      {/* Mobile-only artwork strip */}
-      {work.image && (
-        <div className="relative h-56 sm:h-72 overflow-hidden md:hidden">
-          <Image
-            src={work.image}
-            alt={work.title}
-            fill
-            className="object-cover object-center"
-            priority
-            sizes="100vw"
-          />
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-5 py-4">
-            <p className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.25em] text-white/60">
-              {work.artist_short}
-            </p>
-            <p className="font-[family-name:var(--font-display)] text-sm text-white/90 mt-0.5 truncate [font-variation-settings:'opsz'_24]">
-              {work.title}
-            </p>
-          </div>
-        </div>
-      )}
-
+    <section className="relative flex min-h-screen flex-col bg-[var(--offwhite)]">
       {/* Text content */}
-      <div className="flex flex-1 flex-col md:max-w-[60%]">
+      <div className="flex flex-1 flex-col">
         {/* Brand label */}
         <div className="px-6 pt-10 md:px-10 md:pt-14 lg:px-20">
           <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.4em] text-[var(--black)]/35">
@@ -90,40 +58,6 @@ export function HeroContent({ work }: { work: FeaturedWork }) {
           </span>
         </div>
       </div>
-
-      {/* Desktop artwork panel */}
-      {work.image && (
-        <div className="hidden md:block relative" style={{ width: "40%" }}>
-          <Image
-            src={work.image}
-            alt={work.title}
-            fill
-            className="object-cover"
-            priority
-            sizes="40vw"
-          />
-          {/* caption overlay at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/65 to-transparent px-6 py-6">
-            <p className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.25em] text-white/55">
-              {work.artist_short}
-            </p>
-            <p className="font-[family-name:var(--font-display)] text-base text-white/90 mt-1 truncate [font-variation-settings:'opsz'_24]">
-              {work.title}
-            </p>
-            {work.price_xlm && (
-              <p className="font-[family-name:var(--font-mono)] text-[10px] text-white/40 mt-1">
-                {work.price_xlm} XLM
-              </p>
-            )}
-          </div>
-          {/* "Latest work" badge */}
-          <div className="absolute top-5 right-5">
-            <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.2em] text-white/40 border border-white/15 px-2 py-1">
-              Latest work
-            </span>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

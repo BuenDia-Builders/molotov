@@ -2,14 +2,27 @@ import type { Metadata, Viewport } from "next";
 import { Syne, DM_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/providers/wallet-provider";
+import { MolotovPrivyProvider } from "@/providers/privy-provider";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { I18nProvider } from "@/lib/i18n";
 import { en } from "@/lib/i18n/en";
 import { PageLoader } from "@/components/page-loader";
 
-const syne = Syne({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-display" });
-const dmSans = DM_Sans({ subsets: ["latin"], weight: ["300", "400", "500", "600"], variable: "--font-body" });
-const spaceMono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-mono" });
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-display",
+});
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-body",
+});
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: en.meta.title,
@@ -51,7 +64,9 @@ export default function RootLayout({
         <div aria-hidden className="grain pointer-events-none fixed inset-0 z-0 opacity-[0.04]" />
         <PageLoader />
         <I18nProvider>
-          <WalletProvider>{children}</WalletProvider>
+          <MolotovPrivyProvider>
+            <WalletProvider>{children}</WalletProvider>
+          </MolotovPrivyProvider>
         </I18nProvider>
         <ServiceWorkerRegister />
       </body>

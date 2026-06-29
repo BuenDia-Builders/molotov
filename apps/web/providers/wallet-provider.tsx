@@ -26,17 +26,17 @@ type WalletContextValue = {
   isConnecting: boolean;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
-  /** Signs a transaction XDR with the connected wallet (Stellar Wallets Kit). */
-  signTransaction: (
-    xdr: string,
-    opts?: { networkPassphrase?: string },
-  ) => Promise<SignResult>;
+  signTransaction: (xdr: string, opts?: { networkPassphrase?: string }) => Promise<SignResult>;
+  /** Called by WalletButton after Privy email/Google login resolves a Stellar address. */
+  connectViaPrivy: (address: string, signer: (xdr: string) => Promise<string>) => void;
 };
 
 const WalletContext = createContext<WalletContextValue | null>(null);
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const kitPromiseRef = useRef<Promise<StellarWalletsKit> | null>(null);
+  const walletModeRef = useRef<"swk" | "privy">("swk");
+  const privySignerRef = useRef<((xdr: string) => Promise<string>) | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
@@ -76,7 +76,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [ensureKit]);
 
+  const connectViaPrivy = useCallback((addr: string, signer: (xdr: string) => Promise<string>) => {
+    walletModeRef.current = "privy";
+    privySignerRef.current = signer;
+    setAddress(addr);
+  }, []);
+
   const disconnect = useCallback(async () => {
+    if (walletModeRef.current === "privy") {
+      walletModeRef.current = "swk";
+      privySignerRef.current = null;
+      setAddress(null);
+      return;
+    }
     const kit = await ensureKit();
     await kit.disconnect();
     window.localStorage.removeItem(SELECTED_WALLET_KEY);
@@ -85,6 +97,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const signTransaction = useCallback(
     async (xdr: string, opts?: { networkPassphrase?: string }) => {
+      if (walletModeRef.current === "privy" && privySignerRef.current) {
+        const signedTxXdr = await privySignerRef.current(xdr);
+        return { signedTxXdr };
+      }
       const kit = await ensureKit();
       return kit.signTransaction(xdr, {
         address: address ?? undefined,
@@ -103,6 +119,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         connect,
         disconnect,
         signTransaction,
+        connectViaPrivy,
       }}
     >
       {children}
