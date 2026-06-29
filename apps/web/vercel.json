@@ -1,3 +1,10 @@
 {
-  "installCommand": "cd ../.. && pnpm install"
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "cd ../.. && pnpm --filter=web build",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_STELLAR_NETWORK": "TESTNET",
+    "INDEXER_START_LEDGER": "3000000"
+  }
 }

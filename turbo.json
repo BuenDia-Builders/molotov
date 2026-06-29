@@ -3,7 +3,17 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "env": [
+        "NEXT_PUBLIC_STELLAR_NETWORK",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_URL",
+        "SUPABASE_SECRET_KEY",
+        "PINATA_JWT",
+        "NEXT_PUBLIC_PRIVY_APP_ID",
+        "INDEXER_START_LEDGER"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
