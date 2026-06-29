@@ -1,137 +1,177 @@
 # Molotov
 
-**A digital-art marketplace where the royalty is enforced by the contract.** On every resale, the artist is paid automatically — or the sale doesn't happen. Income flows *to* the creator, not away from them. We call it *inverted Spotify*.
+**Digital art marketplace where royalties are enforced by the contract — not the platform.**
 
-> Smart contracts live and verified on Stellar testnet · Backend proven end-to-end · Web app in progress
+> On every resale, the artist is paid automatically. Or the sale doesn't happen.
+
+🌐 **Live:** [molotov-web.vercel.app](https://molotov-web.vercel.app) · 🔗 **Testnet contracts:** [Stellar Expert](https://stellar.expert/explorer/testnet/contract/CB6T6DOYV2JCD36ZE43ESXNGCL2GBDARCZNRVYQWOXGTZNJBWB72K7DU)
 
 ---
 
-## The problem
+## 💡 The problem
 
-When a digital artwork resells for more, **the artist who made it usually sees nothing.** The upside goes to speculators and platforms. The market rewards trading, not creating.
+When a digital artwork resells for more, **the artist who made it usually sees nothing.**
 
 Web3 was supposed to fix this with royalties — a cut for the artist on every resale. In practice, that promise collapsed. To compete on lower fees, the major NFT marketplaces made royalties **optional**, dependent on the goodwill of the buyer or the platform. Creators were cut out again, this time with extra jargon on top.
 
 The real problem isn't technical — it's about **who captures the value**. And that gets decided in exactly one place: the contract that moves the money.
 
-## The solution
+---
+
+## ⚡ The solution
 
 Molotov makes the royalty **immutable and mandatory at the contract level**:
 
 - The artist sets their royalty when minting (**1–15%**). Once minted, it **can never be changed**.
-- On every resale, the marketplace contract reads that royalty and pays the artist **before the sale can close**. No royalty distributed, no sale.
-- The contract acts as **escrow**: it never over-custodies funds, leaves no residual, and the parts always sum **to the stroop** (the smallest unit of XLM, 1/10,000,000).
+- On every resale, the marketplace contract pays the artist **before the sale can close**. No royalty → no sale.
+- The contract acts as **escrow**: zero residual, every part sums to the stroop (1/10,000,000 XLM).
 
-You don't have to trust the platform. The guarantee is in the code — public and verifiable.
+We call it _inverted Spotify_: income flows **to** the creator, not away from them.
 
-## How it works — a real example
+---
 
-**A 100 XLM resale.** An artist set a **10% royalty** when they minted a piece. A collector resells it for 100 XLM:
+## 🔄 How it works — a real example
 
-| Recipient | Amount | |
-|---|---|---|
-| **Artist** (royalty) | 10 XLM | paid automatically, enforced by the contract |
-| **Platform fee** | 2.5 XLM | |
-| **Seller** | 87.5 XLM | |
+**A 100 XLM resale with a 10% royalty:**
 
-Every unit is accounted for, down to the stroop. If the royalty can't be distributed, the contract **reverts the entire sale** — the artist getting paid is not a step that can be skipped.
+| Recipient        | Amount   | Rule                                    |
+| ---------------- | -------- | --------------------------------------- |
+| **Artist**       | 10 XLM   | enforced by contract — can't be skipped |
+| **Platform fee** | 2.5 XLM  | half of what competitors charge         |
+| **Seller**       | 87.5 XLM |                                         |
 
-An optional **referral** share is carved *out of* the platform fee (never added to the price): whoever brings a buyer earns part of the fee, not a cent from anyone else's pocket.
+> Every stroop is accounted for. If the royalty can't be distributed, the entire sale reverts.
 
-## Architecture
+An optional **referral** share is carved _out of_ the platform fee — never added to the price. Whoever brings a buyer earns part of the fee.
+
+---
+
+## 🔌 Stellar Integrations
+
+This is where Molotov touches Stellar — not superficially, but as **load-bearing infrastructure**:
+
+### ✅ Live integrations
+
+| Integration                           | Role in Molotov                                      | Why it matters                                           |
+| ------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------- |
+| **Soroban** (Stellar smart contracts) | NFT minting, marketplace escrow, royalty enforcement | The royalty guarantee lives here — it's the core product |
+| **Stellar Wallets Kit**               | Multi-wallet connection (Freighter, xBull, Albedo)   | Users sign every transaction from their own wallet       |
+| **Privy**                             | Embedded wallet via email/Google login               | No-extension onboarding for non-crypto artists           |
+
+### 🗺️ Roadmap integrations (post-hackathon)
+
+| Integration                       | What it unlocks                                                                  |
+| --------------------------------- | -------------------------------------------------------------------------------- |
+| **alfredpay / BlindPay**          | Artists withdraw royalties directly to their Argentine bank account (ARS or USD) |
+| **Anchor Platform**               | USDC-denominated listings — artists price in dollars, Stellar is invisible       |
+| **Blend v2**                      | Royalties parked in a yield pool between sales — idle money earns                |
+| **Soroswap / Aquarius**           | Auto-swap XLM → USDC at point of sale, no manual conversion needed               |
+| **CCTP / Allbridge**              | Cross-chain collectors (Ethereum, Base) buy with their native stablecoins        |
+| **Stellar Disbursement Platform** | Batch royalty drops to artists at the end of each period                         |
+
+---
+
+## 🏗️ Architecture
 
 Three Soroban contracts, each with one responsibility:
 
-| Contract | Responsibility |
-|---|---|
-| **MolotovNFT** | The artwork token. Stores the artist's immutable royalty (SEP-50). |
+| Contract           | Responsibility                                                   |
+| ------------------ | ---------------------------------------------------------------- |
+| **MolotovNFT**     | The artwork token. Stores the artist's immutable royalty.        |
 | **ArtistRegistry** | Registry of verified artists. Only a registered artist can mint. |
-| **Marketplace** | The economic engine. Escrow, listings, open editions, and royalty enforcement on every sale. |
+| **Marketplace**    | Escrow, listings, and royalty enforcement on every sale.         |
 
-**Off-chain layer (indexer).** The chain is the source of truth, but querying it directly for "all works by this artist" is slow. An indexer reads the events the contracts emit, decodes them, and projects them into a queryable database (Supabase). That projection is **reconstructable**: wipe it, replay the events, and you get exactly the same state. The web app reads from there.
+**Off-chain indexer** — the chain is the source of truth, but we project events into a queryable database (Supabase) for fast reads. The projection is **reconstructable**: wipe it, replay the events, get exactly the same state.
 
 ```
 Contracts (Stellar) ── emit events
         ↓
 Soroban RPC (getEvents)
         ↓
-Indexer (poller): fetch → decode → write → advance cursor ↻
+Indexer: fetch → decode → write → advance cursor ↻
         ↓
 Supabase (queryable projection)
         ↓
-Web app
+Web app (Next.js)
 ```
 
-## The business
+---
 
-**Market.** Molotov is for contemporary digital artists who want their work to earn over time, not only at first sale. The creator economy is large and growing — but the tooling built for it has failed creators on one specific point: resale royalties.
+## ✅ What's live
 
-**Why now.** Web3 promised artists a cut of every resale, then the major marketplaces made royalties optional to win a fee war, and creators lost most of their expected resale income overnight. Artists are actively looking for a home where the royalty is **guaranteed** — not a policy, but a rule. That's the wedge.
+> This is not a plan — it's what is **already deployed and verified on Stellar testnet**.
 
-**How Molotov makes money.** A flat **2.5% platform fee** on every sale, primary and secondary. Revenue scales with marketplace volume. That fee is **half** of what objkt — the leading art marketplace on Tezos — charges (5%), so the pitch to artists is direct: a lower platform cut *and* a royalty that can't be bypassed. The referral share is carved out of that fee, giving the marketplace a built-in growth lever.
-
-**Why Stellar.** Low fees and fast settlement make small-value art sales and micro-royalties economically viable — on high-gas chains, network fees can swallow a small royalty whole.
-
-**The moat.** The royalty guarantee lives in the contract: public, immutable, verifiable. Paired with an editorial, gallery-first brand (deliberately *not* crypto-bro), Molotov targets serious artists that hype-driven platforms underserve.
-
-## What's live
-
-This is a working pitch — the section below is not what we *plan* to build, it's what is **already deployed and verified**.
-
-**Contracts — live on Stellar testnet:**
+**Contracts:**
 
 - ArtistRegistry — [`CC37LTUP…GU533`](https://stellar.expert/explorer/testnet/contract/CC37LTUPS5WLNBQSVNJJGBMZK4QCUJ76EFGW4RGY7XNVLKFKXCRGU533)
 - Marketplace — [`CB6T6DOY…2K7DU`](https://stellar.expert/explorer/testnet/contract/CB6T6DOYV2JCD36ZE43ESXNGCL2GBDARCZNRVYQWOXGTZNJBWB72K7DU)
-- MolotovNFT — *(see `doc/contracts.md`)*
+- MolotovNFT — see [`doc/contracts.md`](doc/contracts.md)
 
-**Engineering rigor — applied, not assumed:**
+**Engineering proof:**
 
-- **Mutation testing** (cargo-mutants): 0 surviving mutants across the money and governance functions (`distribute`, `buy`, `list`, `cancel`, `upgrade`). Every latent bug it surfaced was fixed.
-- **Static analysis** (Scout): 0 findings across all three contracts.
-- **Conservation proven live**: a 100 XLM secondary sale with a 10% royalty and 2.5% fee settles exactly — artist, treasury and seller balance to the stroop, zero residual.
-- **Indexer idempotency proven**: replaying the same events yields an identical projection, with no duplicated sales. The continuous loop picks up fresh mints within one ledger.
+- **Mutation testing** (cargo-mutants): 0 surviving mutants across `distribute`, `buy`, `list`, `cancel`, `upgrade`
+- **Static analysis** (Scout): 0 findings across all three contracts
+- **Conservation verified live**: a 100 XLM secondary sale with 10% royalty + 2.5% fee settles to the stroop — zero residual
+- **Indexer idempotency**: replaying the same events yields an identical projection, no duplicate sales
 
-## Roadmap
+---
 
-- **Done** — On-chain contracts (NFT + Registry + Marketplace) deployed, tested and verified. Full indexer with idempotent ingestion.
-- **In progress** — The web app reading from Supabase: gallery, wallet-based purchase, artist profiles, manifesto, activity feed.
-- **Next** — Mainnet: admin keys to multisig, final fee and royalty-cap decisions, audit. Mobile apps and multi-language support (EN, PT).
+## 💼 The business
 
-## Getting started
+**Why Stellar.** Low fees and fast settlement make micro-royalties economically viable — on high-gas chains, network fees can swallow a small royalty whole.
 
-Requirements: Node 20 (see `.nvmrc`), pnpm 10, Rust with the `wasm32v1-none` target, and the Stellar CLI (for the contracts).
+**How Molotov makes money.** A flat **2.5% platform fee** on every sale — half of what objkt (leading Tezos art marketplace) charges. Revenue scales with volume.
+
+**The moat.** The royalty guarantee lives in the contract: public, immutable, verifiable. Artists don't have to trust the platform. The code is the policy.
+
+**Who it's for.** Contemporary digital artists in Latin America who want their work to earn _over time_ — not only at first sale. Editorial and gallery-first brand, deliberately anti-crypto-bro.
+
+---
+
+## 🛠️ Tech stack
+
+| Layer                    | Stack                                            |
+| ------------------------ | ------------------------------------------------ |
+| Web app                  | Next.js 16 + React 19 + Tailwind + shadcn/ui     |
+| Smart contracts          | Soroban (Rust) + OpenZeppelin Stellar Contracts  |
+| Wallet                   | Stellar Wallets Kit · Freighter · xBull · Albedo |
+| Auth / embedded wallet   | Privy (email + Google login)                     |
+| Indexer + off-chain data | Supabase                                         |
+| File storage             | IPFS via Pinata                                  |
+| Monorepo                 | pnpm + Turborepo                                 |
+
+---
+
+## 🚀 Getting started
+
+**Requirements:** Node 20, pnpm 10, Rust with `wasm32v1-none` target, Stellar CLI.
 
 ```bash
 git clone https://github.com/BuenDia-Builders/molotov.git
 cd molotov
+cp apps/web/.env.example apps/web/.env.local
+# fill in your Supabase, Pinata, and Privy keys
 pnpm install
 pnpm dev
 ```
 
-Workspace tasks (via turborepo, from the root):
-
-```bash
-pnpm dev      # run the apps in development
-pnpm build    # build the workspace
-pnpm lint     # ESLint across apps and packages
-pnpm test     # run the workspace tests
-pnpm format   # Prettier
-```
-
-## Tech stack
-
-- **Web:** Next.js 16 + React 19 + Tailwind + shadcn/ui
-- **Contracts:** Soroban (Rust) + OpenZeppelin Stellar Contracts
-- **Wallet:** Stellar Wallets Kit (Freighter, xBull, Albedo, LOBSTR)
-- **Indexer + off-chain data:** Supabase (a reconstructable projection of on-chain events)
-- **Storage:** IPFS
-- **Monorepo:** pnpm + turborepo
-
-
-## Language & identity
-
-In-app copy is **Spanish-first** (Argentina by default), with EN and PT planned. The brand is editorial and gallery-like, deliberately anti-crypto-bro: a blue/black/white palette with a `#2D43FF` accent. This README is in English to reach the broader Stellar and builder ecosystem.
+| Command      | What it does                   |
+| ------------ | ------------------------------ |
+| `pnpm dev`   | Run apps in development        |
+| `pnpm build` | Build the full workspace       |
+| `pnpm lint`  | ESLint across all packages     |
+| `pnpm test`  | Run contract + workspace tests |
 
 ---
 
-*Molotov — digital art where creating earns you a permanent stake in what you made.*
+## 🗺️ Roadmap
+
+- **Done** — Soroban contracts deployed and verified. Full indexer. Web app live on Vercel.
+- **Next** — Mainnet: multisig admin keys, final audit. USDC-denominated listings via Anchor Platform.
+- **Later** — Mobile apps, PT/EN/ES full support, bank withdrawal for Argentine artists.
+
+---
+
+_Molotov — digital art where creating earns you a permanent stake in what you made._
+
+_Built for PULSO Hackathon 2026 — NearX × Stellar Development Foundation_
