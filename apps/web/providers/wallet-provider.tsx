@@ -11,6 +11,7 @@ import {
 } from "react";
 import {
   createWalletsKit,
+  isUserRejection,
   STELLAR_NETWORK_PASSPHRASE,
   type ISupportedWallet,
   type StellarWalletsKit,
@@ -33,6 +34,18 @@ const SELECTED_WALLET_KEY = "molotov:selectedWalletId";
 const WC_NOT_READY = "not running yet";
 const WC_READY_DEADLINE_MS = 10_000;
 
+// The kit does NOT throw Error instances: its modules run every rejection through
+// parseError(), which returns a plain object `{ code, message, ext }`. So reading
+// `.message` off an `instanceof Error` check misses it entirely (String(obj) is
+// "[object Object]"). Read `.message` from whatever shape we get.
+function errMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === "object" && "message" in err) {
+    return String((err as { message: unknown }).message ?? "");
+  }
+  return String(err);
+}
+
 async function getAddressWhenReady(
   kit: StellarWalletsKit,
   opts?: { skipRequestAccess?: boolean },
@@ -42,8 +55,7 @@ async function getAddressWhenReady(
     try {
       return await kit.getAddress(opts);
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      if (!message.includes(WC_NOT_READY) || Date.now() > deadline) throw err;
+      if (!errMessage(err).includes(WC_NOT_READY) || Date.now() > deadline) throw err;
       await new Promise((resolve) => setTimeout(resolve, 250));
     }
   }
@@ -74,6 +86,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [modalWallets, setModalWallets] = useState<ISupportedWallet[]>([]);
+  const [connectingId, setConnectingId] = useState<string | null>(null);
+  const [connectError, setConnectError] = useState<string | null>(null);
   const walletCallbackRef = useRef<((wallet: ISupportedWallet) => void) | null>(null);
 
   const ensureKit = useCallback(() => {
@@ -98,8 +112,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const handleWalletSelected = useCallback(
     async (option: ISupportedWallet) => {
-      setModalWallets([]);
-      walletCallbackRef.current = null;
+      // Keep the modal open through the attempt: the wallet popup (or WalletConnect
+      // QR) opens over it, and if the connection fails we want to show why and let
+      // the user pick again — not vanish.
+      setConnectError(null);
+      setConnectingId(option.id);
       try {
         const kit = await ensureKit();
         kit.setWallet(option.id);
@@ -108,7 +125,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         // pairing would be restored on the next load, popping the QR unprompted.
         window.localStorage.setItem(SELECTED_WALLET_KEY, option.id);
         setAddress(address);
+        setModalWallets([]); // close only on success
+        walletCallbackRef.current = null;
+      } catch (err) {
+        // Without this catch the rejection escapes the async click handler as an
+        // unhandled promise rejection (this is the "not running yet" the console
+        // showed). Surface a message instead.
+        if (isUserRejection(err)) {
+          setConnectError(null); // they cancelled on purpose — no error banner
+        } else if (errMessage(err).includes(WC_NOT_READY)) {
+          setConnectError(
+            "WalletConnect took too long to start. Check your connection and try again.",
+          );
+        } else {
+          setConnectError("Couldn't connect to that wallet. Try again.");
+        }
       } finally {
+        setConnectingId(null);
         setIsConnecting(false);
       }
     },
@@ -117,6 +150,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const handleModalClose = useCallback(() => {
     setModalWallets([]);
+    setConnectingId(null);
+    setConnectError(null);
     walletCallbackRef.current = null;
     setIsConnecting(false);
   }, []);
@@ -192,6 +227,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       {modalWallets.length > 0 && (
         <WalletSelectModal
           wallets={modalWallets}
+          connectingId={connectingId}
+          error={connectError}
           onSelect={handleWalletSelected}
           onClose={handleModalClose}
         />
