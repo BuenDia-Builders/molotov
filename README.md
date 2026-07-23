@@ -153,6 +153,21 @@ Claims here are checkable by cloning the repo and running the commands.
 - **Indexer decoding** — tested against a committed fixture of **real testnet XDR**, not synthetic events.
 - **Conservation verified live** — a 100 XLM secondary sale with a 10% royalty and 2.5% fee settles to the stroop, zero residual.
 
+### ⚠️ What CI does not cover
+
+**`@molotov/indexer-db-tests` (25 tests) does not run in CI, and nobody runs it automatically.**
+
+It is an integration suite that exercises the database layer directly — the RLS policies, the `SECURITY DEFINER` writer functions, and the idempotency of `apply_*` — against a **local Supabase**, which needs Docker. In CI there is no such instance, so every test fails on a connection error. Rather than let that make the pipeline permanently red (a red pipeline is a pipeline nobody reads), it is excluded.
+
+The consequence is worth stating plainly: **the tests that cover the database's security model are the ones with no automation behind them.** Run them by hand after touching anything under `supabase/`:
+
+```bash
+supabase start                              # needs Docker
+pnpm --filter=@molotov/indexer-db-tests test
+```
+
+Wiring this into CI means booting the local stack in the job — worth doing, not done yet.
+
 ---
 
 ## 💼 The business
