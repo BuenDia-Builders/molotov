@@ -1,0 +1,72 @@
+name: CI
+
+# Runs on every push to main and every pull request. The point is that a red suite
+# is impossible to miss: the poller tests spent a day asserting the pre-56e25a0
+# contract ("single bad event does not block the page") — the exact behaviour that
+# commit deliberately removed — and nobody found out until someone opened the file.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to the same branch cancels the previous run; main is never cancelled.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  contracts:
+    name: Contracts — cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      # Cache keyed on the workspace lockfile: the Soroban SDK is a heavy build.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts
+
+      # No `cargo fmt --check` here on purpose: the contract sources do not currently
+      # satisfy rustfmt, and making them would be a large reformat diff over freshly
+      # audited code. Worth doing as its own commit, then adding the check.
+      - name: cargo test
+        working-directory: contracts
+        run: cargo test --workspace --verbose
+
+  web:
+    name: Web — typecheck, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Each step runs even if an earlier one failed, so one push surfaces every
+      # problem instead of one per re-run.
+      - name: Typecheck
+        if: ${{ !cancelled() }}
+        run: pnpm typecheck
+
+      - name: Lint
+        if: ${{ !cancelled() }}
+        run: pnpm lint
+
+      # Scoped to the web package on purpose. The other test package,
+      # @molotov/indexer-db-tests, is an integration suite that talks to a local
+      # Supabase over Docker (`supabase start`) — without it every test fails on a
+      # connection error, which would make CI permanently red and therefore ignored.
+      # Running it here needs the local stack booted first; worth a separate job.
+      - name: Test
+        if: ${{ !cancelled() }}
+        run: pnpm --filter=web test

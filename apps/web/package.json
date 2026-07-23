@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "icons:gen": "node scripts/generate-pwa-icons.mjs",
     "test": "vitest run --reporter=verbose",
     "test:watch": "vitest"
