@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import { stroopsToXlm } from "@/lib/stroops";
 
 interface Listing {
   listing_id: number;
@@ -27,12 +28,6 @@ const fetcher = (url: string) =>
     return r.json();
   });
 
-function stroopsToXlm(stroops: string): string {
-  const n = Number(stroops);
-  if (Number.isNaN(n)) return "—";
-  return (n / 10_000_000).toFixed(2);
-}
-
 function truncate(addr: string): string {
   if (addr.length <= 8) return addr;
   return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
@@ -40,7 +35,15 @@ function truncate(addr: string): string {
 
 function ListingCard({ listing }: { listing: Listing }) {
   const { t } = useI18n();
-  const xlm = stroopsToXlm(listing.price);
+  // The canonical converter throws on a malformed amount rather than returning a
+  // wrong number. Our own indexer writes NUMERIC NOT NULL here, so this should be
+  // unreachable — but this feed is on the landing page and must not blank it out.
+  let xlm: string;
+  try {
+    xlm = stroopsToXlm(listing.price);
+  } catch {
+    xlm = "—";
+  }
   const royaltyPct = listing.tokens ? (listing.tokens.royalty_bps / 100).toFixed(0) : null;
   const isEdition = listing.kind === "open_edition" && listing.editions_total != null;
 

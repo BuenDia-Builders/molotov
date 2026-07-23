@@ -1,4 +1,5 @@
 import { getDb } from "./client";
+import { stroopsToXlm, xlmToStroops } from "../stroops";
 
 export type DbListing = {
   listing_id: string;
@@ -13,16 +14,10 @@ export type DbListing = {
   status: string;
 };
 
-const STROOP_PER_XLM = BigInt(10_000_000);
-
-export function stroopsToXlm(price: string): string {
-  const p = BigInt(price);
-  const whole = p / STROOP_PER_XLM;
-  const frac = p % STROOP_PER_XLM;
-  if (frac === BigInt(0)) return whole.toString();
-  const fracStr = frac.toString().padStart(7, "0").replace(/0+$/, "");
-  return `${whole}.${fracStr}`;
-}
+// The implementation lives in the pure `lib/stroops` module so client components can
+// use it without pulling the Supabase client into their bundle. Re-exported here so
+// `import { stroopsToXlm } from "@/lib/db"` keeps working.
+export { stroopsToXlm, xlmToStroops };
 
 export async function findActiveListingByToken(
   tokenId: number,

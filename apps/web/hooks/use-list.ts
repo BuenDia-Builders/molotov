@@ -8,6 +8,7 @@ import {
 } from "@molotov/stellar-client/molotov-marketplace";
 import { useWallet } from "@/hooks/use-wallet";
 import { MARKETPLACE_CONTRACT_ID, NATIVE_XLM_SAC, RPC_URL, isUserRejection } from "@/lib/stellar";
+import { xlmToStroops } from "@/lib/stroops";
 
 export type ListState = "idle" | "approving" | "listing" | "success" | "error";
 export type ListErrorKind = "approve_rejected" | "approve" | "list" | null;
@@ -29,7 +30,7 @@ export function useList() {
       if (!address) throw new Error("No wallet connected");
       setErrorKind(null);
 
-      const priceStraops = BigInt(Math.round(priceXlm * 10_000_000));
+      const priceStroops = xlmToStroops(priceXlm);
 
       const signFn = async (xdr: string) => {
         return signTransaction(xdr, {
@@ -82,7 +83,7 @@ export function useList() {
           seller: address,
           nft: nftNetworks.testnet.contractId,
           token_id: tokenId,
-          price: priceStraops,
+          price: priceStroops,
           currency: NATIVE_XLM_SAC,
           kind: { tag: "FixedPrice", values: undefined as unknown as void },
           editions: 1,
