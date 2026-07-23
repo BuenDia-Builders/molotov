@@ -50,3 +50,9 @@ mutants.out.old/
 
 # supabase cli local state
 supabase/.temp/
+.vercel
+
+# Internal ops / audit docs — kept out of the public repo (not published)
+doc/indexer-operations.md
+doc/audit/
+.claude/commands/auditoria.md
