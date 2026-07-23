@@ -19,6 +19,36 @@ import { WalletSelectModal } from "@/components/wallet-select-modal";
 
 const SELECTED_WALLET_KEY = "molotov:selectedWalletId";
 
+// The WalletConnect module fires SignClient.init() from its constructor without
+// awaiting it, and reports isAvailable() = true immediately. Since we build the kit
+// lazily (on the Connect click, not on mount, to avoid opening a relay socket for
+// every anonymous visitor), the init network round-trip is usually still in flight
+// when the user picks WalletConnect — so getAddress() throws "WalletConnect is not
+// running yet" because this.client is null.
+//
+// This retries getAddress ONLY while that specific error is thrown, up to a short
+// deadline. Once the client is ready, getAddress proceeds into the pairing flow
+// (QR / deep link) which we await without any timeout of our own — the deadline
+// bounds the "waiting for init" phase, never the "waiting for the user to scan" one.
+const WC_NOT_READY = "not running yet";
+const WC_READY_DEADLINE_MS = 10_000;
+
+async function getAddressWhenReady(
+  kit: StellarWalletsKit,
+  opts?: { skipRequestAccess?: boolean },
+): Promise<{ address: string }> {
+  const deadline = Date.now() + WC_READY_DEADLINE_MS;
+  for (;;) {
+    try {
+      return await kit.getAddress(opts);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (!message.includes(WC_NOT_READY) || Date.now() > deadline) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+}
+
 type SignResult = { signedTxXdr: string; signerAddress?: string };
 
 type WalletContextValue = {
@@ -55,7 +85,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     ensureKit()
       .then(async (kit) => {
         kit.setWallet(savedId);
-        const { address } = await kit.getAddress({ skipRequestAccess: true });
+        // Same wait as the connect path: a restored WalletConnect session would
+        // otherwise be dropped just because init had not finished yet.
+        const { address } = await getAddressWhenReady(kit, { skipRequestAccess: true });
         setAddress(address);
       })
       .catch(() => window.localStorage.removeItem(SELECTED_WALLET_KEY));
@@ -68,8 +100,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       try {
         const kit = await ensureKit();
         kit.setWallet(option.id);
+        const { address } = await getAddressWhenReady(kit);
+        // Persist only after a real connection: otherwise a cancelled WalletConnect
+        // pairing would be restored on the next load, popping the QR unprompted.
         window.localStorage.setItem(SELECTED_WALLET_KEY, option.id);
-        const { address } = await kit.getAddress();
         setAddress(address);
       } finally {
         setIsConnecting(false);
