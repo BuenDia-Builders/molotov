@@ -18,6 +18,9 @@ export const STELLAR_NETWORK_PASSPHRASE = !IS_TESTNET
   ? "Public Global Stellar Network ; September 2015"
   : "Test SDF Network ; September 2015";
 
+/** WalletConnect Cloud project ID. Absent → the WalletConnect option is not offered. */
+export const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "";
+
 /**
  * Creates the multi-provider wallet kit instance supporting Freighter, xBull,
  * Albedo, LOBSTR and Hana. Imported dynamically so it only loads in the browser.
@@ -33,16 +36,40 @@ export async function createWalletsKit(): Promise<StellarWalletsKit> {
     HanaModule,
   } = await import("@creit.tech/stellar-wallets-kit");
 
+  const modules = [
+    new FreighterModule(),
+    new xBullModule(),
+    new AlbedoModule(),
+    new LobstrModule(),
+    new HanaModule(),
+  ];
+
+  // WalletConnect is how someone signs from a wallet on their phone while browsing
+  // on a laptop — and, since there is no native app, it is also how a phone browser
+  // reaches a wallet app at all. It needs a project ID from WalletConnect Cloud; if
+  // that is not configured we simply omit the module rather than register a broken
+  // entry that fails when tapped.
+  if (WALLETCONNECT_PROJECT_ID) {
+    const { WalletConnectModule, WalletConnectAllowedMethods } =
+      await import("@creit.tech/stellar-wallets-kit/modules/walletconnect.module");
+    modules.push(
+      new WalletConnectModule({
+        projectId: WALLETCONNECT_PROJECT_ID,
+        name: "Molotov",
+        description: "Digital art marketplace where the royalty is enforced by the contract.",
+        url:
+          typeof window === "undefined" ? "https://molotov-web.vercel.app" : window.location.origin,
+        icons: ["https://molotov-web.vercel.app/icon-512.png"],
+        method: WalletConnectAllowedMethods.SIGN,
+        network: STELLAR_NETWORK_PASSPHRASE as WalletNetwork,
+      }),
+    );
+  }
+
   return new StellarWalletsKit({
     network: STELLAR_NETWORK_PASSPHRASE as WalletNetwork,
     selectedWalletId: FREIGHTER_ID,
-    modules: [
-      new FreighterModule(),
-      new xBullModule(),
-      new AlbedoModule(),
-      new LobstrModule(),
-      new HanaModule(),
-    ],
+    modules,
   });
 }
 
