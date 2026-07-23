@@ -133,9 +133,9 @@ async function fetchTokenUri(tokenId: number): Promise<string> {
 
 async function applyDecoded(
   ev: DecodedEvent,
-  meta: { ledger: number; txHash: string; eventIndex: number },
+  meta: { ledger: number; txHash: string; eventIndex: number; closedAt: string | null },
 ): Promise<void> {
-  const { ledger, txHash, eventIndex } = meta;
+  const { ledger, txHash, eventIndex, closedAt } = meta;
 
   switch (ev.kind) {
     case "ArtistRegistered": {
@@ -172,6 +172,7 @@ async function applyDecoded(
         p_ledger: ledger,
         p_tx: txHash,
         p_event_index: eventIndex,
+        p_closed_at: closedAt,
       });
       if (error) throw new Error(`apply_minted_event: ${error.message}`);
       break;
@@ -185,6 +186,7 @@ async function applyDecoded(
         p_ledger: ledger,
         p_tx: txHash,
         p_event_index: eventIndex,
+        p_closed_at: closedAt,
       });
       if (error) throw new Error(`apply_transfer: ${error.message}`);
       break;
@@ -197,6 +199,7 @@ async function applyDecoded(
         p_ledger: ledger,
         p_tx: txHash,
         p_event_index: eventIndex,
+        p_closed_at: closedAt,
       });
       if (error) throw new Error(`apply_burn: ${error.message}`);
       break;
@@ -218,6 +221,7 @@ async function applyDecoded(
         p_ledger: ledger,
         p_tx: txHash,
         p_event_index: eventIndex,
+        p_closed_at: closedAt,
       });
       if (error) throw new Error(`apply_listing_created: ${error.message}`);
       break;
@@ -237,6 +241,7 @@ async function applyDecoded(
         p_royalty_paid: ev.royaltyPaid,
         p_referral_paid: ev.referralPaid,
         p_fee_paid: ev.feePaid,
+        p_closed_at: closedAt,
       });
       if (error) throw new Error(`apply_sold: ${error.message}`);
       break;
@@ -359,6 +364,11 @@ export async function pollOnce(): Promise<PollResult> {
           ledger: raw.ledger,
           txHash: raw.txHash,
           eventIndex,
+          // Wall-clock close time of the ledger. The RPC only serves it inside the
+          // retention window, so capturing it here is the only chance we get: once
+          // an event ages out, its timestamp is unrecoverable. Null-safe because
+          // older SDK/RPC responses may omit it — the column is nullable by design.
+          closedAt: raw.ledgerClosedAt ?? null,
         });
       } catch (err) {
         // A failed apply must NOT be skipped: skipping it and advancing the cursor
