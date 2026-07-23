@@ -56,6 +56,9 @@ type WalletContextValue = {
   isConnected: boolean;
   isConnecting: boolean;
   connect: () => Promise<void>;
+  /** Start building the kit early (on wallet-menu open) so WalletConnect's async
+   *  SignClient.init has finished by the time the user picks it. Idempotent. */
+  prewarm: () => void;
   disconnect: () => Promise<void>;
   signTransaction: (xdr: string, opts?: { networkPassphrase?: string }) => Promise<SignResult>;
   /** Called by WalletButton after Privy email/Google login resolves a Stellar address. */
@@ -118,6 +121,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setIsConnecting(false);
   }, []);
 
+  // Fire kit creation (and thus WalletConnect's SignClient.init) as early as the
+  // user shows intent to connect — when the wallet menu opens — not when they pick
+  // WalletConnect. init then runs while they read the wallet list, so by the time
+  // they choose it the client is ready and the retry below rarely has to wait. No
+  // cost to anonymous visitors: it only fires once someone opens the wallet menu.
+  const prewarm = useCallback(() => {
+    void ensureKit();
+  }, [ensureKit]);
+
   const connect = useCallback(async () => {
     setIsConnecting(true);
     try {
@@ -170,6 +182,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         isConnected: address !== null,
         isConnecting,
         connect,
+        prewarm,
         disconnect,
         signTransaction,
         connectViaPrivy,
