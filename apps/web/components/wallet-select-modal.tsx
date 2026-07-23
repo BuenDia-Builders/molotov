@@ -5,8 +5,6 @@ import type { ISupportedWallet } from "@/lib/stellar";
 
 interface Props {
   wallets: ISupportedWallet[];
-  /** id of the wallet a connection is currently in flight for, if any. */
-  connectingId?: string | null;
   /** user-facing connection error to show, if the last attempt failed. */
   error?: string | null;
   onSelect: (wallet: ISupportedWallet) => void;
@@ -28,13 +26,9 @@ function rank(wallet: ISupportedWallet): number {
 
 function WalletRow({
   wallet,
-  connecting,
-  disabled,
   onSelect,
 }: {
   wallet: ISupportedWallet;
-  connecting: boolean;
-  disabled: boolean;
   onSelect: (wallet: ISupportedWallet) => void;
 }) {
   const available = wallet.isAvailable;
@@ -42,11 +36,11 @@ function WalletRow({
   return (
     <li>
       <button
-        disabled={!available || disabled}
+        disabled={!available}
         onClick={() => onSelect(wallet)}
         className={`flex w-full items-center gap-3 px-3 py-3 text-left transition-colors ${
           available ? "hover:bg-white/5" : "cursor-default"
-        } disabled:cursor-default`}
+        }`}
       >
         {wallet.icon && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -65,18 +59,12 @@ function WalletRow({
         >
           {wallet.name}
         </span>
-        {connecting && (
-          <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--offwhite)]/50">
-            Connecting…
-          </span>
-        )}
       </button>
     </li>
   );
 }
 
-export function WalletSelectModal({ wallets, connectingId, error, onSelect, onClose }: Props) {
-  const busy = connectingId != null;
+export function WalletSelectModal({ wallets, error, onSelect, onClose }: Props) {
   // Installed wallets first, missing ones grouped at the bottom instead of
   // interleaved: a greyed-out row between two usable ones reads as something broken
   // rather than as "you don't have this one".
@@ -116,13 +104,7 @@ export function WalletSelectModal({ wallets, connectingId, error, onSelect, onCl
         {available.length > 0 && (
           <ul className="space-y-1">
             {available.map((wallet) => (
-              <WalletRow
-                key={wallet.id}
-                wallet={wallet}
-                connecting={connectingId === wallet.id}
-                disabled={busy}
-                onSelect={onSelect}
-              />
+              <WalletRow key={wallet.id} wallet={wallet} onSelect={onSelect} />
             ))}
           </ul>
         )}
@@ -134,13 +116,7 @@ export function WalletSelectModal({ wallets, connectingId, error, onSelect, onCl
             </p>
             <ul className="space-y-1">
               {unavailable.map((wallet) => (
-                <WalletRow
-                  key={wallet.id}
-                  wallet={wallet}
-                  connecting={connectingId === wallet.id}
-                  disabled={busy}
-                  onSelect={onSelect}
-                />
+                <WalletRow key={wallet.id} wallet={wallet} onSelect={onSelect} />
               ))}
             </ul>
           </>

@@ -112,9 +112,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const handleWalletSelected = useCallback(
     async (option: ISupportedWallet) => {
-      // Keep the modal open through the attempt: the wallet popup (or WalletConnect
-      // QR) opens over it, and if the connection fails we want to show why and let
-      // the user pick again — not vanish.
+      // Hide our selector while the attempt runs (connectingId gates its render):
+      // WalletConnect draws its own QR modal in the DOM, and keeping ours on top
+      // would cover it. The wallet list stays in state, so on failure the selector
+      // reappears with an error to retry — it is not lost.
       setConnectError(null);
       setConnectingId(option.id);
       try {
@@ -125,14 +126,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         // pairing would be restored on the next load, popping the QR unprompted.
         window.localStorage.setItem(SELECTED_WALLET_KEY, option.id);
         setAddress(address);
-        setModalWallets([]); // close only on success
+        setModalWallets([]); // success: close for good
         walletCallbackRef.current = null;
       } catch (err) {
         // Without this catch the rejection escapes the async click handler as an
-        // unhandled promise rejection (this is the "not running yet" the console
-        // showed). Surface a message instead.
+        // unhandled promise rejection (the "not running yet" the console showed).
+        // Surface a message and let the selector reappear (unless they cancelled).
         if (isUserRejection(err)) {
-          setConnectError(null); // they cancelled on purpose — no error banner
+          setConnectError(null);
         } else if (errMessage(err).includes(WC_NOT_READY)) {
           setConnectError(
             "WalletConnect took too long to start. Check your connection and try again.",
@@ -141,7 +142,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           setConnectError("Couldn't connect to that wallet. Try again.");
         }
       } finally {
-        setConnectingId(null);
+        setConnectingId(null); // selector shows again (with the error, if any)
         setIsConnecting(false);
       }
     },
@@ -224,10 +225,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-      {modalWallets.length > 0 && (
+      {modalWallets.length > 0 && connectingId === null && (
         <WalletSelectModal
           wallets={modalWallets}
-          connectingId={connectingId}
           error={connectError}
           onSelect={handleWalletSelected}
           onClose={handleModalClose}
