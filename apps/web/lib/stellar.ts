@@ -63,6 +63,12 @@ export function contractExplorerUrl(contractId: string): string {
   return `https://stellar.expert/explorer/${net}/contract/${contractId}`;
 }
 
+/** Builds a stellar.expert explorer URL for a transaction on the active network. */
+export function txExplorerUrl(txHash: string): string {
+  const net = process.env.NEXT_PUBLIC_STELLAR_NETWORK === "PUBLIC" ? "public" : "testnet";
+  return `https://stellar.expert/explorer/${net}/tx/${txHash}`;
+}
+
 /** Truncates a Stellar address for display, e.g. GABC…XY12. */
 export function truncateAddress(address: string, prefix = 4, suffix = 4): string {
   if (address.length <= prefix + suffix) return address;

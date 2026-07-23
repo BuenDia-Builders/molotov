@@ -11,6 +11,7 @@ export const es = {
     discover: "Descubrir",
     create: "Crear",
     myWork: "Mis obras",
+    earnings: "Lo que ganaste",
     artists: "Artistas",
     more: "Más",
     howYouEarn: "Cómo cobrás",
@@ -230,5 +231,58 @@ export const es = {
     connectWallet: "Conectá tu wallet para ver tus obras",
     tokensSingular: "token",
     tokensPlural: "tokens",
+  },
+  earnings: {
+    title: "Lo que ganaste",
+    connectWallet: "Conectá tu wallet para ver lo que ganaste",
+    loadError: "No pudimos cargar tus ganancias",
+    loadErrorHint: "Los datos on-chain no están disponibles en este momento.",
+
+    royaltyLabel: "Te volvió en regalías",
+    royaltyCaption: "Plata que llegó después de que la obra dejó de ser tuya",
+    royaltyFromSales: "de {sales} reventas de {tokens} obras tuyas",
+    royaltyNone: "Todavía nadie revendió una obra tuya",
+    royaltyNoneExplain:
+      "Cuando pase, tu regalía llega sola: el contrato la paga antes de cerrar la venta. No depende de la plataforma ni de la buena voluntad de nadie.",
+
+    primaryLabel: "Ventas primarias",
+    primaryCaption: "obras que vendiste vos",
+    totalLabel: "Total ganado",
+    listedLabel: "En venta ahora",
+    listedCaption: "si se vende todo lo que tenés listado",
+    listedNotIncome: "Todavía no es plata cobrada",
+
+    sharedTitle: "Regalías compartidas",
+    sharedBody:
+      "{sales} reventas de obras con regalía repartida entre {recipients} destinatarios, por {amount} XLM en total. El evento del contrato no registra cuánto le tocó a cada uno, así que no lo sumamos a tu total.",
+    sharedBadge: "Compartida",
+
+    perTokenTitle: "Por obra",
+    perTokenEmpty: "Ninguna de tus obras se vendió todavía",
+    colWork: "Obra",
+    colSales: "Ventas",
+    colPrimary: "Primaria",
+    colRoyalty: "Regalías",
+    colTotal: "Total",
+    colStatus: "Estado",
+    statusListed: "En venta",
+    statusNotListed: "Sin listar",
+
+    activityTitle: "Actividad",
+    activityEmpty: "Sin movimientos todavía",
+    badgePrimary: "Primaria",
+    badgeRoyalty: "Regalía",
+    youEarned: "Lo tuyo",
+    price: "Precio",
+    viewTx: "Ver transacción",
+
+    noWorksTitle: "Todavía no subiste ninguna obra",
+    noWorksBody:
+      "Cuando subas tu primera obra, acá vas a ver lo que ganás: lo que cobrás al venderla, y la regalía que te vuelve cada vez que alguien la revende.",
+    noWorksCta: "Subir mi primera obra",
+
+    noSalesTitle: "Tus obras todavía no se vendieron",
+    noSalesBody:
+      "Acá va a aparecer cada venta y cada regalía apenas pasen. Nada que hacer de tu lado: el indexer lo levanta solo de la cadena.",
   },
 };

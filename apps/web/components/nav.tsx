@@ -16,6 +16,7 @@ const PRIMARY_LINKS = [
 ] as const;
 
 const SECONDARY_LINKS = [
+  { href: "/earnings", key: "nav.earnings" },
   { href: "/#how", key: "nav.howYouEarn" },
   { href: "/#activity", key: "nav.activity" },
   { href: "/#manifesto", key: "nav.manifesto" },

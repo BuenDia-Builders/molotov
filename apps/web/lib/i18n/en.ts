@@ -13,6 +13,7 @@ export const en = {
     discover: "Discover",
     create: "Create",
     myWork: "My works",
+    earnings: "What you earned",
     artists: "Artists",
     more: "More",
     howYouEarn: "How you earn",
@@ -232,5 +233,58 @@ export const en = {
     connectWallet: "Connect your wallet to see your works",
     tokensSingular: "token",
     tokensPlural: "tokens",
+  },
+  earnings: {
+    title: "What you earned",
+    connectWallet: "Connect your wallet to see what you earned",
+    loadError: "Could not load your earnings",
+    loadErrorHint: "On-chain data is unavailable right now.",
+
+    royaltyLabel: "Came back to you in royalties",
+    royaltyCaption: "Money that arrived after the work stopped being yours",
+    royaltyFromSales: "from {sales} resales of {tokens} of your works",
+    royaltyNone: "Nobody has resold your work yet",
+    royaltyNoneExplain:
+      "When it happens, your royalty arrives on its own: the contract pays it before the sale can close. It does not depend on the platform, or on anyone's goodwill.",
+
+    primaryLabel: "Primary sales",
+    primaryCaption: "works you sold yourself",
+    totalLabel: "Total earned",
+    listedLabel: "Listed right now",
+    listedCaption: "if everything you have listed sells",
+    listedNotIncome: "Not money received yet",
+
+    sharedTitle: "Shared royalties",
+    sharedBody:
+      "{sales} resales of works whose royalty is split across {recipients} recipients, for {amount} XLM in total. The contract event does not record each recipient's share, so we do not add it to your total.",
+    sharedBadge: "Shared",
+
+    perTokenTitle: "By work",
+    perTokenEmpty: "None of your works has sold yet",
+    colWork: "Work",
+    colSales: "Sales",
+    colPrimary: "Primary",
+    colRoyalty: "Royalties",
+    colTotal: "Total",
+    colStatus: "Status",
+    statusListed: "Listed",
+    statusNotListed: "Not listed",
+
+    activityTitle: "Activity",
+    activityEmpty: "No movements yet",
+    badgePrimary: "Primary",
+    badgeRoyalty: "Royalty",
+    youEarned: "You earned",
+    price: "Price",
+    viewTx: "View transaction",
+
+    noWorksTitle: "You have not uploaded any work yet",
+    noWorksBody:
+      "Once you upload your first work, this is where you will see what you earn: what you collect when it sells, and the royalty that comes back every time someone resells it.",
+    noWorksCta: "Upload my first work",
+
+    noSalesTitle: "Your works have not sold yet",
+    noSalesBody:
+      "Every sale and every royalty will show up here as soon as they happen. Nothing to do on your side: the indexer picks them up from the chain.",
   },
 } satisfies typeof es;
