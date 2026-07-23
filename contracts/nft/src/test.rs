@@ -193,6 +193,62 @@ fn test_mint_rejects_royalty_above_max() {
     );
 }
 
+// The bounds are advertised as "1% to 15%", so both ends have to be *mintable*.
+// Rejecting outside the range was already covered; accepting exactly at it was not,
+// which left `<` vs `<=` (and `>` vs `>=`) in mint free to flip without any test
+// noticing — a one-character change would have made 1% and 15% unmintable.
+#[test]
+fn test_mint_accepts_exactly_min_royalty() {
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+    let artist = Address::generate(&e);
+    let token_id = client.mint(
+        &artist,
+        &artist,
+        &String::from_str(&e, "ipfs://x"),
+        &100u32, // MIN_ROYALTY_BPS — exactly 1%
+        &one_recipient(&e, &artist),
+    );
+    assert_eq!(client.royalty_bps(&token_id), 100);
+}
+
+#[test]
+fn test_mint_accepts_exactly_max_royalty() {
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+    let artist = Address::generate(&e);
+    let token_id = client.mint(
+        &artist,
+        &artist,
+        &String::from_str(&e, "ipfs://x"),
+        &1500u32, // MAX_ROYALTY_BPS — exactly 15%
+        &one_recipient(&e, &artist),
+    );
+    assert_eq!(client.royalty_bps(&token_id), 1500);
+}
+
+// Zero is a legal sale price to quote: it must return zero-value payouts, not panic.
+// Only a negative price is an error, and `< 0` vs `<= 0` is the difference.
+#[test]
+fn test_get_royalty_info_accepts_zero_price() {
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+    let artist = Address::generate(&e);
+    let token_id = client.mint(
+        &artist,
+        &artist,
+        &String::from_str(&e, "ipfs://x"),
+        &1000u32,
+        &one_recipient(&e, &artist),
+    );
+    let payouts = client.get_royalty_info(&token_id, &0i128);
+    assert_eq!(payouts.len(), 1);
+    assert_eq!(payouts.get(0).unwrap().1, 0);
+}
+
 #[test]
 #[should_panic]
 fn test_mint_rejects_split_not_summing_10000() {
@@ -390,6 +446,39 @@ fn test_burn_removes_token_metadata() {
 
     client.burn(&owner, &token_id);
 
+    e.as_contract(&id, || {
+        assert!(!e.storage().persistent().has(&DataKey::Royalty(token_id)));
+        assert!(!e.storage().persistent().has(&DataKey::TokenUri(token_id)));
+        assert!(!e.storage().persistent().has(&DataKey::Minter(token_id)));
+    });
+}
+
+// `burn_from` is the SEP-50 delegated burn: an approved spender destroys someone
+// else's token. It had no test at all, so its whole body — including the metadata
+// cleanup that stops a burned token paying rent forever — could have been deleted
+// without anything failing.
+#[test]
+fn test_burn_from_by_approved_spender_removes_metadata() {
+    use crate::DataKey;
+
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+    let owner = Address::generate(&e);
+    let spender = Address::generate(&e);
+    let token_id = client.mint(
+        &owner,
+        &owner,
+        &String::from_str(&e, "ipfs://burn-from"),
+        &1000u32,
+        &one_recipient(&e, &owner),
+    );
+
+    let expiry = e.ledger().sequence() + 100;
+    client.approve(&owner, &spender, &token_id, &expiry);
+    client.burn_from(&spender, &owner, &token_id);
+
+    let id = client.address.clone();
     e.as_contract(&id, || {
         assert!(!e.storage().persistent().has(&DataKey::Royalty(token_id)));
         assert!(!e.storage().persistent().has(&DataKey::TokenUri(token_id)));
