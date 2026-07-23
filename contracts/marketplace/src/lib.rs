@@ -33,6 +33,11 @@ use stellar_access::ownable::{enforce_owner_auth, set_owner, Ownable};
 const BPS_DENOMINATOR: i128 = 10_000; // 100%
 // Mirrors the NFT: an unbounded loop over a user-supplied split is a DoS vector.
 const MAX_RECIPIENTS: u32 = 10;
+// Minimum listing price in stroops (objkt uses an equivalent floor). Below this a
+// fee/royalty of a few bps would floor-divide to 0 stroops, so the royalty could be
+// silently skipped on micro-priced sales. 10_000 stroops = 0.001 XLM guarantees any
+// fee/royalty >= 1 bp is at least 1 stroop.
+const MIN_LISTING_PRICE: i128 = 10_000;
 
 // TTL maintenance for persistent listing / allowlist entries — same Phase 0.5
 // discipline as the NFT and ArtistRegistry. ~1 day threshold, ~30 day bump.
@@ -69,6 +74,16 @@ pub enum MarketError {
     /// Open-edition listing past its `ends_at` window — no more buys; the seller
     /// reclaims the unsold inventory with `cancel`.
     ListingExpired = 17,
+    /// A primary-sale split (`primary_split = Some(..)`) was used by a seller who is
+    /// not the token's minter. Only the creator may skip the royalty on a first
+    /// sale; a reseller must sell on the royalty-bearing secondary path.
+    SplitNotAllowedForReseller = 18,
+    /// Listing price below the minimum (`MIN_LISTING_PRICE`); rejected so the fee
+    /// and royalty can never round down to zero.
+    PriceBelowMinimum = 19,
+    /// A non-zero `ends_at` that is not strictly in the future — a listing must not
+    /// be born already expired.
+    InvalidEndsAt = 20,
 }
 
 /// One wallet of a primary-sale split: a share of the post-fee proceeds in bps.
@@ -146,6 +161,8 @@ pub trait NftInterface {
     fn transfer(e: Env, from: Address, to: Address, token_id: u32);
     fn get_royalty_info(e: Env, token_id: u32, sale_price: i128) -> Vec<(Address, i128)>;
     fn royalty_bps(e: Env, token_id: u32) -> u32;
+    /// The token's creator (`None` for legacy tokens). Used to gate primary splits.
+    fn minter_of(e: Env, token_id: u32) -> Option<Address>;
 }
 
 /// Emitted when a listing is created. Carries the full listing so the indexer can
@@ -220,6 +237,21 @@ fn mul_div(a: i128, b: i128, denom: i128) -> Result<i128, MarketError> {
 ///   (Σ = 10000, 1..=10 wallets); the **last** wallet absorbs the rounding dust.
 /// - `Secondary(seller, royalties)`: pays the royalty vector verbatim, then
 ///   `remainder = price − fee − Σroyalties` to the seller.
+/// Full distribution result: the payout vector plus the explicit platform figures
+/// the `Sold` event needs. Exposing `fee`/`referral` here means `buy` never has to
+/// reconstruct the referral by scanning payouts for the referrer's address — which
+/// double-counts when the referrer is also the treasury or a royalty recipient.
+pub struct Distribution {
+    pub payouts: Vec<(Address, i128)>,
+    /// Total platform take (treasury + referral) = `price * fee_bps / 10000`.
+    pub fee: i128,
+    /// Amount routed to the referrer (0 when there is no active referrer).
+    pub referral: i128,
+}
+
+/// Thin wrapper returning only the payout vector — the pure conservation-tested
+/// surface used across the property tests. `buy` uses [`distribute_full`] for the
+/// event figures.
 pub fn distribute(
     e: &Env,
     price: i128,
@@ -229,6 +261,18 @@ pub fn distribute(
     referrer: &Option<Address>,
     mode: &DistMode,
 ) -> Result<Vec<(Address, i128)>, MarketError> {
+    Ok(distribute_full(e, price, fee_bps, referral_bps, treasury, referrer, mode)?.payouts)
+}
+
+pub fn distribute_full(
+    e: &Env,
+    price: i128,
+    fee_bps: u32,
+    referral_bps: u32,
+    treasury: &Address,
+    referrer: &Option<Address>,
+    mode: &DistMode,
+) -> Result<Distribution, MarketError> {
     if price <= 0 {
         return Err(MarketError::InvalidPrice);
     }
@@ -317,7 +361,11 @@ pub fn distribute(
         }
     }
 
-    Ok(out)
+    Ok(Distribution {
+        payouts: out,
+        fee,
+        referral,
+    })
 }
 
 #[contract]
@@ -387,6 +435,14 @@ impl MolotovMarketplace {
         if price <= 0 {
             panic_with_error!(e, MarketError::InvalidPrice);
         }
+        // Floor the price so a low fee/royalty can never floor-divide to 0 stroops.
+        if price < MIN_LISTING_PRICE {
+            panic_with_error!(e, MarketError::PriceBelowMinimum);
+        }
+        // A non-zero expiry must be strictly in the future — never born expired.
+        if ends_at != 0 && ends_at <= e.ledger().timestamp() {
+            panic_with_error!(e, MarketError::InvalidEndsAt);
+        }
         match kind {
             // Reserved; listing an auction is enabled later together with its buy path.
             ListingKind::Auction => panic_with_error!(e, MarketError::NotImplemented),
@@ -436,9 +492,18 @@ impl MolotovMarketplace {
         {
             panic_with_error!(e, MarketError::FeePlusRoyaltyTooHigh);
         }
-        // Validate the primary split up-front by dry-running the audited distributor
-        // (cap, positivity, shares summing to 10000) — no duplicated money math.
+        // B1 gate: a primary split skips the royalty, which is only sound when the
+        // seller is the token's creator (objkt's Advanced-Sale model). A reseller —
+        // or any token whose minter is unknown (legacy) — must use the secondary,
+        // royalty-bearing path. Checked before the dry-run so the reject is cheap.
         if let Some(split) = &primary_split {
+            match NftClient::new(e, &nft).minter_of(&token_id) {
+                Some(minter) if minter == seller => {}
+                _ => panic_with_error!(e, MarketError::SplitNotAllowedForReseller),
+            }
+            // Validate the primary split up-front by dry-running the audited
+            // distributor (cap, positivity, shares summing to 10000) — no duplicated
+            // money math.
             distribute(
                 e,
                 price,
@@ -653,7 +718,7 @@ impl MolotovMarketplace {
             }
         };
 
-        let payouts = distribute(
+        let dist = distribute_full(
             e,
             listing.price,
             fee_bps,
@@ -688,11 +753,16 @@ impl MolotovMarketplace {
             TTL_BUMP_THRESHOLD,
             TTL_BUMP_AMOUNT,
         );
+        // Keep the marketplace instance (code + fee/treasury/counter) rent-alive on
+        // every sale, so an actively traded marketplace never lets it archive.
+        e.storage()
+            .instance()
+            .extend_ttl(TTL_BUMP_THRESHOLD, TTL_BUMP_AMOUNT);
 
         // --- INTERACTIONS ---
         // Payments: buyer → each recipient (skip zero-value transfers).
         let pay = token::TokenClient::new(e, &listing.currency);
-        for entry in payouts.iter() {
+        for entry in dist.payouts.iter() {
             let (to, amount) = entry;
             // Skip zero-value transfers (every payout is >= 0, so `!= 0` == `> 0`).
             if amount != 0 {
@@ -706,21 +776,12 @@ impl MolotovMarketplace {
             &handed_token_id,
         );
 
-        // Event for the indexer: derive fee/referral from the distribution output.
-        let treasury_amount = payouts.get(0).unwrap().1; // treasury is always first
-        let referral_paid = match &eff_referrer {
-            Some(r) => {
-                let mut a: i128 = 0;
-                for entry in payouts.iter() {
-                    if &entry.0 == r {
-                        a += entry.1;
-                    }
-                }
-                a
-            }
-            None => 0,
-        };
-        let fee_paid = treasury_amount + referral_paid;
+        // Event for the indexer: the platform figures come straight from the
+        // distributor, not reconstructed by scanning payouts for the referrer's
+        // address (which double-counts when the referrer is also the treasury or a
+        // royalty recipient).
+        let referral_paid = dist.referral;
+        let fee_paid = dist.fee;
 
         Sold {
             listing_id,

@@ -56,6 +56,8 @@ pub enum MolotovError {
     RoyaltyConfigMissing = 8,
     MathOverflow = 9,
     TooManyRecipients = 10,
+    /// `get_royalty_info` was called with a negative sale price.
+    NegativeSalePrice = 11,
 }
 
 #[contracttype]
@@ -89,6 +91,10 @@ pub enum DataKey {
     Registry,
     TokenUri(u32),
     Royalty(u32),
+    /// The token's creator (the `artist` passed to `mint`). Read by the marketplace
+    /// to gate primary-sale splits to the minter. Absent for legacy tokens minted
+    /// before this key existed.
+    Minter(u32),
 }
 
 /// ArtistRegistry interface (implemented by the Step 7 contract). Only used to
@@ -182,6 +188,23 @@ impl MolotovNft {
             TTL_BUMP_AMOUNT,
         );
 
+        // Record the creator so the marketplace can gate primary-sale splits to
+        // the minter (immutable, like the royalty config).
+        e.storage()
+            .persistent()
+            .set(&DataKey::Minter(token_id), &artist);
+        e.storage().persistent().extend_ttl(
+            &DataKey::Minter(token_id),
+            TTL_BUMP_THRESHOLD,
+            TTL_BUMP_AMOUNT,
+        );
+
+        // Keep the contract instance (code + registry config) rent-alive on every
+        // mint, so an actively used collection never lets its instance archive.
+        e.storage()
+            .instance()
+            .extend_ttl(TTL_BUMP_THRESHOLD, TTL_BUMP_AMOUNT);
+
         MintedEvent {
             token_id,
             artist,
@@ -201,6 +224,9 @@ impl MolotovNft {
     /// `total * share_bps / 10000`. The last recipient absorbs the rounding dust
     /// so that the sum of amounts == total.
     pub fn get_royalty_info(e: &Env, token_id: u32, sale_price: i128) -> Vec<(Address, i128)> {
+        if sale_price < 0 {
+            panic_with_error!(e, MolotovError::NegativeSalePrice);
+        }
         let config = Self::royalty_config(e, token_id);
         // Keep the royalty entry alive on access: when the marketplace reads it,
         // bump its TTL. Only extends rent — the value is not rewritten.
@@ -235,6 +261,13 @@ impl MolotovNft {
 
     pub fn royalty_bps(e: &Env, token_id: u32) -> u32 {
         Self::royalty_config(e, token_id).total_bps
+    }
+
+    /// The token's creator, or `None` for legacy tokens minted before minter
+    /// tracking existed. The marketplace uses this to allow a primary-sale split
+    /// only when the seller is the minter.
+    pub fn minter_of(e: &Env, token_id: u32) -> Option<Address> {
+        e.storage().persistent().get(&DataKey::Minter(token_id))
     }
 
     pub fn registry(e: &Env) -> Address {
@@ -325,7 +358,28 @@ impl NonFungibleToken for MolotovNft {
 }
 
 #[contractimpl(contracttrait)]
-impl NonFungibleBurnable for MolotovNft {}
+impl NonFungibleBurnable for MolotovNft {
+    /// Burn + clean up. The base burn removes ownership; we additionally drop the
+    /// per-token royalty, URI, and minter entries so a burned token leaves no
+    /// orphaned persistent rent behind.
+    fn burn(e: &Env, from: Address, token_id: u32) {
+        Base::burn(e, &from, token_id);
+        remove_token_metadata(e, token_id);
+    }
+
+    fn burn_from(e: &Env, spender: Address, from: Address, token_id: u32) {
+        Base::burn_from(e, &spender, &from, token_id);
+        remove_token_metadata(e, token_id);
+    }
+}
+
+/// Removes the per-token persistent entries (royalty, URI, minter). Called after a
+/// burn so a destroyed token stops paying rent for data no one can reach.
+fn remove_token_metadata(e: &Env, token_id: u32) {
+    e.storage().persistent().remove(&DataKey::Royalty(token_id));
+    e.storage().persistent().remove(&DataKey::TokenUri(token_id));
+    e.storage().persistent().remove(&DataKey::Minter(token_id));
+}
 
 #[contractimpl(contracttrait)]
 impl Ownable for MolotovNft {}

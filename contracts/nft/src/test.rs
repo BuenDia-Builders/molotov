@@ -319,6 +319,84 @@ fn test_burn_by_non_owner_fails() {
     client.burn(&stranger, &token_id);
 }
 
+// ===================== minter / negative price / burn cleanup =====================
+
+/// `minter_of` returns the creator recorded at mint (even when the token was
+/// delivered to a different recipient), and `None` for a token that was never
+/// minted (the legacy case the marketplace treats as "not the minter").
+#[test]
+fn test_minter_of_returns_creator() {
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+
+    let artist = Address::generate(&e);
+    let collector = Address::generate(&e);
+    let token_id = client.mint(
+        &artist,
+        &collector,
+        &String::from_str(&e, "ipfs://minter"),
+        &1000u32,
+        &one_recipient(&e, &artist),
+    );
+
+    assert_eq!(client.minter_of(&token_id), Some(artist));
+    assert_eq!(client.minter_of(&999u32), None);
+}
+
+/// `get_royalty_info` rejects a negative sale price: a third-party integrator
+/// passing garbage gets a clean panic instead of a negative payout vector.
+#[test]
+#[should_panic]
+fn test_get_royalty_info_rejects_negative_price() {
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+    let artist = Address::generate(&e);
+    let token_id = client.mint(
+        &artist,
+        &artist,
+        &String::from_str(&e, "ipfs://neg"),
+        &1000u32,
+        &one_recipient(&e, &artist),
+    );
+    client.get_royalty_info(&token_id, &-1i128);
+}
+
+/// Burning a token removes its royalty, URI, and minter entries — no orphaned
+/// persistent rent is left behind.
+#[test]
+fn test_burn_removes_token_metadata() {
+    use crate::DataKey;
+
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+    let owner = Address::generate(&e);
+    let token_id = client.mint(
+        &owner,
+        &owner,
+        &String::from_str(&e, "ipfs://burn-cleanup"),
+        &1000u32,
+        &one_recipient(&e, &owner),
+    );
+
+    let id = client.address.clone();
+    e.as_contract(&id, || {
+        assert!(e.storage().persistent().has(&DataKey::Royalty(token_id)));
+        assert!(e.storage().persistent().has(&DataKey::TokenUri(token_id)));
+        assert!(e.storage().persistent().has(&DataKey::Minter(token_id)));
+    });
+
+    client.burn(&owner, &token_id);
+
+    e.as_contract(&id, || {
+        assert!(!e.storage().persistent().has(&DataKey::Royalty(token_id)));
+        assert!(!e.storage().persistent().has(&DataKey::TokenUri(token_id)));
+        assert!(!e.storage().persistent().has(&DataKey::Minter(token_id)));
+    });
+}
+
 // ===================== Recipient cap (MAX_RECIPIENTS) =====================
 
 /// Exactly 10 recipients (the cap) is allowed.

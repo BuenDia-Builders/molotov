@@ -666,7 +666,25 @@ impl MockNft {
             .set(&(symbol_short!("OWN"), token_id), &to);
         e.storage()
             .persistent()
+            .set(&(symbol_short!("MINT"), token_id), &artist);
+        e.storage()
+            .persistent()
             .set(&(symbol_short!("ROY"), token_id), &(artist, royalty_bps));
+    }
+    /// Mint a legacy token: ownership + royalty but NO minter recorded — mirrors a
+    /// token minted before the NFT tracked its creator (`minter_of` → None).
+    pub fn mint_legacy(e: &Env, to: Address, token_id: u32, artist: Address, royalty_bps: u32) {
+        e.storage()
+            .persistent()
+            .set(&(symbol_short!("OWN"), token_id), &to);
+        e.storage()
+            .persistent()
+            .set(&(symbol_short!("ROY"), token_id), &(artist, royalty_bps));
+    }
+    pub fn minter_of(e: &Env, token_id: u32) -> Option<Address> {
+        e.storage()
+            .persistent()
+            .get(&(symbol_short!("MINT"), token_id))
     }
     pub fn owner_of(e: &Env, token_id: u32) -> Address {
         e.storage()
@@ -813,6 +831,130 @@ fn p3_primary_buy_conserves_zero_residual() {
     assert_eq!(MockNftClient::new(&c.e, &c.nft).owner_of(&0u32), c.buyer);
 }
 
+// ======================= B1 — royalty-evasion gate =======================
+// A "primary sale" (`primary_split = Some(..)`) skips the royalty, which is only
+// sound when the seller IS the token's creator — the objkt Advanced-Sale model.
+// Before the fix ANY holder could list a split and evade the royalty (reproduced in
+// git history by `b1_reseller_primary_split_must_not_evade_royalty`, which asserted
+// the artist was paid and failed against the pre-fix contract). The fix gates the
+// split to the minter; these tests lock the invariant in.
+
+/// PASO 3 — the reseller's evasion is now rejected at `list`: `c.seller` is not the
+/// minter of token 0 (`c.artist` is), so a primary split panics
+/// `SplitNotAllowedForReseller` before any escrow happens.
+#[test]
+fn b1_reseller_primary_split_rejected_at_list() {
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+
+    let split = vec![&c.e, RoyaltyRecipient { address: c.seller.clone(), share_bps: 10_000 }];
+    let r = mkt_client(&c).try_list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &Some(split), &0u32,
+    );
+    assert_eq!(r, Err(Ok(MarketError::SplitNotAllowedForReseller.into())));
+    // Nothing was escrowed — the token stays with the reseller.
+    assert_eq!(nft_owner(&c, 0), c.seller);
+}
+
+/// PASO 3 (no regression) — the minter listing with a primary split still works:
+/// `c.seller` minted token 0 (minter == seller), so the split is allowed, the split
+/// wallet is paid after fee, and no royalty is charged (genuine first sale).
+#[test]
+fn b1_minter_primary_split_still_allowed() {
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.seller, &1000u32);
+    let w = Address::generate(&c.e);
+    let split = vec![&c.e, RoyaltyRecipient { address: w.clone(), share_bps: 10_000 }];
+    let id = mkt_client(&c).list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &Some(split), &0u32,
+    );
+    let no_ref: Option<Address> = None;
+    mkt_client(&c).buy(&c.buyer, &id, &no_ref);
+
+    assert_eq!(bal(&c, &c.treasury), 50_000_000); // 5% fee
+    assert_eq!(bal(&c, &w), 950_000_000); // rest to the split wallet
+    assert_eq!(bal(&c, &c.mkt), 0);
+    assert_eq!(nft_owner(&c, 0), c.buyer);
+}
+
+/// PASO 3 — a reseller listing WITHOUT a split pays the full royalty: the normal
+/// secondary path is unaffected by the gate, so the artist still collects 20%.
+#[test]
+fn b1_reseller_without_split_pays_full_royalty() {
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let id = mkt_client(&c).list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+    let no_ref: Option<Address> = None;
+    mkt_client(&c).buy(&c.buyer, &id, &no_ref);
+
+    assert_eq!(bal(&c, &c.artist), 200_000_000); // full 20% royalty, not evaded
+    assert_eq!(bal(&c, &c.treasury), 50_000_000);
+    assert_eq!(bal(&c, &c.seller), 750_000_000);
+    assert_eq!(bal(&c, &c.mkt), 0);
+    assert_eq!(nft_owner(&c, 0), c.buyer);
+}
+
+/// PART C — legacy token: minted before minter tracking (`minter_of` → None). A
+/// primary split can NEVER be used for it, so the gate rejects the listing.
+#[test]
+fn b1_legacy_token_without_minter_rejects_split() {
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint_legacy(&c.seller, &0u32, &c.artist, &2000u32);
+    let split = vec![&c.e, RoyaltyRecipient { address: c.seller.clone(), share_bps: 10_000 }];
+    let r = mkt_client(&c).try_list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &Some(split), &0u32,
+    );
+    assert_eq!(r, Err(Ok(MarketError::SplitNotAllowedForReseller.into())));
+    // A legacy token can still be resold on the royalty-bearing secondary path.
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let id = mkt_client(&c).list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+    let no_ref: Option<Address> = None;
+    mkt_client(&c).buy(&c.buyer, &id, &no_ref);
+    assert_eq!(bal(&c, &c.artist), 200_000_000); // royalty still paid
+}
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(96))]
+
+    /// PASO 3 property — on a secondary (resale) distribution, for ANY valid price,
+    /// fee, referral and royalty split: `treasury(fee) + Σroyalty + seller_remainder
+    /// == price` exactly, and the royalty total is never skipped (equals
+    /// `price * royalty_bps / 10000`). This is the invariant the B1 gate protects:
+    /// a reseller sale always distributes the token's royalty.
+    #[test]
+    fn b1_secondary_fee_plus_royalty_plus_remainder_eq_price(
+        shares in arb_shares(),
+        royalty_bps in 100u32..=1500u32,
+        price in arb_price(),
+        (fee_bps, referral_bps) in arb_fee_ref(),
+    ) {
+        let e = Env::default();
+        let treasury = Address::generate(&e);
+        let seller = Address::generate(&e);
+        let (royalties, roy_total) = royalty_vec(&e, price, royalty_bps, &shares);
+        let no_ref: Option<Address> = None;
+        let out = distribute(&e, price, fee_bps, referral_bps, &treasury, &no_ref,
+            &DistMode::Secondary(seller.clone(), royalties)).unwrap();
+
+        prop_assert_eq!(roy_total, price * royalty_bps as i128 / 10_000);
+        prop_assert_eq!(
+            amount_of(&out, &treasury) + roy_total + amount_of(&out, &seller),
+            price
+        );
+        prop_assert_eq!(sum_amounts(&out), price);
+    }
+}
+
 /// Referred secondary sale (objkt example on-chain): the 2% referral is carved out
 /// of the 5% fee → treasury 30M + referrer 20M; royalty and seller unchanged.
 #[test]
@@ -930,6 +1072,39 @@ fn sold_event_fields() {
 
     let mkt_events = c.e.events().all().filter_by_contract(&c.mkt);
     assert_eq!(mkt_events, std::vec![expected]);
+}
+
+/// N1 — when the referrer is ALSO a royalty recipient, the `Sold` event figures
+/// come straight from the distributor, not reconstructed by scanning payouts for
+/// the referrer's address (which double-counted the royalty as referral). Referrer
+/// == the artist (the royalty recipient) here: pre-fix this reported referral_paid
+/// 220M / fee_paid 250M; correct is 20M / 50M.
+#[test]
+fn sold_event_referral_no_address_collision() {
+    use soroban_sdk::{testutils::Events as _, Event as _};
+    use crate::Sold;
+
+    let c = setup();
+    seed_listing(&c, 2000, None, 200, ListingKind::FixedPrice, &c.sac);
+    mkt_client(&c).buy(&c.buyer, &0u64, &Some(c.artist.clone()));
+
+    let expected = Sold {
+        listing_id: 0,
+        token_id: 0,
+        buyer: c.buyer.clone(),
+        seller: c.seller.clone(),
+        price: PRICE,
+        currency: c.sac.clone(),
+        royalty_paid: 200_000_000,
+        referral_paid: 20_000_000, // exactly the referral, NOT royalty + referral
+        fee_paid: 50_000_000,      // exactly the fee, NOT fee + royalty
+    }
+    .to_xdr(&c.e, &c.mkt);
+
+    let mkt_events = c.e.events().all().filter_by_contract(&c.mkt);
+    assert_eq!(mkt_events, std::vec![expected]);
+    // The artist really received royalty (200M) + referral (20M).
+    assert_eq!(bal(&c, &c.artist), 220_000_000);
 }
 
 // ======================= list / cancel / open-edition =======================
@@ -1051,6 +1226,49 @@ fn list_rejects_bad_editions() {
     assert!(r.is_err());
 }
 
+/// A price below `MIN_LISTING_PRICE` (10_000 stroops) is rejected — this is what
+/// kills the fee/royalty rounding-to-zero on micro-priced sales.
+#[test]
+fn list_rejects_price_below_minimum() {
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let r = mkt_client(&c).try_list(
+        &c.seller, &c.nft, &0u32, &9_999i128, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+    assert_eq!(r, Err(Ok(MarketError::PriceBelowMinimum.into())));
+}
+
+/// Exactly `MIN_LISTING_PRICE` is accepted (boundary).
+#[test]
+fn list_accepts_minimum_price() {
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let id = mkt_client(&c).list(
+        &c.seller, &c.nft, &0u32, &10_000i128, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+    assert_eq!(id, 0);
+}
+
+/// A non-zero `ends_at` that is not strictly in the future is rejected at `list`
+/// (no listing born already expired). Here `ends_at == now`.
+#[test]
+fn list_rejects_non_future_ends_at() {
+    use soroban_sdk::testutils::Ledger as _;
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+    c.e.ledger().with_mut(|l| l.timestamp = 1000);
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let r = mkt_client(&c).try_list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &1000u64, &no_split, &0u32,
+    );
+    assert_eq!(r, Err(Ok(MarketError::InvalidEndsAt.into())));
+}
+
 /// `cancel` returns the escrowed NFT to the seller, flips status (a later buy
 /// fails), emits ListingCancelled, and keeps zero residual.
 #[test]
@@ -1115,7 +1333,7 @@ fn open_edition_sell_through() {
     let c = setup();
     // Pre-mint 3 contiguous tokens (0,1,2) to the seller.
     for tid in 0u32..3 {
-        MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &tid, &c.artist, &1000u32);
+        MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &tid, &c.seller, &1000u32);
     }
     // Primary split: 100% to the artist.
     let split = vec![&c.e, RoyaltyRecipient { address: c.artist.clone(), share_bps: 10_000 }];
@@ -1150,7 +1368,7 @@ fn open_edition_sell_through() {
 fn open_edition_cancel_returns_unsold() {
     let c = setup();
     for tid in 0u32..3 {
-        MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &tid, &c.artist, &1000u32);
+        MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &tid, &c.seller, &1000u32);
     }
     let split = vec![&c.e, RoyaltyRecipient { address: c.artist.clone(), share_bps: 10_000 }];
     let id = mkt_client(&c).list(
@@ -1220,7 +1438,7 @@ fn list_ids_increment() {
 /// given `ends_at`, 100% primary split to the artist. Returns the listing id.
 fn list_oe(c: &Ctx, editions: u32, ends_at: u64) -> u64 {
     for tid in 0..editions {
-        MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &tid, &c.artist, &1000u32);
+        MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &tid, &c.seller, &1000u32);
     }
     let split = vec![&c.e, RoyaltyRecipient { address: c.artist.clone(), share_bps: 10_000 }];
     mkt_client(c).list(
