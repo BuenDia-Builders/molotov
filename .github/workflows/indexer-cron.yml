@@ -1,11 +1,16 @@
 name: indexer-cron
 
 # Scheduled trigger for the Molotov indexer. This is the ACTIVE scheduler while the
-# Vercel project is on the Hobby plan (Vercel Cron on Hobby only runs once/day, so
-# the `crons` entry in apps/web/vercel.json would silently NOT run every 2 min).
-# GitHub Actions' minimum schedule is ~5 min and it is sometimes delayed, which is
-# fine for testnet. When the project moves to Vercel Pro, switch to the vercel.json
-# cron and disable this workflow. See doc/indexer-operations.md.
+# Vercel project is on the Hobby plan. Do NOT add a sub-daily `crons` entry to
+# apps/web/vercel.json while on Hobby: Vercel rejects it and FAILS THE WHOLE DEPLOY
+# ("Hobby accounts are limited to daily cron jobs") — it is a hard deploy blocker, not
+# a silent no-op, and production stays stuck on the previous commit.
+#
+# Note that */5 below is a request, not a guarantee: GitHub throttles scheduled events
+# and in practice runs here land 2-3 h apart. MAX_LEDGER_LAG is calibrated to that
+# real spacing. When the project moves to Vercel Pro, switch to a vercel.json cron
+# (which gets a real schedule) and disable this workflow.
+# See doc/indexer-operations.md.
 #
 # Required repo secrets:
 #   INDEXER_URL  — deployed app base URL (e.g. https://<app>.vercel.app)

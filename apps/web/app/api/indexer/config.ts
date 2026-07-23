@@ -26,10 +26,23 @@ export const START_LEDGER = Number(process.env.INDEXER_START_LEDGER ?? "0");
 // Testnet closes ~1 ledger every 5s.
 
 // Max acceptable lag between the cursor and the network tip before /health reports
-// unhealthy. With the cron every 2 min the normal lag is ~24 ledgers (2min / 5s), so
-// 500 is a generous ceiling: exceeding it means the indexer has not advanced for
-// roughly half an hour (500 * 5s ≈ 42 min).
-export const MAX_LEDGER_LAG = 500;
+// unhealthy. Calibrated to the scheduler that actually runs, not the one configured:
+// the workflow asks for */5, but GitHub Actions heavily throttles scheduled events on
+// this repo — observed spacing between `schedule` runs is 2–3 h, not 5 min.
+//
+// Derivation:
+//   worst observed gap    3 h            = 2160 ledgers (3*3600s / 5s per ledger)
+//   tolerate one miss     2 x 3 h = 6 h  = 4320 ledgers
+//   rounded up            5000 ledgers   ≈ 6.9 h without progress
+//
+// So a single skipped or failed run does not trip the alarm, but two consecutive
+// worst-case gaps do. The ordering that matters: this alarm must fire long before the
+// cursor is at risk of falling out of the ~120 960-ledger retention window. It does —
+// 5000 is ~24x below that window, so /health goes red on lag days before
+// retentionMarginLedgers gets anywhere near MIN_RETENTION_MARGIN. Lag is the freshness
+// alarm; retention margin is the data-loss alarm. Move this back down (~50) once a
+// real sub-5-min scheduler exists (Vercel Pro cron); see doc/indexer-operations.md.
+export const MAX_LEDGER_LAG = 5000;
 
 // Minimum margin between the cursor and the RPC retention floor. Below this the
 // cursor is close to falling out of the window — after which its next events stop
