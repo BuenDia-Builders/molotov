@@ -21,72 +21,20 @@ type Work = {
   image?: string;
 };
 
-const MOCK_WORKS: Work[] = [
-  {
-    token_id: 1,
-    title: "Paraná River",
-    artist: "GABCDE...XYZ001",
-    artist_short: "Carolina M.",
-    royalty_bps: 1000,
-    price_xlm: "50",
-    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80",
-  },
-  {
-    token_id: 2,
-    title: "Mendoza Sky, III",
-    artist: "GABCDE...XYZ002",
-    artist_short: "Tomás P.",
-    royalty_bps: 750,
-    price_xlm: "90",
-    image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=80",
-  },
-  {
-    token_id: 3,
-    title: "Route 60 Bus",
-    artist: "GABCDE...XYZ003",
-    artist_short: "Joaquín R.",
-    royalty_bps: 1200,
-    price_xlm: "200",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
-  },
-  {
-    token_id: 4,
-    title: "Untitled (water series)",
-    artist: "GABCDE...XYZ004",
-    artist_short: "Renata B.",
-    royalty_bps: 1500,
-    price_xlm: "75",
-    image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&q=80",
-  },
-  {
-    token_id: 5,
-    title: "Platform 4",
-    artist: "GABCDE...XYZ005",
-    artist_short: "Inés L.",
-    royalty_bps: 500,
-    price_xlm: "40",
-    image: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=600&q=80",
-  },
-  {
-    token_id: 6,
-    title: "Siesta in Salta",
-    artist: "GABCDE...XYZ006",
-    artist_short: "Lucía V.",
-    royalty_bps: 1000,
-    price_xlm: "120",
-    image: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80",
-  },
-];
+type WorksResult = { status: "ok"; works: Work[] } | { status: "empty" } | { status: "error" };
 
-async function getWorks(): Promise<{ works: Work[]; isMock: boolean }> {
-  if (!isDbConfigured()) return { works: MOCK_WORKS, isMock: true };
+async function getWorks(): Promise<WorksResult> {
+  if (!isDbConfigured()) return { status: "error" };
 
-  const [tokens, priceByToken] = await Promise.all([
-    getRecentTokens(48),
-    getActivePricesByTokenId(),
-  ]);
+  let tokens: Awaited<ReturnType<typeof getRecentTokens>>;
+  let priceByToken: Awaited<ReturnType<typeof getActivePricesByTokenId>>;
+  try {
+    [tokens, priceByToken] = await Promise.all([getRecentTokens(48), getActivePricesByTokenId()]);
+  } catch {
+    return { status: "error" };
+  }
 
-  if (!tokens.length) return { works: MOCK_WORKS, isMock: true };
+  if (!tokens.length) return { status: "empty" };
 
   const works: Work[] = await Promise.all(
     tokens.map(async (t) => {
@@ -114,7 +62,7 @@ async function getWorks(): Promise<{ works: Work[]; isMock: boolean }> {
     }),
   );
 
-  return { works, isMock: false };
+  return { status: "ok", works };
 }
 
 function WorkCard({ work }: { work: Work }) {
@@ -170,7 +118,7 @@ function WorkCard({ work }: { work: Work }) {
 }
 
 export default async function WorksPage() {
-  const { works, isMock } = await getWorks();
+  const result = await getWorks();
 
   return (
     <div className="relative z-10 flex flex-1 flex-col min-h-screen">
@@ -186,26 +134,45 @@ export default async function WorksPage() {
               Discover
             </h1>
           </div>
-          <span className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] text-[var(--smoke)] uppercase">
-            {works.length} works
-          </span>
+          {result.status === "ok" && (
+            <span className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] text-[var(--smoke)] uppercase">
+              {result.works.length} works
+            </span>
+          )}
         </div>
 
-        {/* Mock notice */}
-        {isMock && (
-          <div className="mb-8 border border-[var(--ember)] px-4 py-3">
-            <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.15em] uppercase text-[var(--smoke)]">
-              Sample works · Connect Supabase to see real on-chain data
+        {result.status === "error" && (
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] uppercase text-red-500">
+              Could not load works
+            </p>
+            <p className="mt-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] uppercase text-[var(--smoke)]">
+              On-chain data is unavailable right now.
             </p>
           </div>
         )}
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
-          {works.map((work) => (
-            <WorkCard key={work.token_id} work={work} />
-          ))}
-        </div>
+        {result.status === "empty" && (
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] uppercase text-[var(--smoke)]">
+              No works yet
+            </p>
+            <a
+              href="/create"
+              className="mt-5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] uppercase text-[var(--offwhite)] underline-offset-4 hover:underline"
+            >
+              Upload the first work →
+            </a>
+          </div>
+        )}
+
+        {result.status === "ok" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
+            {result.works.map((work) => (
+              <WorkCard key={work.token_id} work={work} />
+            ))}
+          </div>
+        )}
       </main>
       <Footer />
     </div>

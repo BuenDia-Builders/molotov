@@ -8,29 +8,7 @@ import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
 
 async function getTokenData(tokenId: number) {
-  if (!isDbConfigured()) {
-    return {
-      token: {
-        token_id: tokenId,
-        token_uri: "/icon-512.png",
-        owner: "GABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890XYZ",
-        artist: "GDEF1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890XYZ",
-        royalty_bps: 1000,
-        recipients_count: 2,
-        minted_at_ledger: 1000,
-      },
-      listing: {
-        listing_id: "1",
-        price: "500000000",
-        currency: "native",
-        kind: "open_edition",
-        editions_total: 100,
-        editions_sold: 42,
-        ends_at: null,
-        seller: "",
-      },
-    };
-  }
+  if (!isDbConfigured()) return { error: true as const };
 
   const [token, listing] = await Promise.all([
     findTokenById(tokenId),
@@ -62,6 +40,28 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
 
   const data = await getTokenData(id);
   if (!data) notFound();
+
+  if ("error" in data) {
+    return (
+      <div className="min-h-screen bg-[var(--black)]">
+        <Nav />
+        <div className="flex flex-col items-center justify-center px-8 py-40 text-center">
+          <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-red-500">
+            Could not load this work
+          </p>
+          <p className="mt-3 font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--smoke)]">
+            On-chain data is unavailable right now.
+          </p>
+          <Link
+            href="/works"
+            className="mt-6 font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--offwhite)] underline-offset-4 hover:underline"
+          >
+            ← Discover
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const { token, listing, imageUrl, title } = data;
   const imageSrc = imageUrl || "/icon-512.png";
