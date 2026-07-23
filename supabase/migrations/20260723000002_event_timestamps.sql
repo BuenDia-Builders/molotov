@@ -268,7 +268,27 @@ REVOKE EXECUTE ON FUNCTION apply_sold(
 ) FROM PUBLIC, anon, authenticated;
 
 -- ════════════════════════════════════════════════════════════════════════════
--- PART 3 — guards
+-- PART 3 — close a pre-existing hole the guard below found
+--
+-- reset_projection() TRUNCATEs sales, token_transfers, listings, tokens and
+-- artists and rewinds the indexer cursor to 0. It is SECURITY DEFINER, and
+-- 20260611000011 revoked it `FROM anon, authenticated` — without PUBLIC.
+--
+-- Postgres grants EXECUTE to PUBLIC by default, and revoking from anon does not
+-- take away what anon holds *through* PUBLIC. So the function stayed callable by
+-- the anon key, which ships in the client bundle: anyone could wipe the whole
+-- projection. Recovery would be a replay, which only reaches back as far as the
+-- RPC retention window — everything older would be gone for good.
+--
+-- Every other writer in this schema revokes FROM PUBLIC, anon, authenticated.
+-- This is that one line, applied forward rather than by editing a migration that
+-- already ran.
+-- ════════════════════════════════════════════════════════════════════════════
+
+REVOKE EXECUTE ON FUNCTION reset_projection() FROM PUBLIC, anon, authenticated;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- PART 4 — guards
 --
 -- Both failure modes above are silent: an orphan overload only surfaces on the
 -- next write, and a leaked EXECUTE grant surfaces never. Fail the migration
