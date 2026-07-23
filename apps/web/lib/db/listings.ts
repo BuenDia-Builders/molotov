@@ -16,7 +16,12 @@ export type DbListing = {
 const STROOP_PER_XLM = BigInt(10_000_000);
 
 export function stroopsToXlm(price: string): string {
-  return (BigInt(price) / STROOP_PER_XLM).toString();
+  const p = BigInt(price);
+  const whole = p / STROOP_PER_XLM;
+  const frac = p % STROOP_PER_XLM;
+  if (frac === BigInt(0)) return whole.toString();
+  const fracStr = frac.toString().padStart(7, "0").replace(/0+$/, "");
+  return `${whole}.${fracStr}`;
 }
 
 export async function findActiveListingByToken(

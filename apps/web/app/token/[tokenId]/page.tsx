@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { isDbConfigured, findTokenById, findActiveListingByToken } from "@/lib/db";
+import { isDbConfigured, findTokenById, findActiveListingByToken, stroopsToXlm } from "@/lib/db";
 import { BuyButton } from "@/components/buy-button";
 import { Nav } from "@/components/nav";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
@@ -152,7 +152,7 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
                 For sale
               </p>
               <p className="font-mono text-2xl text-[var(--offwhite)] mb-1">
-                {(BigInt(listing.price) / BigInt(10_000_000)).toString()}{" "}
+                {stroopsToXlm(listing.price)}{" "}
                 <span className="text-sm text-[var(--smoke)]">XLM</span>
               </p>
               {listing.kind === "open_edition" && (
@@ -163,7 +163,7 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
               <div className="mt-4">
                 <BuyButton
                   listingId={BigInt(listing.listing_id)}
-                  priceXlm={(BigInt(listing.price) / BigInt(10_000_000)).toString()}
+                  priceXlm={stroopsToXlm(listing.price)}
                   tokenId={id}
                 />
               </div>
