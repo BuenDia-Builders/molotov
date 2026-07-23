@@ -5,6 +5,8 @@ import type { ISupportedWallet } from "@/lib/stellar";
 
 interface Props {
   wallets: ISupportedWallet[];
+  /** user-facing connection error to show, if the last attempt failed. */
+  error?: string | null;
   onSelect: (wallet: ISupportedWallet) => void;
   onClose: () => void;
 }
@@ -62,7 +64,7 @@ function WalletRow({
   );
 }
 
-export function WalletSelectModal({ wallets, onSelect, onClose }: Props) {
+export function WalletSelectModal({ wallets, error, onSelect, onClose }: Props) {
   // Installed wallets first, missing ones grouped at the bottom instead of
   // interleaved: a greyed-out row between two usable ones reads as something broken
   // rather than as "you don't have this one".
@@ -92,6 +94,12 @@ export function WalletSelectModal({ wallets, onSelect, onClose }: Props) {
             ×
           </button>
         </div>
+
+        {error && (
+          <p className="mb-4 border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            {error}
+          </p>
+        )}
 
         {available.length > 0 && (
           <ul className="space-y-1">
