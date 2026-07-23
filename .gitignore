@@ -56,3 +56,6 @@ supabase/.temp/
 doc/indexer-operations.md
 doc/audit/
 .claude/commands/auditoria.md
+
+# Local AI-assistant context (deploy state, open work) — CLAUDE.md is the public one
+CLAUDE.local.md
