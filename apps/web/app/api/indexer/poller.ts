@@ -43,6 +43,27 @@ const db = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
   auth: { persistSession: false },
 });
 
+/**
+ * Thrown when the stored cursor / startLedger has fallen out of the RPC retention
+ * window. This is NOT auto-recoverable (the events are no longer fetchable), so the
+ * poller surfaces it distinctly instead of retrying in a loop, and never advances
+ * the cursor on its own. run-indexer.ts stops the loop on this error.
+ */
+export class CursorOutOfRetentionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CursorOutOfRetentionError";
+  }
+}
+
+/** Soroban RPC returns code -32600 with a "ledger range" message when startLedger
+ *  or the cursor predates the retention window. */
+function isCursorOutOfRetention(err: unknown): boolean {
+  const msg = (err as { message?: string })?.message ?? String(err);
+  const code = (err as { code?: number })?.code;
+  return code === -32600 || /ledger range|must be within|out of range/i.test(msg);
+}
+
 // ── cursor helpers ─────────────────────────────────────────────────────────────
 
 async function getCursor(): Promise<{ lastLedger: number; lastCursor: string | null }> {
@@ -64,6 +85,18 @@ async function advanceCursor(lastLedger: number, lastCursor: string | null) {
     p_last_cursor: lastCursor,
   });
   if (error) throw new Error(`advanceCursor: ${error.message}`);
+}
+
+/** Best-effort record of the event that blocked the poll, surfaced by /health.
+ *  Never throws — the original apply error is what matters and is rethrown by the
+ *  caller. Cleared automatically by advance_cursor on the next successful run. */
+async function recordIndexerError(ledger: number, eventIndex: number, message: string) {
+  const { error } = await db.rpc("record_indexer_error", {
+    p_ledger: ledger,
+    p_event_index: eventIndex,
+    p_message: message.slice(0, 2000),
+  });
+  if (error) console.error("[poller] record_indexer_error failed:", error.message);
 }
 
 // ── token_uri hydration ───────────────────────────────────────────────────────
@@ -225,7 +258,7 @@ async function applyDecoded(
 
 // ── oldest-ledger discovery ───────────────────────────────────────────────────
 
-async function resolveOldestLedger(): Promise<number> {
+export async function resolveOldestLedger(): Promise<number> {
   try {
     // getEvents returns oldestLedger in the RetentionState base of the response.
     const probe = await server.getEvents({
@@ -286,11 +319,29 @@ export async function pollOnce(): Promise<PollResult> {
   let prevCursor: string | null = null;
 
   while (true) {
-    const result = await server.getEvents({
-      filters: [{ type: "contract", contractIds: [...CONTRACT_IDS] }],
-      ...startOpts,
-      limit: POLL_LIMIT,
-    });
+    let result;
+    try {
+      result = await server.getEvents({
+        filters: [{ type: "contract", contractIds: [...CONTRACT_IDS] }],
+        ...startOpts,
+        limit: POLL_LIMIT,
+      });
+    } catch (err) {
+      // Auto-recovery guard: if the cursor/startLedger fell out of the retention
+      // window, do NOT loop-retry and NEVER advance the cursor on our own — the
+      // events are gone and only a manual reset can recover.
+      if (isCursorOutOfRetention(err)) {
+        const guidance =
+          "[poller] FATAL: the cursor/startLedger is outside the RPC retention " +
+          "window — those events are no longer fetchable. The indexer cannot resume " +
+          "on its own. Recovery: reset the cursor into the window with " +
+          "advance_cursor(<oldest_retained_ledger>, null) and re-run. See " +
+          "doc/indexer-operations.md. The cursor was NOT advanced.";
+        console.error(guidance, err);
+        throw new CursorOutOfRetentionError(guidance);
+      }
+      throw err;
+    }
 
     latestLedger = result.latestLedger;
 
@@ -310,13 +361,21 @@ export async function pollOnce(): Promise<PollResult> {
           eventIndex,
         });
       } catch (err) {
-        console.error("[poller] failed to apply event", {
+        // A failed apply must NOT be skipped: skipping it and advancing the cursor
+        // past it would drop the event from the projection forever. Record which
+        // event failed (surfaced by /api/indexer/health) and rethrow so the poll
+        // aborts BEFORE advanceCursor — the cursor stays put and the next run
+        // retries the same event.
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("[poller] failed to apply event — aborting poll", {
           ledger: raw.ledger,
           txHash: raw.txHash,
           eventIndex,
           kind: decoded.kind,
-          err,
+          message,
         });
+        await recordIndexerError(raw.ledger, eventIndex, `${decoded.kind}: ${message}`);
+        throw err;
       }
     }
 

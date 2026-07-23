@@ -1,0 +1,39 @@
+name: indexer-cron
+
+# Scheduled trigger for the Molotov indexer. This is the ACTIVE scheduler while the
+# Vercel project is on the Hobby plan (Vercel Cron on Hobby only runs once/day, so
+# the `crons` entry in apps/web/vercel.json would silently NOT run every 2 min).
+# GitHub Actions' minimum schedule is ~5 min and it is sometimes delayed, which is
+# fine for testnet. When the project moves to Vercel Pro, switch to the vercel.json
+# cron and disable this workflow. See doc/indexer-operations.md.
+#
+# Required repo secrets:
+#   INDEXER_URL  — deployed app base URL (e.g. https://<app>.vercel.app)
+#   CRON_SECRET  — same value set as the CRON_SECRET env var on the deployment
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: {}
+
+# Never run two polls at once (a slow poll must not overlap the next tick).
+concurrency:
+  group: indexer-cron
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger indexer poll
+        run: |
+          if [ -z "${{ secrets.INDEXER_URL }}" ] || [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "::error::INDEXER_URL and CRON_SECRET repo secrets must be set."
+            exit 1
+          fi
+          code=$(curl -sS -m 60 -o /tmp/out -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.INDEXER_URL }}/api/indexer")
+          echo "HTTP $code"
+          cat /tmp/out
+          echo
+          test "$code" = "200"

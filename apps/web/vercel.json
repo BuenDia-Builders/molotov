@@ -6,5 +6,6 @@
   "env": {
     "NEXT_PUBLIC_STELLAR_NETWORK": "TESTNET",
     "INDEXER_START_LEDGER": "3000000"
-  }
+  },
+  "crons": [{ "path": "/api/indexer", "schedule": "*/2 * * * *" }]
 }
