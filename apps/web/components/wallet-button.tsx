@@ -9,7 +9,8 @@ import { useI18n } from "@/lib/i18n";
 import { useStellarWallet, getOrCreateLocalKeypair } from "@/lib/privy-stellar";
 
 export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
-  const { address, isConnected, isConnecting, connect, disconnect, connectViaPrivy } = useWallet();
+  const { address, isConnected, isConnecting, connect, prewarm, disconnect, connectViaPrivy } =
+    useWallet();
   const { login, logout, ready, authenticated, user: privyUser } = usePrivy();
   const privyEmail = privyUser?.email?.address ?? privyUser?.google?.email ?? null;
   const isPrivyMode = authenticated && !!privyEmail;
@@ -103,7 +104,14 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
     return (
       <div ref={containerRef} className="relative">
         <Button
-          onClick={() => setMenuOpen((o) => !o)}
+          onClick={() => {
+            setMenuOpen((o) => {
+              // Opening the menu is the earliest signal the user intends to connect —
+              // start warming the kit now so WalletConnect is ready when picked.
+              if (!o) prewarm();
+              return !o;
+            });
+          }}
           disabled={isConnecting || privyLoading}
           className="bg-[var(--blue)] text-white hover:bg-[var(--blue-light)]"
         >
