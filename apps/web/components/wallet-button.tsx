@@ -33,6 +33,7 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
 
   // When Privy auth resolves, wire up the Stellar address + signer into WalletProvider
   useEffect(() => {
+    if (!IS_TESTNET) return;
     if (!ready || !authenticated || isConnected) return;
 
     // Case 1: Privy exposes a native Stellar wallet (future)
@@ -119,16 +120,20 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
             >
               {t("wallet.connect")}
             </button>
-            <div className="my-1 border-t border-black/8" />
-            <button
-              className="w-full px-3 py-2.5 text-left text-sm text-[var(--black)]/70 hover:bg-black/5"
-              onClick={() => {
-                setMenuOpen(false);
-                void handlePrivyLogin();
-              }}
-            >
-              Sign in with email
-            </button>
+            {IS_TESTNET && (
+              <>
+                <div className="my-1 border-t border-black/8" />
+                <button
+                  className="w-full px-3 py-2.5 text-left text-sm text-[var(--black)]/70 hover:bg-black/5"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    void handlePrivyLogin();
+                  }}
+                >
+                  Sign in with email
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
