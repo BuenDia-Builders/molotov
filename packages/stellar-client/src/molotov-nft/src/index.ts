@@ -30,94 +30,85 @@ if (typeof window !== "undefined") {
   window.Buffer = window.Buffer || Buffer;
 }
 
-
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
     contractId: "CBS6UQE542PLU54SVUIK76EKWUJ3CNPOQ35IB4WXKF3BU6YDIBEC7XWS",
-  }
-} as const
-
-
+  },
+} as const;
 
 export interface RoyaltyRecipient {
   address: string;
   share_bps: u32;
 }
 
-
-
-
-
-
-
-
-
 export interface Client {
   /**
    * Construct and simulate a burn transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Destroys the token with `token_id` from `from`.
-   * 
-   * # Arguments
-   * 
-   * * `e` - Access to the Soroban environment.
-   * * `from` - The account whose token is destroyed.
-   * * `token_id` - The identifier of the token to burn.
-   * 
-   * # Errors
-   * 
-   * * [`crate::non_fungible::NonFungibleTokenError::NonExistentToken`] -
-   * When attempting to burn a token that does not exist.
-   * * [`crate::non_fungible::NonFungibleTokenError::IncorrectOwner`] - If
-   * the current owner (before calling this function) is not `from`.
-   * 
-   * # Events
-   * 
-   * * topics - `["burn", from: Address]`
-   * * data - `[token_id: u32]`
+   * Burn + clean up. The base burn removes ownership; we additionally drop the
+   * per-token royalty, URI, and minter entries so a burned token leaves no
+   * orphaned persistent rent behind.
    */
-  burn: ({from, token_id}: {from: string, token_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  burn: (
+    { from, token_id }: { from: string; token_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a mint transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Mints a token to `recipient`, attributed to `artist`, with its IPFS URI
    * and immutable royalty config. Returns the sequential `token_id`.
    */
-  mint: ({artist, recipient, token_uri, royalty_bps, recipients}: {artist: string, recipient: string, token_uri: string, royalty_bps: u32, recipients: Array<RoyaltyRecipient>}, options?: MethodOptions) => Promise<AssembledTransaction<u32>>
+  mint: (
+    {
+      artist,
+      recipient,
+      token_uri,
+      royalty_bps,
+      recipients,
+    }: {
+      artist: string;
+      recipient: string;
+      token_uri: string;
+      royalty_bps: u32;
+      recipients: Array<RoyaltyRecipient>;
+    },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<u32>>;
 
   /**
    * Construct and simulate a name transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Returns the token collection name.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    */
-  name: (options?: MethodOptions) => Promise<AssembledTransaction<string>>
+  name: (options?: MethodOptions) => Promise<AssembledTransaction<string>>;
 
   /**
    * Construct and simulate a symbol transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Returns the token collection symbol.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    */
-  symbol: (options?: MethodOptions) => Promise<AssembledTransaction<string>>
+  symbol: (options?: MethodOptions) => Promise<AssembledTransaction<string>>;
 
   /**
    * Construct and simulate a approve transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Gives permission to `approved` to transfer the token with `token_id` to
    * another account. The approval is cleared when the token is
    * transferred.
-   * 
+   *
    * Only a single account can be approved at a time for a `token_id`.
    * To remove an approval, the approver can approve their own address,
    * effectively removing the previous approved address. Alternatively,
    * setting the `live_until_ledger` to `0` will also revoke the approval.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to Soroban environment.
    * * `approver` - The address of the approver (should be `owner` or
    * `operator`).
@@ -125,300 +116,340 @@ export interface Client {
    * * `token_id` - Token ID as a number.
    * * `live_until_ledger` - The ledger number at which the allowance
    * expires. If `live_until_ledger` is `0`, the approval is revoked.
-   * 
+   *
    * # Errors
-   * 
+   *
    * * [`NonFungibleTokenError::NonExistentToken`] - If the token does not
    * exist.
    * * [`NonFungibleTokenError::InvalidApprover`] - If the owner address is
    * not the actual owner of the token.
    * * [`NonFungibleTokenError::InvalidLiveUntilLedger`] - If the ledge
    */
-  approve: ({approver, approved, token_id, live_until_ledger}: {approver: string, approved: string, token_id: u32, live_until_ledger: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  approve: (
+    {
+      approver,
+      approved,
+      token_id,
+      live_until_ledger,
+    }: { approver: string; approved: string; token_id: u32; live_until_ledger: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a balance transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Returns the number of tokens owned by `account`.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    * * `account` - The address for which the balance is being queried.
    */
-  balance: ({account}: {account: string}, options?: MethodOptions) => Promise<AssembledTransaction<u32>>
+  balance: (
+    { account }: { account: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<u32>>;
 
   /**
    * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Upgrade the contract WASM in place (SEP-49). Owner-gated.
-   * 
+   *
    * Same address, same data, new code. The per-token royalty config stays
    * immutable — no code path here rewrites it.
    */
-  upgrade: ({new_wasm_hash}: {new_wasm_hash: Buffer}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  upgrade: (
+    { new_wasm_hash }: { new_wasm_hash: Buffer },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a owner_of transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Returns the owner of the token with `token_id`.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    * * `token_id` - Token ID as a number.
-   * 
+   *
    * # Errors
-   * 
+   *
    * * [`NonFungibleTokenError::NonExistentToken`] - If the token does not
    * exist.
    */
-  owner_of: ({token_id}: {token_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<string>>
+  owner_of: (
+    { token_id }: { token_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<string>>;
 
   /**
    * Construct and simulate a registry transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  registry: (options?: MethodOptions) => Promise<AssembledTransaction<string>>
+  registry: (options?: MethodOptions) => Promise<AssembledTransaction<string>>;
 
   /**
    * Construct and simulate a transfer transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Transfers the token with `token_id` from `from` to `to`.
-   * 
+   *
    * WARNING: Confirmation that the recipient is capable of receiving the
    * `Non-Fungible` is the caller's responsibility; otherwise the NFT may be
    * permanently lost.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    * * `from` - Account of the sender.
    * * `to` - Account of the recipient.
    * * `token_id` - Token ID as a number.
-   * 
+   *
    * # Errors
-   * 
+   *
    * * [`NonFungibleTokenError::IncorrectOwner`] - If the current owner
    * (before calling this function) is not `from`.
    * * [`NonFungibleTokenError::NonExistentToken`] - If the token does not
    * exist.
-   * 
+   *
    * # Events
-   * 
+   *
    * * topics - `["transfer", from: Address, to: Address]`
    * * data - `[token_id: u32]`
    */
-  transfer: ({from, to, token_id}: {from: string, to: string, token_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  transfer: (
+    { from, to, token_id }: { from: string; to: string; token_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a burn_from transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Destroys the token with `token_id` from `from`, by using `spender`s
-   * approval.
-   * 
-   * # Arguments
-   * 
-   * * `e` - Access to the Soroban environment.
-   * * `spender` - The account that is allowed to burn the token on behalf of
-   * the owner.
-   * * `from` - The account whose token is destroyed.
-   * * `token_id` - The identifier of the token to burn.
-   * 
-   * # Errors
-   * 
-   * * [`crate::non_fungible::NonFungibleTokenError::NonExistentToken`] -
-   * When attempting to burn a token that does not exist.
-   * * [`crate::non_fungible::NonFungibleTokenError::IncorrectOwner`] - If
-   * the current owner (before calling this function) is not `from`.
-   * * [`crate::non_fungible::NonFungibleTokenError::InsufficientApproval`] -
-   * If the spender does not have a valid approval.
-   * 
-   * # Events
-   * 
-   * * topics - `["burn", from: Address]`
-   * * data - `[token_id: u32]`
    */
-  burn_from: ({spender, from, token_id}: {spender: string, from: string, token_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  burn_from: (
+    { spender, from, token_id }: { spender: string; from: string; token_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a get_owner transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Returns `Some(Address)` if ownership is set, or `None` if ownership has
    * been renounced.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    */
-  get_owner: (options?: MethodOptions) => Promise<AssembledTransaction<Option<string>>>
+  get_owner: (options?: MethodOptions) => Promise<AssembledTransaction<Option<string>>>;
+
+  /**
+   * Construct and simulate a minter_of transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * The token's creator, or `None` for legacy tokens minted before minter
+   * tracking existed. The marketplace uses this to allow a primary-sale split
+   * only when the seller is the minter.
+   */
+  minter_of: (
+    { token_id }: { token_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Option<string>>>;
 
   /**
    * Construct and simulate a token_uri transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Override: returns the per-token IPFS URI stored at mint (not base_uri + id).
+   * Bumps the URI entry TTL on every successful read so it stays alive as long
+   * as the token is queried.
    */
-  token_uri: ({token_id}: {token_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<string>>
+  token_uri: (
+    { token_id }: { token_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<string>>;
 
   /**
    * Construct and simulate a royalty_bps transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  royalty_bps: ({token_id}: {token_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<u32>>
+  royalty_bps: (
+    { token_id }: { token_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<u32>>;
 
   /**
    * Construct and simulate a get_approved transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Returns the account approved for the token with `token_id`.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    * * `token_id` - Token ID as a number.
-   * 
+   *
    * # Errors
-   * 
+   *
    * * [`NonFungibleTokenError::NonExistentToken`] - If the token does not
    * exist.
    */
-  get_approved: ({token_id}: {token_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<Option<string>>>
+  get_approved: (
+    { token_id }: { token_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Option<string>>>;
 
   /**
    * Construct and simulate a set_registry transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Point the mint gate at a new ArtistRegistry. Owner-gated.
-   * 
+   *
    * Required to activate the gate (swap out the placeholder) or rotate the
    * registry without redeploying the NFT.
    */
-  set_registry: ({new_registry}: {new_registry: string}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  set_registry: (
+    { new_registry }: { new_registry: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a transfer_from transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Transfers the token with `token_id` from `from` to `to` by using
    * `spender`s approval.
-   * 
+   *
    * Unlike `transfer()`, which is used when the token owner initiates the
    * transfer, `transfer_from()` allows an approved third party
    * (`spender`) to transfer the token on behalf of the owner. This
    * function verifies that `spender` has the necessary approval.
-   * 
+   *
    * WARNING: Confirmation that the recipient is capable of receiving the
    * `Non-Fungible` is the caller's responsibility; otherwise the NFT may be
    * permanently lost.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    * * `spender` - The address authorizing the transfer.
    * * `from` - Account of the sender.
    * * `to` - Account of the recipient.
    * * `token_id` - Token ID as a number.
-   * 
+   *
    * # Errors
-   * 
+   *
    * * [`NonFungibleTokenError::IncorrectOwner`] - If the current owner
    * (before calling this function) is not `from`.
    * * [`NonFungibleTokenError::InsufficientApproval`] - If the spender does
    * not have a valid approval.
    * * [`NonFungibleTokenError::NonExistentToken`] - If the token does not
    * exist.
-   * 
+   *
    * # Events
    */
-  transfer_from: ({spender, from, to, token_id}: {spender: string, from: string, to: string, token_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  transfer_from: (
+    { spender, from, to, token_id }: { spender: string; from: string; to: string; token_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a approve_for_all transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Approve or remove `operator` as an operator for the owner.
-   * 
+   *
    * Operators can call `transfer_from()` for any token held by `owner`,
    * and call `approve()` on behalf of `owner`.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to Soroban environment.
    * * `owner` - The address holding the tokens.
    * * `operator` - Account to add to the set of authorized operators.
    * * `live_until_ledger` - The ledger number at which the allowance
    * expires. If `live_until_ledger` is `0`, the approval is revoked.
-   * 
+   *
    * # Errors
-   * 
+   *
    * * [`NonFungibleTokenError::InvalidLiveUntilLedger`] - If the ledger
    * number is less than the current ledger number.
-   * 
+   *
    * # Events
-   * 
+   *
    * * topics - `["approve_for_all", from: Address]`
    * * data - `[operator: Address, live_until_ledger: u32]`
    */
-  approve_for_all: ({owner, operator, live_until_ledger}: {owner: string, operator: string, live_until_ledger: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  approve_for_all: (
+    {
+      owner,
+      operator,
+      live_until_ledger,
+    }: { owner: string; operator: string; live_until_ledger: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a accept_ownership transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Accepts a pending ownership transfer.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
-   * 
+   *
    * # Errors
-   * 
+   *
    * * [`crate::role_transfer::RoleTransferError::NoPendingTransfer`] - If
    * there is no pending transfer to accept.
-   * 
+   *
    * # Events
-   * 
+   *
    * * topics - `["ownership_transfer_completed"]`
    * * data - `[new_owner: Address]`
    */
-  accept_ownership: (options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  accept_ownership: (options?: MethodOptions) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a get_royalty_info transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Royalty distribution for a sale: a list of `(recipient, amount_stroops)`.
    * The marketplace consumes it to distribute proceeds.
-   * 
+   *
    * `total = sale_price * total_bps / 10000`; each share is
    * `total * share_bps / 10000`. The last recipient absorbs the rounding dust
    * so that the sum of amounts == total.
    */
-  get_royalty_info: ({token_id, sale_price}: {token_id: u32, sale_price: i128}, options?: MethodOptions) => Promise<AssembledTransaction<Array<readonly [string, i128]>>>
+  get_royalty_info: (
+    { token_id, sale_price }: { token_id: u32; sale_price: i128 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Array<readonly [string, i128]>>>;
 
   /**
    * Construct and simulate a set_token_royalty transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  set_token_royalty: ({token_id, receiver, basis_points}: {token_id: u32, receiver: string, basis_points: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  set_token_royalty: (
+    { token_id, receiver, basis_points }: { token_id: u32; receiver: string; basis_points: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a renounce_ownership transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Renounces ownership of the contract.
-   * 
+   *
    * Permanently removes the owner, disabling all functions gated by
    * `#[only_owner]`.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
-   * 
+   *
    * # Errors
-   * 
+   *
    * * [`OwnableError::TransferInProgress`] - If there is a pending ownership
    * transfer.
    * * [`OwnableError::OwnerNotSet`] - If the owner is not set.
-   * 
+   *
    * # Notes
-   * 
+   *
    * * Authorization for the current owner is required.
    */
-  renounce_ownership: (options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  renounce_ownership: (options?: MethodOptions) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a transfer_ownership transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Initiates a 2-step ownership transfer to a new address.
-   * 
+   *
    * Requires authorization from the current owner. The new owner must later
    * call `accept_ownership()` to complete the transfer.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    * * `new_owner` - The proposed new owner.
    * * `live_until_ledger` - Ledger number until which the new owner can
    * accept. A value of `0` cancels any pending transfer.
-   * 
+   *
    * # Errors
-   * 
+   *
    * * [`OwnableError::OwnerNotSet`] - If the owner is not set.
    * * [`crate::role_transfer::RoleTransferError::NoPendingTransfer`] - If
    * trying to cancel a transfer that doesn't exist.
@@ -427,36 +458,49 @@ export interface Client {
    * * [`crate::role_transfer::RoleTransferError::InvalidPendingAccount`] -
    * If the specified pending account is not the same as the provided `new`
    * address.
-   * 
+   *
    * # Notes
-   * 
+   *
    * * Authorization for the current owner is required.
    */
-  transfer_ownership: ({new_owner, live_until_ledger}: {new_owner: string, live_until_ledger: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  transfer_ownership: (
+    { new_owner, live_until_ledger }: { new_owner: string; live_until_ledger: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a is_approved_for_all transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Returns whether the `operator` is allowed to manage all the assets of
    * `owner`.
-   * 
+   *
    * # Arguments
-   * 
+   *
    * * `e` - Access to the Soroban environment.
    * * `owner` - Account of the token's owner.
    * * `operator` - Account to be checked.
    */
-  is_approved_for_all: ({owner, operator}: {owner: string, operator: string}, options?: MethodOptions) => Promise<AssembledTransaction<boolean>>
+  is_approved_for_all: (
+    { owner, operator }: { owner: string; operator: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<boolean>>;
 
   /**
    * Construct and simulate a set_default_royalty transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
-  set_default_royalty: ({receiver, basis_points}: {receiver: string, basis_points: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
-
+  set_default_royalty: (
+    { receiver, basis_points }: { receiver: string; basis_points: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 }
 export class Client extends ContractClient {
   static async deploy<T = Client>(
-        /** Constructor/Initialization Args for the contract's `__constructor` method */
-        {admin, registry, name, symbol}: {admin: string, registry: string, name: string, symbol: string},
+    /** Constructor/Initialization Args for the contract's `__constructor` method */
+    {
+      admin,
+      registry,
+      name,
+      symbol,
+    }: { admin: string; registry: string; name: string; symbol: string },
     /** Options for initializing a Client as well as for calling a method, with extras specific to deploying. */
     options: MethodOptions &
       Omit<ContractClientOptions, "contractId"> & {
@@ -466,13 +510,14 @@ export class Client extends ContractClient {
         salt?: Buffer | Uint8Array;
         /** The format used to decode `wasmHash`, if it's provided as a string. */
         format?: "hex" | "base64";
-      }
+      },
   ): Promise<AssembledTransaction<T>> {
-    return ContractClient.deploy({admin, registry, name, symbol}, options)
+    return ContractClient.deploy({ admin, registry, name, symbol }, options);
   }
   constructor(public readonly options: ContractClientOptions) {
     super(
-      new ContractSpec([ "AAAAAAAAAiNEZXN0cm95cyB0aGUgdG9rZW4gd2l0aCBgdG9rZW5faWRgIGZyb20gYGZyb21gLgoKIyBBcmd1bWVudHMKCiogYGVgIC0gQWNjZXNzIHRvIHRoZSBTb3JvYmFuIGVudmlyb25tZW50LgoqIGBmcm9tYCAtIFRoZSBhY2NvdW50IHdob3NlIHRva2VuIGlzIGRlc3Ryb3llZC4KKiBgdG9rZW5faWRgIC0gVGhlIGlkZW50aWZpZXIgb2YgdGhlIHRva2VuIHRvIGJ1cm4uCgojIEVycm9ycwoKKiBbYGNyYXRlOjpub25fZnVuZ2libGU6Ok5vbkZ1bmdpYmxlVG9rZW5FcnJvcjo6Tm9uRXhpc3RlbnRUb2tlbmBdIC0KV2hlbiBhdHRlbXB0aW5nIHRvIGJ1cm4gYSB0b2tlbiB0aGF0IGRvZXMgbm90IGV4aXN0LgoqIFtgY3JhdGU6Om5vbl9mdW5naWJsZTo6Tm9uRnVuZ2libGVUb2tlbkVycm9yOjpJbmNvcnJlY3RPd25lcmBdIC0gSWYKdGhlIGN1cnJlbnQgb3duZXIgKGJlZm9yZSBjYWxsaW5nIHRoaXMgZnVuY3Rpb24pIGlzIG5vdCBgZnJvbWAuCgojIEV2ZW50cwoKKiB0b3BpY3MgLSBgWyJidXJuIiwgZnJvbTogQWRkcmVzc11gCiogZGF0YSAtIGBbdG9rZW5faWQ6IHUzMl1gAAAAAARidXJuAAAAAgAAAAAAAAAEZnJvbQAAABMAAAAAAAAACHRva2VuX2lkAAAABAAAAAA=",
+      new ContractSpec([
+        "AAAAAAAAALJCdXJuICsgY2xlYW4gdXAuIFRoZSBiYXNlIGJ1cm4gcmVtb3ZlcyBvd25lcnNoaXA7IHdlIGFkZGl0aW9uYWxseSBkcm9wIHRoZQpwZXItdG9rZW4gcm95YWx0eSwgVVJJLCBhbmQgbWludGVyIGVudHJpZXMgc28gYSBidXJuZWQgdG9rZW4gbGVhdmVzIG5vCm9ycGhhbmVkIHBlcnNpc3RlbnQgcmVudCBiZWhpbmQuAAAAAAAEYnVybgAAAAIAAAAAAAAABGZyb20AAAATAAAAAAAAAAh0b2tlbl9pZAAAAAQAAAAA",
         "AAAAAAAAAIhNaW50cyBhIHRva2VuIHRvIGByZWNpcGllbnRgLCBhdHRyaWJ1dGVkIHRvIGBhcnRpc3RgLCB3aXRoIGl0cyBJUEZTIFVSSQphbmQgaW1tdXRhYmxlIHJveWFsdHkgY29uZmlnLiBSZXR1cm5zIHRoZSBzZXF1ZW50aWFsIGB0b2tlbl9pZGAuAAAABG1pbnQAAAAFAAAAAAAAAAZhcnRpc3QAAAAAABMAAAAAAAAACXJlY2lwaWVudAAAAAAAABMAAAAAAAAACXRva2VuX3VyaQAAAAAAABAAAAAAAAAAC3JveWFsdHlfYnBzAAAAAAQAAAAAAAAACnJlY2lwaWVudHMAAAAAA+oAAAfQAAAAEFJveWFsdHlSZWNpcGllbnQAAAABAAAABA==",
         "AAAAAAAAAFtSZXR1cm5zIHRoZSB0b2tlbiBjb2xsZWN0aW9uIG5hbWUuCgojIEFyZ3VtZW50cwoKKiBgZWAgLSBBY2Nlc3MgdG8gdGhlIFNvcm9iYW4gZW52aXJvbm1lbnQuAAAAAARuYW1lAAAAAAAAAAEAAAAQ",
         "AAAAAAAAAF1SZXR1cm5zIHRoZSB0b2tlbiBjb2xsZWN0aW9uIHN5bWJvbC4KCiMgQXJndW1lbnRzCgoqIGBlYCAtIEFjY2VzcyB0byB0aGUgU29yb2JhbiBlbnZpcm9ubWVudC4AAAAAAAAGc3ltYm9sAAAAAAAAAAAAAQAAABA=",
@@ -483,9 +528,10 @@ export class Client extends ContractClient {
         "AAAAAAAAAAAAAAAIcmVnaXN0cnkAAAAAAAAAAQAAABM=",
         "AAAAAAAAAqBUcmFuc2ZlcnMgdGhlIHRva2VuIHdpdGggYHRva2VuX2lkYCBmcm9tIGBmcm9tYCB0byBgdG9gLgoKV0FSTklORzogQ29uZmlybWF0aW9uIHRoYXQgdGhlIHJlY2lwaWVudCBpcyBjYXBhYmxlIG9mIHJlY2VpdmluZyB0aGUKYE5vbi1GdW5naWJsZWAgaXMgdGhlIGNhbGxlcidzIHJlc3BvbnNpYmlsaXR5OyBvdGhlcndpc2UgdGhlIE5GVCBtYXkgYmUKcGVybWFuZW50bHkgbG9zdC4KCiMgQXJndW1lbnRzCgoqIGBlYCAtIEFjY2VzcyB0byB0aGUgU29yb2JhbiBlbnZpcm9ubWVudC4KKiBgZnJvbWAgLSBBY2NvdW50IG9mIHRoZSBzZW5kZXIuCiogYHRvYCAtIEFjY291bnQgb2YgdGhlIHJlY2lwaWVudC4KKiBgdG9rZW5faWRgIC0gVG9rZW4gSUQgYXMgYSBudW1iZXIuCgojIEVycm9ycwoKKiBbYE5vbkZ1bmdpYmxlVG9rZW5FcnJvcjo6SW5jb3JyZWN0T3duZXJgXSAtIElmIHRoZSBjdXJyZW50IG93bmVyCihiZWZvcmUgY2FsbGluZyB0aGlzIGZ1bmN0aW9uKSBpcyBub3QgYGZyb21gLgoqIFtgTm9uRnVuZ2libGVUb2tlbkVycm9yOjpOb25FeGlzdGVudFRva2VuYF0gLSBJZiB0aGUgdG9rZW4gZG9lcyBub3QKZXhpc3QuCgojIEV2ZW50cwoKKiB0b3BpY3MgLSBgWyJ0cmFuc2ZlciIsIGZyb206IEFkZHJlc3MsIHRvOiBBZGRyZXNzXWAKKiBkYXRhIC0gYFt0b2tlbl9pZDogdTMyXWAAAAAIdHJhbnNmZXIAAAADAAAAAAAAAARmcm9tAAAAEwAAAAAAAAACdG8AAAAAABMAAAAAAAAACHRva2VuX2lkAAAABAAAAAA=",
         "AAAABQAAAERTdHJ1Y3R1cmVkIGV2ZW50IGVtaXR0ZWQgb24gbWludC4gYHRva2VuX2lkYCBpcyBhIHRvcGljIChpbmRleGFibGUpLgAAAAAAAAALTWludGVkRXZlbnQAAAAAAQAAAAxtaW50ZWRfZXZlbnQAAAAFAAAAAAAAAAh0b2tlbl9pZAAAAAQAAAABAAAAAAAAAAZhcnRpc3QAAAAAABMAAAAAAAAAAAAAAAlyZWNpcGllbnQAAAAAAAATAAAAAAAAAAAAAAALcm95YWx0eV9icHMAAAAABAAAAAAAAAAAAAAAEHJlY2lwaWVudHNfY291bnQAAAAEAAAAAAAAAAI=",
-        "AAAAAAAAAw1EZXN0cm95cyB0aGUgdG9rZW4gd2l0aCBgdG9rZW5faWRgIGZyb20gYGZyb21gLCBieSB1c2luZyBgc3BlbmRlcmBzCmFwcHJvdmFsLgoKIyBBcmd1bWVudHMKCiogYGVgIC0gQWNjZXNzIHRvIHRoZSBTb3JvYmFuIGVudmlyb25tZW50LgoqIGBzcGVuZGVyYCAtIFRoZSBhY2NvdW50IHRoYXQgaXMgYWxsb3dlZCB0byBidXJuIHRoZSB0b2tlbiBvbiBiZWhhbGYgb2YKdGhlIG93bmVyLgoqIGBmcm9tYCAtIFRoZSBhY2NvdW50IHdob3NlIHRva2VuIGlzIGRlc3Ryb3llZC4KKiBgdG9rZW5faWRgIC0gVGhlIGlkZW50aWZpZXIgb2YgdGhlIHRva2VuIHRvIGJ1cm4uCgojIEVycm9ycwoKKiBbYGNyYXRlOjpub25fZnVuZ2libGU6Ok5vbkZ1bmdpYmxlVG9rZW5FcnJvcjo6Tm9uRXhpc3RlbnRUb2tlbmBdIC0KV2hlbiBhdHRlbXB0aW5nIHRvIGJ1cm4gYSB0b2tlbiB0aGF0IGRvZXMgbm90IGV4aXN0LgoqIFtgY3JhdGU6Om5vbl9mdW5naWJsZTo6Tm9uRnVuZ2libGVUb2tlbkVycm9yOjpJbmNvcnJlY3RPd25lcmBdIC0gSWYKdGhlIGN1cnJlbnQgb3duZXIgKGJlZm9yZSBjYWxsaW5nIHRoaXMgZnVuY3Rpb24pIGlzIG5vdCBgZnJvbWAuCiogW2BjcmF0ZTo6bm9uX2Z1bmdpYmxlOjpOb25GdW5naWJsZVRva2VuRXJyb3I6Okluc3VmZmljaWVudEFwcHJvdmFsYF0gLQpJZiB0aGUgc3BlbmRlciBkb2VzIG5vdCBoYXZlIGEgdmFsaWQgYXBwcm92YWwuCgojIEV2ZW50cwoKKiB0b3BpY3MgLSBgWyJidXJuIiwgZnJvbTogQWRkcmVzc11gCiogZGF0YSAtIGBbdG9rZW5faWQ6IHUzMl1gAAAAAAAACWJ1cm5fZnJvbQAAAAAAAAMAAAAAAAAAB3NwZW5kZXIAAAAAEwAAAAAAAAAEZnJvbQAAABMAAAAAAAAACHRva2VuX2lkAAAABAAAAAA=",
+        "AAAAAAAAAAAAAAAJYnVybl9mcm9tAAAAAAAAAwAAAAAAAAAHc3BlbmRlcgAAAAATAAAAAAAAAARmcm9tAAAAEwAAAAAAAAAIdG9rZW5faWQAAAAEAAAAAA==",
         "AAAAAAAAAJBSZXR1cm5zIGBTb21lKEFkZHJlc3MpYCBpZiBvd25lcnNoaXAgaXMgc2V0LCBvciBgTm9uZWAgaWYgb3duZXJzaGlwIGhhcwpiZWVuIHJlbm91bmNlZC4KCiMgQXJndW1lbnRzCgoqIGBlYCAtIEFjY2VzcyB0byB0aGUgU29yb2JhbiBlbnZpcm9ubWVudC4AAAAJZ2V0X293bmVyAAAAAAAAAAAAAAEAAAPoAAAAEw==",
-        "AAAAAAAAAExPdmVycmlkZTogcmV0dXJucyB0aGUgcGVyLXRva2VuIElQRlMgVVJJIHN0b3JlZCBhdCBtaW50IChub3QgYmFzZV91cmkgKyBpZCkuAAAACXRva2VuX3VyaQAAAAAAAAEAAAAAAAAACHRva2VuX2lkAAAABAAAAAEAAAAQ",
+        "AAAAAAAAALNUaGUgdG9rZW4ncyBjcmVhdG9yLCBvciBgTm9uZWAgZm9yIGxlZ2FjeSB0b2tlbnMgbWludGVkIGJlZm9yZSBtaW50ZXIKdHJhY2tpbmcgZXhpc3RlZC4gVGhlIG1hcmtldHBsYWNlIHVzZXMgdGhpcyB0byBhbGxvdyBhIHByaW1hcnktc2FsZSBzcGxpdApvbmx5IHdoZW4gdGhlIHNlbGxlciBpcyB0aGUgbWludGVyLgAAAAAJbWludGVyX29mAAAAAAAAAQAAAAAAAAAIdG9rZW5faWQAAAAEAAAAAQAAA+gAAAAT",
+        "AAAAAAAAALBPdmVycmlkZTogcmV0dXJucyB0aGUgcGVyLXRva2VuIElQRlMgVVJJIHN0b3JlZCBhdCBtaW50IChub3QgYmFzZV91cmkgKyBpZCkuCkJ1bXBzIHRoZSBVUkkgZW50cnkgVFRMIG9uIGV2ZXJ5IHN1Y2Nlc3NmdWwgcmVhZCBzbyBpdCBzdGF5cyBhbGl2ZSBhcyBsb25nCmFzIHRoZSB0b2tlbiBpcyBxdWVyaWVkLgAAAAl0b2tlbl91cmkAAAAAAAABAAAAAAAAAAh0b2tlbl9pZAAAAAQAAAABAAAAEA==",
         "AAAAAAAAAAAAAAALcm95YWx0eV9icHMAAAAAAQAAAAAAAAAIdG9rZW5faWQAAAAEAAAAAQAAAAQ=",
         "AAAAAAAAAPFSZXR1cm5zIHRoZSBhY2NvdW50IGFwcHJvdmVkIGZvciB0aGUgdG9rZW4gd2l0aCBgdG9rZW5faWRgLgoKIyBBcmd1bWVudHMKCiogYGVgIC0gQWNjZXNzIHRvIHRoZSBTb3JvYmFuIGVudmlyb25tZW50LgoqIGB0b2tlbl9pZGAgLSBUb2tlbiBJRCBhcyBhIG51bWJlci4KCiMgRXJyb3JzCgoqIFtgTm9uRnVuZ2libGVUb2tlbkVycm9yOjpOb25FeGlzdGVudFRva2VuYF0gLSBJZiB0aGUgdG9rZW4gZG9lcyBub3QKZXhpc3QuAAAAAAAADGdldF9hcHByb3ZlZAAAAAEAAAAAAAAACHRva2VuX2lkAAAABAAAAAEAAAPoAAAAEw==",
         "AAAAAAAAAKdQb2ludCB0aGUgbWludCBnYXRlIGF0IGEgbmV3IEFydGlzdFJlZ2lzdHJ5LiBPd25lci1nYXRlZC4KClJlcXVpcmVkIHRvIGFjdGl2YXRlIHRoZSBnYXRlIChzd2FwIG91dCB0aGUgcGxhY2Vob2xkZXIpIG9yIHJvdGF0ZSB0aGUKcmVnaXN0cnkgd2l0aG91dCByZWRlcGxveWluZyB0aGUgTkZULgAAAAAMc2V0X3JlZ2lzdHJ5AAAAAQAAAAAAAAAMbmV3X3JlZ2lzdHJ5AAAAEwAAAAA=",
@@ -507,35 +553,37 @@ export class Client extends ContractClient {
         "AAAABQAAACVFdmVudCBlbWl0dGVkIHdoZW4gYSB0b2tlbiBpcyBtaW50ZWQuAAAAAAAAAAAAAARNaW50AAAAAQAAAARtaW50AAAAAgAAAAAAAAACdG8AAAAAABMAAAABAAAAAAAAAAh0b2tlbl9pZAAAAAQAAAAAAAAAAg==",
         "AAAABQAAACpFdmVudCBlbWl0dGVkIHdoZW4gYW4gYXBwcm92YWwgaXMgZ3JhbnRlZC4AAAAAAAAAAAAHQXBwcm92ZQAAAAABAAAAB2FwcHJvdmUAAAAABAAAAAAAAAAIYXBwcm92ZXIAAAATAAAAAQAAAAAAAAAIdG9rZW5faWQAAAAEAAAAAQAAAAAAAAAIYXBwcm92ZWQAAAATAAAAAAAAAAAAAAARbGl2ZV91bnRpbF9sZWRnZXIAAAAAAAAEAAAAAAAAAAI=",
         "AAAABQAAACpFdmVudCBlbWl0dGVkIHdoZW4gYSB0b2tlbiBpcyB0cmFuc2ZlcnJlZC4AAAAAAAAAAAAIVHJhbnNmZXIAAAABAAAACHRyYW5zZmVyAAAAAwAAAAAAAAAEZnJvbQAAABMAAAABAAAAAAAAAAJ0bwAAAAAAEwAAAAEAAAAAAAAACHRva2VuX2lkAAAABAAAAAAAAAAC",
-        "AAAABQAAADZFdmVudCBlbWl0dGVkIHdoZW4gYXBwcm92YWwgZm9yIGFsbCB0b2tlbnMgaXMgZ3JhbnRlZC4AAAAAAAAAAAANQXBwcm92ZUZvckFsbAAAAAAAAAEAAAAPYXBwcm92ZV9mb3JfYWxsAAAAAAMAAAAAAAAABW93bmVyAAAAAAAAEwAAAAEAAAAAAAAACG9wZXJhdG9yAAAAEwAAAAAAAAAAAAAAEWxpdmVfdW50aWxfbGVkZ2VyAAAAAAAABAAAAAAAAAAC" ]),
-      options
-    )
+        "AAAABQAAADZFdmVudCBlbWl0dGVkIHdoZW4gYXBwcm92YWwgZm9yIGFsbCB0b2tlbnMgaXMgZ3JhbnRlZC4AAAAAAAAAAAANQXBwcm92ZUZvckFsbAAAAAAAAAEAAAAPYXBwcm92ZV9mb3JfYWxsAAAAAAMAAAAAAAAABW93bmVyAAAAAAAAEwAAAAEAAAAAAAAACG9wZXJhdG9yAAAAEwAAAAAAAAAAAAAAEWxpdmVfdW50aWxfbGVkZ2VyAAAAAAAABAAAAAAAAAAC",
+      ]),
+      options,
+    );
   }
   public readonly fromJSON = {
     burn: this.txFromJSON<null>,
-        mint: this.txFromJSON<u32>,
-        name: this.txFromJSON<string>,
-        symbol: this.txFromJSON<string>,
-        approve: this.txFromJSON<null>,
-        balance: this.txFromJSON<u32>,
-        upgrade: this.txFromJSON<null>,
-        owner_of: this.txFromJSON<string>,
-        registry: this.txFromJSON<string>,
-        transfer: this.txFromJSON<null>,
-        burn_from: this.txFromJSON<null>,
-        get_owner: this.txFromJSON<Option<string>>,
-        token_uri: this.txFromJSON<string>,
-        royalty_bps: this.txFromJSON<u32>,
-        get_approved: this.txFromJSON<Option<string>>,
-        set_registry: this.txFromJSON<null>,
-        transfer_from: this.txFromJSON<null>,
-        approve_for_all: this.txFromJSON<null>,
-        accept_ownership: this.txFromJSON<null>,
-        get_royalty_info: this.txFromJSON<Array<readonly [string, i128]>>,
-        set_token_royalty: this.txFromJSON<null>,
-        renounce_ownership: this.txFromJSON<null>,
-        transfer_ownership: this.txFromJSON<null>,
-        is_approved_for_all: this.txFromJSON<boolean>,
-        set_default_royalty: this.txFromJSON<null>
-  }
+    mint: this.txFromJSON<u32>,
+    name: this.txFromJSON<string>,
+    symbol: this.txFromJSON<string>,
+    approve: this.txFromJSON<null>,
+    balance: this.txFromJSON<u32>,
+    upgrade: this.txFromJSON<null>,
+    owner_of: this.txFromJSON<string>,
+    registry: this.txFromJSON<string>,
+    transfer: this.txFromJSON<null>,
+    burn_from: this.txFromJSON<null>,
+    get_owner: this.txFromJSON<Option<string>>,
+    minter_of: this.txFromJSON<Option<string>>,
+    token_uri: this.txFromJSON<string>,
+    royalty_bps: this.txFromJSON<u32>,
+    get_approved: this.txFromJSON<Option<string>>,
+    set_registry: this.txFromJSON<null>,
+    transfer_from: this.txFromJSON<null>,
+    approve_for_all: this.txFromJSON<null>,
+    accept_ownership: this.txFromJSON<null>,
+    get_royalty_info: this.txFromJSON<Array<readonly [string, i128]>>,
+    set_token_royalty: this.txFromJSON<null>,
+    renounce_ownership: this.txFromJSON<null>,
+    transfer_ownership: this.txFromJSON<null>,
+    is_approved_for_all: this.txFromJSON<boolean>,
+    set_default_royalty: this.txFromJSON<null>,
+  };
 }
