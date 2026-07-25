@@ -68,36 +68,38 @@ export function Nav() {
     <>
       {/* ── Nav bar ── */}
       <header className="sticky top-0 z-40 border-b border-black/10 bg-[var(--offwhite)]">
-        <div className="grid h-12 grid-cols-3 items-center px-4 md:px-10 lg:px-20">
+        <div className="relative flex h-12 items-center justify-between px-4 md:px-10 lg:px-20">
           {/* Left: MENU button */}
-          <div>
-            <button
-              onClick={() => setMenuOpen(true)}
-              aria-label={t("nav.openMenu")}
-              aria-expanded={menuOpen}
-              aria-haspopup="dialog"
-              className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--black)]/45 transition-colors hover:text-[var(--black)]"
-            >
-              {t("nav.menuLabel")}
-            </button>
-          </div>
+          <button
+            onClick={() => setMenuOpen(true)}
+            aria-label={t("nav.openMenu")}
+            aria-expanded={menuOpen}
+            aria-haspopup="dialog"
+            className="inline-flex min-h-11 items-center font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--black)]/45 transition-colors hover:text-[var(--black)]"
+          >
+            {t("nav.menuLabel")}
+          </button>
 
-          {/* Center: Logo */}
-          <div className="flex justify-center">
-            <Link href="/" aria-label={t("nav.homeLabel")}>
-              <Image
-                src="/brand/logo_sinfondo.png"
-                alt="Molotov"
-                width={44}
-                height={44}
-                className="logo-flame h-11 w-11"
-                priority
-              />
-            </Link>
-          </div>
+          {/* Center: Logo — absolutely centered so it never competes with the
+              side content for grid width (that competition is what pushes the
+              header wider than the viewport on narrow screens). */}
+          <Link
+            href="/"
+            aria-label={t("nav.homeLabel")}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          >
+            <Image
+              src="/brand/logo_sinfondo.png"
+              alt="Molotov"
+              width={44}
+              height={44}
+              className="logo-flame h-11 w-11"
+              priority
+            />
+          </Link>
 
           {/* Right: locale + wallet */}
-          <div className="flex items-center justify-end gap-4">
+          <div className="flex items-center gap-4">
             <div className="hidden items-center gap-2 md:flex">{localeBtns(true)}</div>
             <WalletButton theme="light" />
           </div>
@@ -116,7 +118,7 @@ export function Nav() {
           <div className="flex h-12 shrink-0 items-center justify-between border-b border-white/10 px-4 md:px-10 lg:px-20">
             <button
               onClick={close}
-              className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--offwhite)]/50 underline underline-offset-4 transition-colors hover:text-[var(--offwhite)]"
+              className="inline-flex min-h-11 items-center font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--offwhite)]/50 underline underline-offset-4 transition-colors hover:text-[var(--offwhite)]"
             >
               {t("nav.closeMenu")}
             </button>
@@ -203,9 +205,9 @@ export function Nav() {
           </nav>
 
           {/* Overlay bottom */}
-          <div className="flex shrink-0 items-center justify-between gap-4 border-t border-white/10 px-6 py-5 md:px-16 lg:px-24">
+          <div className="flex shrink-0 flex-col gap-4 border-t border-white/10 px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-16 lg:px-24">
             {isConnected ? (
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <span className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/50">
                   {address ? truncateAddress(address, 6, 6) : ""}
                 </span>
@@ -214,7 +216,7 @@ export function Nav() {
                     close();
                     void disconnect();
                   }}
-                  className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-widest text-[var(--offwhite)]/60 underline underline-offset-4 hover:text-[var(--offwhite)]"
+                  className="inline-flex min-h-11 items-center font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-widest text-[var(--offwhite)]/60 underline underline-offset-4 hover:text-[var(--offwhite)]"
                 >
                   {t("wallet.disconnect")}
                 </button>

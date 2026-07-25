@@ -77,19 +77,22 @@ export function WalletSelectModal({ wallets, error, onSelect, onClose }: Props) 
   }, [wallets]);
 
   return (
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4"
-      onClick={onClose}
-    >
+    // Scroll on this outer layer (not just the panel) and center the panel with
+    // margin rather than `items-center`: centering a scrollable child with flex
+    // alignment lets it grow past the viewport equally top and bottom, clipping
+    // the top out of reach of any scroll offset. Margin-centering degrades to a
+    // plain top-anchored, fully scrollable panel instead.
+    <div className="fixed inset-0 z-[200] overflow-y-auto bg-black/70 p-4" onClick={onClose}>
       <div
-        className="max-h-full w-full max-w-sm overflow-y-auto border border-white/12 bg-[var(--black)] p-6"
+        className="mx-auto my-8 w-full max-w-sm border border-white/12 bg-[var(--black)] p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-base font-semibold text-[var(--offwhite)]">Connect a Wallet</h2>
           <button
             onClick={onClose}
-            className="text-xl leading-none text-[var(--offwhite)]/50 hover:text-[var(--offwhite)]"
+            aria-label="Close"
+            className="-m-3 flex min-h-11 min-w-11 items-center justify-center p-3 text-xl leading-none text-[var(--offwhite)]/50 hover:text-[var(--offwhite)]"
           >
             ×
           </button>

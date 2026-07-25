@@ -113,14 +113,14 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
             });
           }}
           disabled={isConnecting || privyLoading}
-          className="bg-[var(--blue)] text-white hover:bg-[var(--blue-light)]"
+          className="min-h-[44px] bg-[var(--blue)] text-white hover:bg-[var(--blue-light)]"
         >
           {isConnecting || privyLoading ? t("wallet.connecting") : "Connect"}
         </Button>
         {menuOpen && (
           <div className="absolute right-0 z-50 mt-2 min-w-48 border border-black/10 bg-[var(--offwhite)] p-1 shadow-md">
             <button
-              className="w-full px-3 py-2.5 text-left text-sm text-[var(--black)] hover:bg-black/5"
+              className="flex w-full min-h-11 items-center px-3 text-left text-sm text-[var(--black)] hover:bg-black/5"
               onClick={() => {
                 setMenuOpen(false);
                 void connect();
@@ -132,7 +132,7 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
               <>
                 <div className="my-1 border-t border-black/8" />
                 <button
-                  className="w-full px-3 py-2.5 text-left text-sm text-[var(--black)]/70 hover:bg-black/5"
+                  className="flex w-full min-h-11 items-center px-3 text-left text-sm text-[var(--black)]/70 hover:bg-black/5"
                   onClick={() => {
                     setMenuOpen(false);
                     void handlePrivyLogin();
@@ -191,7 +191,7 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
           )}
           <button
             role="menuitem"
-            className="w-full px-3 py-2 text-left text-sm text-[var(--offwhite)] hover:bg-white/5"
+            className="flex w-full min-h-11 items-center px-3 text-left text-sm text-[var(--offwhite)] hover:bg-white/5"
             onClick={handleDisconnect}
           >
             {t("wallet.disconnect")}
