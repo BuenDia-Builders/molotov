@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/use-wallet";
 import { useBuy } from "@/hooks/use-buy";
 import { WalletButton } from "@/components/wallet-button";
+import { useI18n } from "@/lib/i18n";
 
 type Props = {
   listingId: bigint;
@@ -15,7 +16,8 @@ type Props = {
 export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
   const router = useRouter();
   const { isConnected } = useWallet();
-  const { buy, state, errorKind, txHash, reset } = useBuy();
+  const { buy, state, errorKey, txHash, reset } = useBuy();
+  const { t } = useI18n();
 
   useEffect(() => {
     if (state === "success") {
@@ -67,13 +69,10 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
   }
 
   if (state === "error") {
+    const message = errorKey ? t(errorKey) : t("transaction.errors.failed");
     return (
       <div className="flex flex-col gap-3">
-        <p className="font-mono text-[10px] text-red-400">
-          {errorKind === "rejected"
-            ? "Transaction rejected."
-            : "Transaction failed. Please try again."}
-        </p>
+        <p className="font-mono text-[10px] text-red-400">{message}</p>
         <button
           onClick={reset}
           className="font-mono text-[10px] text-[var(--smoke)] underline underline-offset-2"

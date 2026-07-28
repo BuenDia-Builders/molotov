@@ -37,8 +37,8 @@ export default function MyWorkPage() {
   const tokenId = Number(params.tokenId);
   const { locale, t } = useI18n();
   const { address, isConnected } = useWallet();
-  const { list, state: listState, errorKind: listError, listingId, reset: resetList } = useList();
-  const { cancel, state: cancelState, errorKind: cancelError, reset: resetCancel } = useCancel();
+  const { list, state: listState, errorKey: listError, listingId, reset: resetList } = useList();
+  const { cancel, state: cancelState, errorKey: cancelError, reset: resetCancel } = useCancel();
   const [priceXlm, setPriceXlm] = useState("");
   const [art, setArt] = useState<Artwork | null>(null);
   const [activeListing, setActiveListing] = useState<{ listingId: bigint; seller: string } | null>(
@@ -329,9 +329,7 @@ export default function MyWorkPage() {
                           {cancelState === "error" && (
                             <div className="flex flex-col gap-2">
                               <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-red-400">
-                                {cancelError === "rejected"
-                                  ? "Transaction rejected."
-                                  : "Cancel failed — please try again."}
+                                {cancelError ? t(cancelError) : t("transaction.errors.failed")}
                               </p>
                               <button
                                 onClick={resetCancel}
@@ -419,11 +417,7 @@ export default function MyWorkPage() {
                   {listState === "error" && (
                     <div className="flex flex-col gap-3">
                       <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-red-400">
-                        {listError === "approve_rejected"
-                          ? "You rejected the approval — try again when ready."
-                          : listError === "approve"
-                            ? "Approval failed — transaction not confirmed."
-                            : "Listing failed — transaction not confirmed."}
+                        {listError ? t(listError) : t("transaction.errors.failed")}
                       </p>
                       <button
                         onClick={resetList}

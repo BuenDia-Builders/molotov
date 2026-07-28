@@ -234,6 +234,22 @@ export const en = {
     tokensSingular: "token",
     tokensPlural: "tokens",
   },
+  transaction: {
+    errors: {
+      rejected: "You cancelled the transaction.",
+      listingNotActive: "This work is no longer available — someone got there first.",
+      listingExpired: "This listing has expired. The seller would need to re-list it.",
+      listingNotFound: "We couldn't find that listing. It may have been removed.",
+      currencyNotAllowed: "The payment currency is not enabled in this contract.",
+      notSeller: "Only the seller can cancel this listing.",
+      splitNotAllowedForReseller: "Only the original creator can use a primary split.",
+      priceBelowMinimum: "The price is below the minimum allowed.",
+      artistNotRegistered: "Your wallet is not registered as an artist yet.",
+      royaltiesImmutable: "Royalties cannot be changed after the work has been minted.",
+      approveGeneric: "The NFT transfer could not be authorised. Please try again.",
+      failed: "The transaction failed. Please try again.",
+    },
+  },
   earnings: {
     title: "What you earned",
     connectWallet: "Connect your wallet to see what you earned",

@@ -9,26 +9,26 @@ import {
 import { useWallet } from "@/hooks/use-wallet";
 import { MARKETPLACE_CONTRACT_ID, NATIVE_XLM_SAC, RPC_URL, isUserRejection } from "@/lib/stellar";
 import { xlmToStroops } from "@/lib/stroops";
+import { contractErrorKey, type ContractErrorKey } from "@/lib/contract-errors";
 
 export type ListState = "idle" | "approving" | "listing" | "success" | "error";
-export type ListErrorKind = "approve_rejected" | "approve" | "list" | null;
 
 export function useList() {
   const { address, signTransaction } = useWallet();
   const [state, setState] = useState<ListState>("idle");
-  const [errorKind, setErrorKind] = useState<ListErrorKind>(null);
+  const [errorKey, setErrorKey] = useState<ContractErrorKey | null>(null);
   const [listingId, setListingId] = useState<bigint | null>(null);
 
   const reset = useCallback(() => {
     setState("idle");
-    setErrorKind(null);
+    setErrorKey(null);
     setListingId(null);
   }, []);
 
   const list = useCallback(
     async ({ tokenId, priceXlm }: { tokenId: number; priceXlm: number }) => {
       if (!address) throw new Error("No wallet connected");
-      setErrorKind(null);
+      setErrorKey(null);
 
       const priceStroops = xlmToStroops(priceXlm);
 
@@ -64,7 +64,10 @@ export function useList() {
         await approveTx.signAndSend();
       } catch (err) {
         console.error("[list] approve failed", err);
-        setErrorKind(isUserRejection(err) ? "approve_rejected" : "approve");
+        const key = isUserRejection(err)
+          ? ("transaction.errors.rejected" as const)
+          : contractErrorKey(err, "approve");
+        setErrorKey(key);
         setState("error");
         throw err;
       }
@@ -97,7 +100,10 @@ export function useList() {
         return { listingId: sent.result };
       } catch (err) {
         console.error("[list] list failed", err);
-        setErrorKind("list");
+        const key = isUserRejection(err)
+          ? ("transaction.errors.rejected" as const)
+          : contractErrorKey(err, "list");
+        setErrorKey(key);
         setState("error");
         throw err;
       }
@@ -105,5 +111,5 @@ export function useList() {
     [address, signTransaction],
   );
 
-  return { list, state, errorKind, listingId, reset };
+  return { list, state, errorKey, listingId, reset };
 }
