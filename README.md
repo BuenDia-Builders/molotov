@@ -1,4 +1,4 @@
-# Molotov
+"# Molotov
 
 **Digital art marketplace where the royalty is enforced by the contract — not by the platform.**
 
@@ -258,3 +258,4 @@ Nothing in this section exists yet.
 _Molotov — digital art where creating earns you a permanent stake in what you made._
 
 _Built for PULSO Hackathon 2026 — NearX × Stellar Development Foundation_
+"
