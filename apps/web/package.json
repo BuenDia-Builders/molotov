@@ -42,6 +42,7 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "jsdom": "^26.0.0",
     "vitest": "^3.0.0"
   }
 }

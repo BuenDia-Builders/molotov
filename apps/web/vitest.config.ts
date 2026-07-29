@@ -1,3 +1,4 @@
+import { resolve } from "path";
 import { defineConfig } from "vitest/config";
 import path from "path";
 
@@ -8,6 +9,9 @@ export default defineConfig({
     },
   },
   test: {
+    alias: {
+      "@": resolve(__dirname, ".").replace(/\\/g, "/"),
+    },
     globals: true,
     environment: "node",
     // Must cover lib/ too: a test file outside `include` does not fail, it simply

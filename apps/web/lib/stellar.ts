@@ -1,3 +1,4 @@
+import { rpc, xdr } from "@stellar/stellar-sdk";
 import type {
   ISupportedWallet,
   StellarWalletsKit,
@@ -104,6 +105,33 @@ export function truncateAddress(address: string, prefix = 4, suffix = 4): string
 
 /** Funded testnet account used only as the source for read-only simulations. */
 export const READ_SOURCE = "GANXCETUVUUILGJPVEZWM7EH66IZM5OICUPMNUWNXKIBRK425MUKZERM";
+
+export type ReconcileResult =
+  | { status: "SUCCESS"; returnValue?: xdr.ScVal }
+  | { status: "FAILED" }
+  | { status: "NOT_FOUND" };
+
+/**
+ * Polls `getTransaction` for a given hash with a simple retry loop.
+ * Mirrors the pattern from `use-registry.ts`.
+ * Returns the terminal status and, on SUCCESS, the raw return value.
+ */
+export async function reconcileTransaction(
+  txHash: string,
+  maxRetries = 20,
+  delayMs = 3000,
+): Promise<ReconcileResult> {
+  const server = new rpc.Server(RPC_URL, { allowHttp: false });
+  for (let i = 0; i < maxRetries; i++) {
+    const result = await server.getTransaction(txHash);
+    if (result.status === rpc.Api.GetTransactionStatus.SUCCESS)
+      return { status: "SUCCESS", returnValue: result.returnValue };
+    if (result.status === rpc.Api.GetTransactionStatus.FAILED)
+      return { status: "FAILED" };
+    await new Promise((r) => setTimeout(r, delayMs));
+  }
+  return { status: "NOT_FOUND" };
+}
 
 /** Detects wallet rejection errors across different wallet extensions. */
 export function isUserRejection(err: unknown): boolean {
