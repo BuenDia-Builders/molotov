@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const PINATA_JWT = process.env.PINATA_JWT ?? "";
-
-const GATEWAYS = [
-  { url: "https://gateway.pinata.cloud/ipfs", auth: PINATA_JWT },
-  { url: "https://ipfs.io/ipfs", auth: "" },
-  { url: "https://cloudflare-ipfs.com/ipfs", auth: "" },
-];
+import { IPFS_GATEWAYS } from "@/lib/ipfs-gateways";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ cid: string }> }) {
   const { cid } = await params;
 
-  for (const gw of GATEWAYS) {
+  for (const gw of IPFS_GATEWAYS) {
     try {
       const res = await fetch(`${gw.url}/${cid}`, {
         headers: gw.auth ? { Authorization: `Bearer ${gw.auth}` } : {},

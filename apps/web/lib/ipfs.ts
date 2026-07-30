@@ -1,6 +1,8 @@
 // Client-side IPFS helpers. They post to /api/ipfs/upload, which holds the
 // Pinata JWT server-side — it is never exposed to the browser.
 
+import { IPFS_GATEWAYS } from "@/lib/ipfs-gateways";
+
 export type IpfsResult = { cid: string; gatewayUrl: string };
 
 /**
@@ -12,22 +14,37 @@ export function ipfsToGateway(uri: string): string {
 }
 
 /**
- * Server-side: fetch IPFS content directly from Pinata with JWT auth.
+ * Server-side: fetch IPFS content with multi-gateway fallback.
  * Use this in React Server Components instead of ipfsToGateway().
  */
-export function fetchIpfs(
+export async function fetchIpfs(
   uri: string,
   opts?: { revalidate?: number; signal?: AbortSignal },
 ): Promise<Response> {
-  const url = uri.startsWith("ipfs://")
-    ? `https://gateway.pinata.cloud/ipfs/${uri.slice("ipfs://".length)}`
-    : uri;
-  const jwt = process.env.PINATA_JWT ?? "";
-  return fetch(url, {
-    headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
-    next: { revalidate: opts?.revalidate ?? 3600 },
-    signal: opts?.signal,
-  });
+  if (!uri.startsWith("ipfs://")) {
+    const jwt = process.env.PINATA_JWT ?? "";
+    return fetch(uri, {
+      headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
+      next: { revalidate: opts?.revalidate ?? 3600 },
+      signal: opts?.signal,
+    });
+  }
+
+  const path = uri.slice("ipfs://".length);
+  let lastResponse: Response | undefined;
+
+  for (const gw of IPFS_GATEWAYS) {
+    const res = await fetch(`${gw.url}/${path}`, {
+      headers: gw.auth ? { Authorization: `Bearer ${gw.auth}` } : {},
+      next: { revalidate: opts?.revalidate ?? 3600 },
+      signal: opts?.signal,
+    });
+
+    if (res.ok) return res;
+    lastResponse = res;
+  }
+
+  return lastResponse!;
 }
 
 const MAX_ATTEMPTS = 3;
