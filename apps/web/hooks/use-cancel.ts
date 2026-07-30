@@ -7,23 +7,24 @@ import {
 } from "@molotov/stellar-client/molotov-marketplace";
 import { useWallet } from "@/hooks/use-wallet";
 import { RPC_URL, isUserRejection } from "@/lib/stellar";
+import { contractErrorKey, type ContractErrorKey } from "@/lib/contract-errors";
 
 export type CancelState = "idle" | "cancelling" | "success" | "error";
 
 export function useCancel() {
   const { address, signTransaction } = useWallet();
   const [state, setState] = useState<CancelState>("idle");
-  const [errorKind, setErrorKind] = useState<"rejected" | "failed" | null>(null);
+  const [errorKey, setErrorKey] = useState<ContractErrorKey | null>(null);
 
   const reset = useCallback(() => {
     setState("idle");
-    setErrorKind(null);
+    setErrorKey(null);
   }, []);
 
   const cancel = useCallback(
     async ({ listingId }: { listingId: bigint }) => {
       if (!address) throw new Error("No wallet connected");
-      setErrorKind(null);
+      setErrorKey(null);
 
       try {
         setState("cancelling");
@@ -44,7 +45,10 @@ export function useCancel() {
         setState("success");
       } catch (err) {
         console.error("[cancel] transaction failed", err);
-        setErrorKind(isUserRejection(err) ? "rejected" : "failed");
+        const key = isUserRejection(err)
+          ? ("transaction.errors.rejected" as const)
+          : contractErrorKey(err, "cancel");
+        setErrorKey(key);
         setState("error");
         throw err;
       }
@@ -52,5 +56,5 @@ export function useCancel() {
     [address, signTransaction],
   );
 
-  return { cancel, state, errorKind, reset };
+  return { cancel, state, errorKey, reset };
 }
