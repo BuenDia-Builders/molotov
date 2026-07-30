@@ -232,6 +232,34 @@ export const es = {
     tokensSingular: "token",
     tokensPlural: "tokens",
   },
+  transaction: {
+    errors: {
+      /** Usuario rechazó la firma en la wallet */
+      rejected: "Cancelaste la transacción.",
+      /** El listado ya no está activo (vendido, cancelado, etc.) */
+      listingNotActive: "Esta obra ya no está disponible. Alguien se adelantó.",
+      /** El listado venció antes de que se completara la compra */
+      listingExpired: "El listado venció. El vendedor tendría que volver a publicarla.",
+      /** El listado no existe (id inválido o nunca existió) */
+      listingNotFound: "No encontramos ese listado. Puede que ya haya sido removido.",
+      /** La moneda que intentó usarse no está habilitada en el contrato */
+      currencyNotAllowed: "La moneda de pago no está habilitada en este contrato.",
+      /** Quien intenta cancelar no es el vendedor del listado */
+      notSeller: "Solo el vendedor puede cancelar este listado.",
+      /** Intentó publicar con primary split sin ser el creador del token */
+      splitNotAllowedForReseller: "Solo quien creó la obra puede usar una distribución primaria.",
+      /** El precio ingresado está por debajo del mínimo permitido */
+      priceBelowMinimum: "El precio está por debajo del mínimo permitido.",
+      /** La wallet no está registrada como artista */
+      artistNotRegistered: "Tu wallet no está registrada como artista todavía.",
+      /** Intento de cambiar las regalías después del mint */
+      royaltiesImmutable: "Las regalías no pueden modificarse una vez subida la obra.",
+      /** El approve del NFT falló por razón desconocida */
+      approveGeneric: "No se pudo autorizar la transferencia del NFT. Intentá de nuevo.",
+      /** Error genérico o desconocido */
+      failed: "La transacción falló. Intentá de nuevo.",
+    },
+  },
   earnings: {
     title: "Lo que ganaste",
     connectWallet: "Conectá tu wallet para ver lo que ganaste",

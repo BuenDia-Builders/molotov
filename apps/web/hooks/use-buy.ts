@@ -7,25 +7,26 @@ import {
 } from "@molotov/stellar-client/molotov-marketplace";
 import { useWallet } from "@/hooks/use-wallet";
 import { RPC_URL, isUserRejection } from "@/lib/stellar";
+import { contractErrorKey, type ContractErrorKey } from "@/lib/contract-errors";
 
 export type BuyState = "idle" | "buying" | "success" | "error";
 
 export function useBuy() {
   const { address, signTransaction } = useWallet();
   const [state, setState] = useState<BuyState>("idle");
-  const [errorKind, setErrorKind] = useState<"rejected" | "failed" | null>(null);
+  const [errorKey, setErrorKey] = useState<ContractErrorKey | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
 
   const reset = useCallback(() => {
     setState("idle");
-    setErrorKind(null);
+    setErrorKey(null);
     setTxHash(null);
   }, []);
 
   const buy = useCallback(
     async ({ listingId }: { listingId: bigint }) => {
       if (!address) throw new Error("No wallet connected");
-      setErrorKind(null);
+      setErrorKey(null);
 
       try {
         setState("buying");
@@ -55,7 +56,10 @@ export function useBuy() {
         return { txHash: hash };
       } catch (err) {
         console.error("[buy] transaction failed", err);
-        setErrorKind(isUserRejection(err) ? "rejected" : "failed");
+        const key = isUserRejection(err)
+          ? ("transaction.errors.rejected" as const)
+          : contractErrorKey(err, "buy");
+        setErrorKey(key);
         setState("error");
         throw err;
       }
@@ -63,5 +67,5 @@ export function useBuy() {
     [address, signTransaction],
   );
 
-  return { buy, state, errorKind, txHash, reset };
+  return { buy, state, errorKey, txHash, reset };
 }
