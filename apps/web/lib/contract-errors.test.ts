@@ -60,7 +60,20 @@ describe("contractErrorKey", () => {
   // ── NFT contract errors ────────────────────────────────────────────────────
 
   it("ArtistNotRegistered (#6) → transaction.errors.artistNotRegistered", () => {
-    expect(contractErrorKey(nftErr(6), "list")).toBe("transaction.errors.artistNotRegistered");
+    expect(contractErrorKey(nftErr(6))).toBe("transaction.errors.artistNotRegistered");
+  });
+
+  // ── cross-contract code collisions ─────────────────────────────────────────
+  // Marketplace and NFT errors share the same numeric space. In a marketplace
+  // context an unmapped market code must fall back to the generic message, not
+  // resolve through the NFT table to an unrelated one.
+
+  it("market #6 (SplitSharesMustSumTo10000) in list context → generic, not artistNotRegistered", () => {
+    expect(contractErrorKey(marketErr(6), "list")).toBe("transaction.errors.failed");
+  });
+
+  it("market #7 (RemainderNegative) in buy context → generic, not royaltiesImmutable", () => {
+    expect(contractErrorKey(marketErr(7), "buy")).toBe("transaction.errors.failed");
   });
 
   it("RoyaltiesImmutableAfterMint (#7) → transaction.errors.royaltiesImmutable", () => {
