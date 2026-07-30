@@ -23,10 +23,16 @@ describe("formatResultError", () => {
 
   it("does not throw when .result() or .switch() throws", () => {
     const throwsOnResult = {
-      result: () => { throw new Error("boom"); },
+      result: () => {
+        throw new Error("boom");
+      },
     };
     const throwsOnSwitch = {
-      result: () => ({ switch: () => { throw new Error("bang"); } }),
+      result: () => ({
+        switch: () => {
+          throw new Error("bang");
+        },
+      }),
     };
     expect(() => formatResultError(throwsOnResult)).not.toThrow();
     expect(formatResultError(throwsOnResult)).toBe("Transaction failed");
