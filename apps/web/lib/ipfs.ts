@@ -32,19 +32,29 @@ export async function fetchIpfs(
 
   const path = uri.slice("ipfs://".length);
   let lastResponse: Response | undefined;
+  let lastError: unknown;
 
   for (const gw of IPFS_GATEWAYS) {
-    const res = await fetch(`${gw.url}/${path}`, {
-      headers: gw.auth ? { Authorization: `Bearer ${gw.auth}` } : {},
-      next: { revalidate: opts?.revalidate ?? 3600 },
-      signal: opts?.signal,
-    });
+    // A gateway can fail by answering non-ok or by throwing outright (dead
+    // DNS, reset, timeout). Both must fall through to the next gateway; only
+    // a caller-initiated abort exits the chain.
+    try {
+      const res = await fetch(`${gw.url}/${path}`, {
+        headers: gw.auth ? { Authorization: `Bearer ${gw.auth}` } : {},
+        next: { revalidate: opts?.revalidate ?? 3600 },
+        signal: opts?.signal,
+      });
 
-    if (res.ok) return res;
-    lastResponse = res;
+      if (res.ok) return res;
+      lastResponse = res;
+    } catch (err) {
+      if (opts?.signal?.aborted) throw err;
+      lastError = err;
+    }
   }
 
-  return lastResponse!;
+  if (lastResponse) return lastResponse;
+  throw lastError;
 }
 
 const MAX_ATTEMPTS = 3;
