@@ -123,11 +123,15 @@ export async function reconcileTransaction(
 ): Promise<ReconcileResult> {
   const server = new rpc.Server(RPC_URL, { allowHttp: false });
   for (let i = 0; i < maxRetries; i++) {
-    const result = await server.getTransaction(txHash);
-    if (result.status === rpc.Api.GetTransactionStatus.SUCCESS)
-      return { status: "SUCCESS", returnValue: result.returnValue };
-    if (result.status === rpc.Api.GetTransactionStatus.FAILED)
-      return { status: "FAILED" };
+    try {
+      const result = await server.getTransaction(txHash);
+      if (result.status === rpc.Api.GetTransactionStatus.SUCCESS)
+        return { status: "SUCCESS", returnValue: result.returnValue };
+      if (result.status === rpc.Api.GetTransactionStatus.FAILED)
+        return { status: "FAILED" };
+    } catch {
+      /* network error — will retry after delay */
+    }
     await new Promise((r) => setTimeout(r, delayMs));
   }
   return { status: "NOT_FOUND" };

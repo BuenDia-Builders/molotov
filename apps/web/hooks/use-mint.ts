@@ -126,16 +126,22 @@ export function useMint() {
     if (!entry?.txHash) return;
 
     queueMicrotask(() => setState("reconciling"));
-    reconcileTransaction(entry.txHash).then((result) => {
-      if (result.status === "SUCCESS") {
-        clearPendingTx(pKey);
-        setState("success");
-      } else if (result.status === "FAILED") {
-        clearPendingTx(pKey);
-        setErrorKind("submit");
-        setState("error");
-      }
-    });
+    reconcileTransaction(entry.txHash)
+      .then((result) => {
+        if (result.status === "SUCCESS") {
+          clearPendingTx(pKey);
+          setState("success");
+        } else if (result.status === "FAILED") {
+          clearPendingTx(pKey);
+          setErrorKind("submit");
+          setState("error");
+        } else {
+          setState("idle");
+        }
+      })
+      .catch(() => {
+        setState("idle");
+      });
   }, [address]);
 
   const reset = useCallback(() => {
@@ -238,24 +244,27 @@ export function useMint() {
         if (capturedHash) {
           console.warn("[mint] signAndSend threw but tx was submitted — reconciling", capturedHash);
           setState("reconciling");
-          const result = await reconcileTransaction(capturedHash);
-          if (result.status === "SUCCESS") {
-            const tokenId = result.returnValue ? Number(scValToNative(result.returnValue)) : 0;
-            clearDraft(key);
-            clearPendingTx(pendingKey(key));
-            setState("success");
-            return { tokenId, txHash: capturedHash };
+          try {
+            const result = await reconcileTransaction(capturedHash);
+            if (result.status === "SUCCESS") {
+              const tokenId = result.returnValue ? Number(scValToNative(result.returnValue)) : 0;
+              clearDraft(key);
+              clearPendingTx(pendingKey(key));
+              setState("success");
+              return { tokenId, txHash: capturedHash };
+            }
+            if (result.status === "FAILED") {
+              clearPendingTx(pendingKey(key));
+            }
+            /* NOT_FOUND: leave pending entry for mount-time recovery */
+          } catch {
+            console.warn("[mint] reconcileTransaction threw — falling through to error path");
           }
-          if (result.status === "FAILED") {
-            clearPendingTx(pendingKey(key));
-          }
-          /* NOT_FOUND: transaction is still not visible after our retries.
-             Leave the pending entry in sessionStorage so mount-time
-             recovery can retry later. */
         }
 
         console.error("[mint] transaction failed", err);
         const rejected = isUserRejection(err);
+        if (rejected) clearPendingTx(pendingKey(key));
         setErrorKind(rejected ? "sign" : "submit");
         setState("error");
         throw new MolotovError(

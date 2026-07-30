@@ -197,6 +197,18 @@ describe("useMint", () => {
     expect(mockReconcileTransaction).not.toHaveBeenCalled();
   });
 
+  it("clears the pending marker on user rejection", async () => {
+    mockUploadImage.mockResolvedValue({ cid: "ipfs-cid" });
+    mockUploadMetadata.mockResolvedValue({ cid: "ipfs-cid" });
+    mockSignAndSend.mockRejectedValue(new Error("User rejected the request"));
+    mockIsUserRejection.mockReturnValue(true);
+
+    await actMintAndCatch(harness.result.mint, validParams);
+
+    const pendingKey = `mlv_mint_pending:mlv_mint_draft:art.png:4:0:Test Artwork`;
+    expect(sessionStorage.getItem(pendingKey)).toBeNull();
+  });
+
   /* ── failure without submission ──────────────────────────── */
 
   it("reports a submit error without reconciling when no hash was captured", async () => {
