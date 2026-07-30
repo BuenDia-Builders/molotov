@@ -18,6 +18,22 @@ const READ_SOURCE = "GANXCETUVUUILGJPVEZWM7EH66IZM5OICUPMNUWNXKIBRK425MUKZERM";
 
 const server = new StellarRpc.Server(RPC_URL, { allowHttp: false });
 
+interface XdrTransactionResultLike {
+  result?(): { switch?(): { name: string } };
+}
+
+export function formatResultError(result: unknown): string {
+  if (typeof result === "string") return result;
+  try {
+    const txResult = (result as XdrTransactionResultLike)?.result?.();
+    const code = txResult?.switch?.()?.name;
+    if (code) return `Transaction failed (${code})`;
+  } catch {
+    // ignore
+  }
+  return "Transaction failed";
+}
+
 export async function fetchRegistryOwner(): Promise<string | null> {
   try {
     const contract = new Contract(REGISTRY_ID);
@@ -62,7 +78,7 @@ async function invokeRegistry(
 
   const sim = await server.simulateTransaction(tx);
   if (StellarRpc.Api.isSimulationError(sim)) {
-    throw new Error(`Simulation failed: ${(sim as StellarRpc.Api.SimulateTransactionErrorResponse).error}`);
+    throw new Error(`Simulation failed: ${(sim as StellarRpc.Api.SimulateTransactionErrorResponse).error || "Contract rejected the operation"}`);
   }
 
   const assembled = StellarRpc.assembleTransaction(tx, sim).build();
@@ -71,7 +87,7 @@ async function invokeRegistry(
   const sent = await server.sendTransaction(
     TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE),
   );
-  if (sent.status === "ERROR") throw new Error(`Submit error: ${sent.errorResult}`);
+  if (sent.status === "ERROR") throw new Error(`Submit error: ${formatResultError(sent.errorResult)}`);
 
   // Poll until confirmed
   const hash = sent.hash;
