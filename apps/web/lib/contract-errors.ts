@@ -102,12 +102,22 @@ export function contractErrorKey(
 
   const code = Number(match[1]);
 
-  // Try marketplace errors first (the most common context for users).
+  // The two contracts share the same numeric space in `Error(Contract, #N)`,
+  // so an unmapped code from one contract must not be looked up in the other's
+  // table: marketplace #6 (SplitSharesMustSumTo10000) would otherwise read as
+  // the NFT's #6 (ArtistNotRegistered). When the call context names the
+  // marketplace, consult only the marketplace table.
+  if (context === "buy" || context === "list" || context === "cancel") {
+    if (code in MARKET_ERROR_KEYS) {
+      return `transaction.errors.${MARKET_ERROR_KEYS[code]}` as ContractErrorKey;
+    }
+    return "transaction.errors.failed";
+  }
+
+  // No context: consult both tables, marketplace first.
   if (code in MARKET_ERROR_KEYS) {
     return `transaction.errors.${MARKET_ERROR_KEYS[code]}` as ContractErrorKey;
   }
-
-  // Try NFT contract errors.
   if (code in NFT_ERROR_KEYS) {
     return `transaction.errors.${NFT_ERROR_KEYS[code]}` as ContractErrorKey;
   }
