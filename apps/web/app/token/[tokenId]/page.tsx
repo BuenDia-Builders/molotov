@@ -70,8 +70,16 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
     <div className="min-h-screen bg-[var(--black)]">
       <Nav />
       <div className="grid grid-cols-1 md:grid-cols-2 md:min-h-[calc(100vh-3rem)]">
-        {/* Left — artwork, full-height, contained so nothing is cropped */}
-        <div className="relative w-full min-h-[60vw] md:min-h-0 bg-[var(--carbon)] flex items-center justify-center">
+        {/* Left — artwork. The frame is sized up front (aspect on mobile,
+            full column height on desktop) so the image loads into reserved
+            space: no layout shift, no cropping at any aspect ratio. Sticky on
+            desktop so the work stays while the sale data scrolls beside it. */}
+        <div className="relative w-full aspect-[4/5] md:aspect-auto md:h-[calc(100vh-3rem)] md:sticky md:top-12 bg-[var(--carbon)] flex items-center justify-center overflow-hidden">
+          {/* Subtle gallery glow behind the work — existing tokens only. */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--blue)_7%,transparent)_0%,transparent_65%)]"
+          />
           <Image
             src={imageSrc}
             alt={title || `Token ${token.token_id}`}

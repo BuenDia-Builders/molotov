@@ -73,16 +73,19 @@ function WorkCard({ work }: { work: Work }) {
       href={`/token/${work.token_id}`}
       className="group flex flex-col bg-[var(--carbon)] overflow-hidden transition-transform duration-300 hover:-translate-y-0.5"
     >
-      {/* Image */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-[var(--blue-deep)] to-[var(--blue)]">
+      {/* Image — fixed frame, contained artwork: wide and tall works both
+          show in full, nothing cropped and no layout shift on load. */}
+      <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-[var(--blue-deep)] to-[var(--blue-muted)]">
         {work.image && (
-          <Image
-            src={work.image}
-            alt={work.title}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          <div className="absolute inset-0 p-5 flex items-center justify-center">
+            <Image
+              src={work.image}
+              alt={work.title}
+              fill
+              className="object-contain transition-transform duration-700 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          </div>
         )}
         {/* subtle token number watermark */}
         <span className="absolute bottom-3 right-4 font-[family-name:var(--font-mono)] text-[40px] font-bold text-white/4 leading-none select-none pointer-events-none">

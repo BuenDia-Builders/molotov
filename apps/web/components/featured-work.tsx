@@ -66,16 +66,19 @@ function WorkCard({ work, slot }: { work?: Work; slot: number }) {
         </span>
       </div>
 
-      {/* Image area */}
-      <div className="relative aspect-[4/5] border-b border-dashed border-white/10 overflow-hidden">
+      {/* Image area — fixed frame, contained artwork: any aspect ratio
+          renders in full (no crop, no distortion, no layout shift). */}
+      <div className="relative aspect-[4/5] border-b border-dashed border-white/10 overflow-hidden bg-[var(--carbon)]">
         {work?.image ? (
-          <Image
-            src={work.image}
-            alt={work.title}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes="(max-width: 1024px) 50vw, 33vw"
-          />
+          <div className="absolute inset-0 p-5 flex items-center justify-center">
+            <Image
+              src={work.image}
+              alt={work.title}
+              fill
+              className="object-contain transition-transform duration-700 group-hover:scale-105"
+              sizes="(max-width: 1024px) 50vw, 33vw"
+            />
+          </div>
         ) : (
           <div className="flex h-full items-center justify-center">
             <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--offwhite)]/20">
