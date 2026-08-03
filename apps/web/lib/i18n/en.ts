@@ -255,6 +255,28 @@ export const en = {
       failed: "The transaction failed. Please try again.",
     },
   },
+  auth: {
+    title: "Sign in to continue",
+    google: "Continue with Google",
+    x: "Continue with X",
+    stellar: "Connect a Stellar wallet",
+    note: "With Google or X we create a wallet for you on the spot: no seed phrase, nothing to install. If you already use a Stellar wallet, connect it directly.",
+    close: "Close",
+  },
+  getStarted: {
+    title: "Get started with Molotov",
+    cta: "Sign up free",
+    faq: {
+      q1: "What is Molotov?",
+      a1: "A digital art market on Stellar. Every work carries its royalty written into the contract at upload time: between 1% and 15%, set by its creator, and nobody — not even us — can change it. On every sale on Molotov, the royalty is paid before the deal closes.",
+      q2: "What is a wallet?",
+      a2: "Your key and your signature. There are no usernames and passwords here: your wallet is your identity. Use one you already have (Freighter, xBull, LOBSTR and more) or sign in with Google or X and we create one for you on the spot, no seed phrase.",
+      q3: "How do I collect art?",
+      a3: "Come in, browse the works and buy the one that moves you. The payment travels directly: to the seller and to the creator, royalty included. We are on testnet today: you can try the whole loop without real money.",
+      q4: "How do I upload my work?",
+      a4: "The artist registry is curated. Once in, you upload your image, set your royalty forever and publish your price. Every time your work sells on Molotov, you get paid. Always.",
+    },
+  },
   landing: {
     counters: {
       works: "Works",

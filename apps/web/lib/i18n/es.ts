@@ -267,6 +267,29 @@ export const es = {
       failed: "La transacción falló. Intentá de nuevo.",
     },
   },
+  auth: {
+    title: "Iniciá sesión para seguir",
+    google: "Continuar con Google",
+    x: "Continuar con X",
+    stellar: "Conectar una wallet de Stellar",
+    /** La diferencia con el resto: entrar con una red social TAMBIÉN te da wallet */
+    note: "Con Google o X te creamos una wallet en el momento: sin frase secreta, sin instalar nada. Si ya usás una wallet de Stellar, conectala directo.",
+    close: "Cerrar",
+  },
+  getStarted: {
+    title: "Empezá con Molotov",
+    cta: "Registrate gratis",
+    faq: {
+      q1: "¿Qué es Molotov?",
+      a1: "Un mercado de arte digital sobre Stellar. Cada obra lleva su regalía escrita en el contrato al momento de subirse: entre el 1% y el 15%, la fija quien la crea y nadie —ni nosotros— puede cambiarla. En cada venta en Molotov, la regalía se paga antes de que la operación cierre.",
+      q2: "¿Qué es una wallet?",
+      a2: "Tu llave y tu firma. Acá no hay usuario y contraseña: tu wallet es tu identidad. Podés usar una que ya tengas (Freighter, xBull, LOBSTR y más) o entrar con Google o X y te creamos una en el momento, sin frase secreta.",
+      q3: "¿Cómo colecciono arte?",
+      a3: "Entrás, mirás las obras y comprás la que te mueva. El pago viaja directo: a quien vende y a quien la creó, su regalía incluida. Hoy estamos en testnet: podés probar todo el circuito sin plata real.",
+      q4: "¿Cómo subo mi obra?",
+      a4: "El registro de artistas es curado. Una vez adentro, subís tu imagen, fijás tu regalía para siempre y publicás tu precio. Cada vez que tu obra se venda en Molotov, cobrás vos. Siempre.",
+    },
+  },
   landing: {
     counters: {
       works: "Obras",
