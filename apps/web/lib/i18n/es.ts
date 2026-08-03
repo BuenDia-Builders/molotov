@@ -200,6 +200,11 @@ export const es = {
       drop: "Arrastrá tu obra acá",
       clickToChoose: "o hacé click para elegirla",
       formats: "JPG · PNG · WEBP · GIF · SVG · máx 30 MB",
+      /** Chips de límites bajo el dropzone, estilo objkt: dichos antes, no al fallar */
+      limitSizeLabel: "Tamaño",
+      limitSizeValue: "El archivo puede pesar hasta 30 MB.",
+      limitTypesLabel: "Tipos",
+      limitTypesValue: "JPG, PNG, WEBP, GIF o SVG.",
       titleLabel: "Título",
       titlePlaceholder: "Título de la obra",
       descriptionLabel: "Descripción",

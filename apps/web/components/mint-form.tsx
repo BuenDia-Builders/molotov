@@ -217,6 +217,25 @@ export function MintForm() {
               </span>
             </button>
           )}
+          {/* Limits said up front, not discovered on error */}
+          <div className="mt-4 flex flex-col gap-2 border border-white/10 p-3">
+            <div className="flex items-baseline gap-3">
+              <span className="shrink-0 bg-[var(--blue)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.15em] text-white">
+                {t("mint.form.limitSizeLabel")}
+              </span>
+              <span className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/60">
+                {t("mint.form.limitSizeValue")}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-3">
+              <span className="shrink-0 bg-[var(--blue)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.15em] text-white">
+                {t("mint.form.limitTypesLabel")}
+              </span>
+              <span className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/60">
+                {t("mint.form.limitTypesValue")}
+              </span>
+            </div>
+          </div>
           {fieldError && <p className="mt-3 text-sm text-red-500">{fieldError}</p>}
         </div>
 
