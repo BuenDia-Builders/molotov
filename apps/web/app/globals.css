@@ -149,6 +149,21 @@
 }
 
 /* Breathing dot for the hero eyebrow: opacity 1 -> 0.4 -> 1, ~2s loop. */
+/* Landing: rotating multilingual headline */
+@keyframes tagline-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.tagline-fade {
+  animation: tagline-fade 0.45s ease-out;
+}
+
 @keyframes breathe {
   0%,
   100% {
