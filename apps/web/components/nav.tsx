@@ -47,7 +47,7 @@ export function Nav() {
           </Link>
           <Link
             href={START_HREF}
-            className="hidden h-8 items-center bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-[var(--blue-light)] sm:inline-flex"
+            className="inline-flex h-8 items-center bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-[var(--blue-light)]"
           >
             {t("nav.start")}
           </Link>

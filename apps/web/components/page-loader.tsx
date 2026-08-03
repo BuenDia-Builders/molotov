@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-type Phase = "show" | "tear" | "fire" | "split" | "done";
+/** "pending" renders nothing on server AND first client render — the
+ *  sessionStorage decision must wait until after hydration, or the server
+ *  (which can't know) and a returning visitor's client disagree and React
+ *  regenerates the whole tree on every load. */
+type Phase = "pending" | "show" | "tear" | "fire" | "split" | "done";
 
 // Jagged tear edge — bottom of top half
 const TOP_JAGGED =
@@ -25,34 +29,46 @@ const TOP_FLAT = "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)";
 const BOT_FLAT = "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)";
 
 export function PageLoader() {
-  const [phase, setPhase] = useState<Phase>(() => {
-    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem("mlv_intro")) {
-      return "done";
-    }
-    return "show";
-  });
+  const [phase, setPhase] = useState<Phase>("pending");
 
   useEffect(() => {
-    if (phase === "done") return;
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-    const t1 = setTimeout(() => setPhase("tear"), 900);
-    const t2 = setTimeout(() => setPhase("fire"), 1600);
-    const t3 = setTimeout(() => setPhase("split"), 2500);
-    const t4 = setTimeout(() => {
-      setPhase("done");
-      sessionStorage.setItem("mlv_intro", "1");
-    }, 3800);
+    // Deferred (never synchronous in the effect): decide, then run the intro.
+    timers.push(
+      setTimeout(() => {
+        let intro = false;
+        try {
+          intro = !sessionStorage.getItem("mlv_intro");
+        } catch {
+          /* storage blocked — skip the intro */
+        }
+        if (!intro) {
+          setPhase("done");
+          return;
+        }
 
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        setPhase("show");
+        timers.push(setTimeout(() => setPhase("tear"), 900));
+        timers.push(setTimeout(() => setPhase("fire"), 1600));
+        timers.push(setTimeout(() => setPhase("split"), 2500));
+        timers.push(
+          setTimeout(() => {
+            setPhase("done");
+            try {
+              sessionStorage.setItem("mlv_intro", "1");
+            } catch {
+              /* ignore */
+            }
+          }, 3800),
+        );
+      }, 0),
+    );
+
+    return () => timers.forEach(clearTimeout);
   }, []);
 
-  if (phase === "done") return null;
+  if (phase === "pending" || phase === "done") return null;
 
   const isJagged = phase === "tear" || phase === "fire" || phase === "split";
   const isSplit = phase === "split";
