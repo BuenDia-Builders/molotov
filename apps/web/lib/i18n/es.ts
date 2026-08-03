@@ -260,6 +260,16 @@ export const es = {
       failed: "La transacción falló. Intentá de nuevo.",
     },
   },
+  share: {
+    cta: "Compartir",
+    copied: "Link copiado",
+    /** Wallet conectada: el link sale con ?r= y el contrato paga el referido */
+    hintConnected:
+      "Tu link lleva tu marca: si alguien compra por él, una parte de la comisión es tuya. Sale de la comisión de Molotov, no del precio de la obra.",
+    /** Sin wallet: se puede compartir igual, pero sin atribución */
+    hintDisconnected:
+      "Conectá tu wallet antes de compartir y el link queda a tu nombre: si alguien compra por él, ganás una parte de la comisión.",
+  },
   earnings: {
     title: "Lo que ganaste",
     connectWallet: "Conectá tu wallet para ver lo que ganaste",

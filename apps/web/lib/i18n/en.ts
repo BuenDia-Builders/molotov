@@ -250,6 +250,14 @@ export const en = {
       failed: "The transaction failed. Please try again.",
     },
   },
+  share: {
+    cta: "Share",
+    copied: "Link copied",
+    hintConnected:
+      "Your link carries your name: if someone buys through it, part of the fee is yours. It comes out of Molotov's cut, not the price of the work.",
+    hintDisconnected:
+      "Connect your wallet before sharing and the link carries your name: if someone buys through it, part of the fee is yours.",
+  },
   earnings: {
     title: "What you earned",
     connectWallet: "Connect your wallet to see what you earned",

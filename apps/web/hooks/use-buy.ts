@@ -24,9 +24,13 @@ export function useBuy() {
   }, []);
 
   const buy = useCallback(
-    async ({ listingId }: { listingId: bigint }) => {
+    async ({ listingId, referrer }: { listingId: bigint; referrer?: string | null }) => {
       if (!address) throw new Error("No wallet connected");
       setErrorKey(null);
+
+      // The contract zeroes self-referral anyway; dropping it here just keeps
+      // the transaction (and the Sold event) clean.
+      const effectiveReferrer = referrer && referrer !== address ? referrer : undefined;
 
       try {
         setState("buying");
@@ -45,7 +49,7 @@ export function useBuy() {
         const tx = await client.buy({
           buyer: address,
           listing_id: listingId,
-          referrer: undefined,
+          referrer: effectiveReferrer,
         });
         const sent = await tx.signAndSend();
         const hash =

@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { isDbConfigured, findTokenById, findActiveListingByToken, stroopsToXlm } from "@/lib/db";
 import { BuyButton } from "@/components/buy-button";
 import { Nav } from "@/components/nav";
+import { ReferralCapture } from "@/components/referral-capture";
+import { ShareButton } from "@/components/share-button";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
 
@@ -69,6 +72,9 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
   return (
     <div className="min-h-screen bg-[var(--black)]">
       <Nav />
+      <Suspense fallback={null}>
+        <ReferralCapture tokenId={id} />
+      </Suspense>
       <div className="grid grid-cols-1 md:grid-cols-2 md:min-h-[calc(100vh-3rem)]">
         {/* Left — artwork, full-height, contained so nothing is cropped */}
         <div className="relative w-full min-h-[60vw] md:min-h-0 bg-[var(--carbon)] flex items-center justify-center">
@@ -131,6 +137,11 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
                 {token.recipients_count === 1 ? "recipient" : "recipients"}
               </span>
             </div>
+          </div>
+
+          {/* Share — the growth loop: the link carries the sharer's referral */}
+          <div className="mt-8">
+            <ShareButton path={`/token/${token.token_id}`} />
           </div>
 
           {/* Manage link — shown when not listed */}
