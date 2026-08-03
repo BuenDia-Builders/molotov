@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { WalletButton } from "@/components/wallet-button";
 import { SearchBox } from "@/components/search-box";
+import { CreateMenu } from "@/components/create-menu";
 import { useI18n } from "@/lib/i18n";
 import { useWallet } from "@/hooks/use-wallet";
 import { START_HREF } from "@/lib/routes";
@@ -41,12 +42,7 @@ export function Nav() {
 
         {/* Right: create / start / locale / wallet */}
         <div className="ml-auto flex items-center gap-3 md:ml-0 md:gap-4">
-          <Link
-            href="/create"
-            className="hidden min-h-11 items-center font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--black)]/60 transition-colors hover:text-[var(--black)] sm:inline-flex"
-          >
-            {t("nav.create")}
-          </Link>
+          <CreateMenu />
           {/* Once signed in, the account chip replaces onboarding as the CTA. */}
           {!isConnected && (
             <Link

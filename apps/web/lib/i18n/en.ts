@@ -31,6 +31,15 @@ export const en = {
     searchNoResults: "No artists match that name.",
     searchLabel: "Search",
     faq: "FAQ",
+    createMenu: {
+      tagline: "Your work, with a royalty for life",
+      workTitle: "Upload a work",
+      workBody:
+        "Turn your creation into a digital piece with the royalty written into the contract.",
+      collectionTitle: "Build a collection",
+      collectionBody: "Group your works and present them together, like a show.",
+      soon: "Soon",
+    },
     megaManifestoBody:
       "We didn't build this for speculation. We built it so an artist can live from their work.",
     megaHowBody: "One sale. Three cuts. The royalty is code, not a platform promise.",
