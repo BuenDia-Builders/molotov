@@ -5,6 +5,7 @@ import Link from "next/link";
 import { WalletButton } from "@/components/wallet-button";
 import { SearchBox } from "@/components/search-box";
 import { useI18n } from "@/lib/i18n";
+import { useWallet } from "@/hooks/use-wallet";
 import { START_HREF } from "@/lib/routes";
 
 /**
@@ -13,10 +14,11 @@ import { START_HREF } from "@/lib/routes";
  */
 export function Nav() {
   const { t } = useI18n();
+  const { isConnected } = useWallet();
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-[var(--offwhite)]">
-      <div className="flex h-12 items-center gap-4 px-4 md:gap-6 md:px-10 lg:px-20">
+      <div className="flex h-12 items-center gap-4 px-5 md:gap-6 md:px-10 lg:px-20">
         {/* Left: wordmark */}
         <Link href="/" aria-label={t("nav.homeLabel")} className="flex shrink-0 items-center gap-2">
           <Image
@@ -45,17 +47,20 @@ export function Nav() {
           >
             {t("nav.create")}
           </Link>
-          <Link
-            href={START_HREF}
-            className="inline-flex h-8 items-center bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-[var(--blue-light)]"
-          >
-            {t("nav.start")}
-          </Link>
+          {/* Once signed in, the account chip replaces onboarding as the CTA. */}
+          {!isConnected && (
+            <Link
+              href={START_HREF}
+              className="inline-flex h-8 items-center bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-[var(--blue-light)]"
+            >
+              {t("nav.start")}
+            </Link>
+          )}
           <WalletButton theme="light" />
         </div>
       </div>
       {/* Mobile search row */}
-      <div className="border-t border-black/5 px-4 py-2 md:hidden">
+      <div className="border-t border-black/5 px-5 py-2 md:hidden">
         <SearchBox variant="block" />
       </div>
     </header>

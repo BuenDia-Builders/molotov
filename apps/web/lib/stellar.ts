@@ -12,6 +12,11 @@ export type { ISupportedWallet, StellarWalletsKit };
  * registers web components on import) stays out of the server bundle.
  */
 export const IS_TESTNET = process.env.NEXT_PUBLIC_STELLAR_NETWORK !== "PUBLIC";
+
+/** Horizon REST endpoint — used only for lightweight reads (account balance). */
+export const HORIZON_URL = IS_TESTNET
+  ? "https://horizon-testnet.stellar.org"
+  : "https://horizon.stellar.org";
 export const STELLAR_NETWORK_NAME = IS_TESTNET ? "Stellar testnet" : "Stellar mainnet";
 
 export const STELLAR_NETWORK_PASSPHRASE = !IS_TESTNET

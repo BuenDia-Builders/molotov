@@ -255,6 +255,14 @@ export const en = {
       failed: "The transaction failed. Please try again.",
     },
   },
+  account: {
+    balance: "Balance",
+    balanceUnavailable: "Account not funded yet",
+    profile: "Profile",
+    copyAddress: "Copy address",
+    copied: "Copied",
+    signOut: "Sign out",
+  },
   auth: {
     title: "Sign in to continue",
     google: "Continue with Google",
@@ -322,6 +330,11 @@ export const en = {
   },
   artistProfile: {
     kicker: "Artist",
+    kickerCollector: "Collector",
+    tabCreated: "Created",
+    tabOwned: "Owned",
+    tabActivity: "Activity",
+    ownedEmpty: "No works held right now.",
     worksTitle: "Works",
     worksEmpty: "No works published yet.",
     salesTitle: "Recent sales",
