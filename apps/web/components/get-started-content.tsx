@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { LoginModal } from "@/components/login-modal";
 import { useI18n } from "@/lib/i18n";
+import { useWallet } from "@/hooks/use-wallet";
 
 const FAQ_KEYS = [
   ["getStarted.faq.q1", "getStarted.faq.a1"],
@@ -19,6 +21,7 @@ const FAQ_KEYS = [
  */
 export function GetStartedContent() {
   const { t } = useI18n();
+  const { isConnected } = useWallet();
   const [loginOpen, setLoginOpen] = useState(false);
 
   return (
@@ -95,12 +98,22 @@ export function GetStartedContent() {
         <h1 className="mt-8 font-[family-name:var(--font-display)] text-[clamp(2rem,6vw,3.4rem)] font-bold leading-tight text-[var(--offwhite)]">
           {t("getStarted.title")}
         </h1>
-        <button
-          onClick={() => setLoginOpen(true)}
-          className="mt-10 inline-flex h-12 items-center bg-[var(--blue)] px-10 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--blue-light)]"
-        >
-          {t("getStarted.cta")}
-        </button>
+        {/* Already signed in? The FAQ stays useful; the sign-up button doesn't. */}
+        {isConnected ? (
+          <Link
+            href="/works"
+            className="mt-10 inline-flex h-12 items-center bg-[var(--blue)] px-10 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--blue-light)]"
+          >
+            {t("getStarted.ctaConnected")}
+          </Link>
+        ) : (
+          <button
+            onClick={() => setLoginOpen(true)}
+            className="mt-10 inline-flex h-12 items-center bg-[var(--blue)] px-10 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--blue-light)]"
+          >
+            {t("getStarted.cta")}
+          </button>
+        )}
 
         {/* ── FAQ ── */}
         <div className="mt-24 w-full text-left">
