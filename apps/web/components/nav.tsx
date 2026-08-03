@@ -12,21 +12,7 @@ import { START_HREF } from "@/lib/routes";
  * lives in the footer (objkt-style) — there is no menu overlay.
  */
 export function Nav() {
-  const { t, locale, setLocale } = useI18n();
-
-  const localeBtns = (["en", "es"] as const).map((loc) => (
-    <button
-      key={loc}
-      onClick={() => setLocale(loc)}
-      className={`font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.2em] transition-colors ${
-        locale === loc
-          ? "text-[var(--black)]"
-          : "text-[var(--black)]/30 hover:text-[var(--black)]/70"
-      }`}
-    >
-      {loc}
-    </button>
-  ));
+  const { t } = useI18n();
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-[var(--offwhite)]">
@@ -65,7 +51,6 @@ export function Nav() {
           >
             {t("nav.start")}
           </Link>
-          <div className="flex items-center gap-2">{localeBtns}</div>
           <WalletButton theme="light" />
         </div>
       </div>

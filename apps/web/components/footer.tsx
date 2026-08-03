@@ -22,7 +22,7 @@ const SOCIAL_LINKS = [
 ] as const;
 
 export function Footer() {
-  const { t } = useI18n();
+  const { t, locale, setLocale } = useI18n();
 
   return (
     <footer className="mt-auto border-t border-white/12">
@@ -114,6 +114,22 @@ export function Footer() {
           {t("footer.copyright")}
         </p>
         <div className="flex items-center gap-6">
+          {/* Locale switch lives here, not in the nav — the bar is full enough. */}
+          <div className="flex items-center gap-2">
+            {(["es", "en"] as const).map((loc) => (
+              <button
+                key={loc}
+                onClick={() => setLocale(loc)}
+                className={`font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.15em] transition-colors ${
+                  locale === loc
+                    ? "text-[var(--offwhite)]"
+                    : "text-[var(--offwhite)]/30 hover:text-[var(--offwhite)]/70"
+                }`}
+              >
+                {loc}
+              </button>
+            ))}
+          </div>
           <a
             href={contractExplorerUrl(NFT_CONTRACT_ID)}
             target="_blank"
