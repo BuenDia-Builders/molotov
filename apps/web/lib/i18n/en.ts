@@ -25,6 +25,11 @@ export const en = {
     openMenu: "Open menu",
     closeMenu: "Close menu",
     menuLabel: "Menu",
+    start: "Get started",
+    signIn: "Sign in",
+    searchPlaceholder: "Search artists",
+    searchNoResults: "No artists match that name.",
+    searchLabel: "Search",
     megaManifestoBody:
       "We didn't build this for speculation. We built it so an artist can live from their work.",
     megaHowBody: "One sale. Three cuts. The royalty is code, not a platform promise.",
@@ -248,6 +253,49 @@ export const en = {
       royaltiesImmutable: "Royalties cannot be changed after the work has been minted.",
       approveGeneric: "The NFT transfer could not be authorised. Please try again.",
       failed: "The transaction failed. Please try again.",
+    },
+  },
+  landing: {
+    counters: {
+      works: "Works",
+      artists: "Artists",
+      collected: "Works collected",
+    },
+    tagline: {
+      description:
+        "A digital art market on Stellar where artists and collectors meet. Here the royalty is not a promise: it is written into each work's contract and paid on every sale on Molotov.",
+      cta: "Get started",
+    },
+    hero: {
+      forSale: "For sale",
+      viewWork: "View work",
+      slideLabel: "Go to work",
+    },
+    trending: {
+      collectionsTitle: "Trending collections",
+      worksTitle: "Trending works",
+      viewCollections: "View collections",
+      viewWorks: "View all works",
+      soldBadge: "Sold",
+      piecesSingular: "work",
+      piecesPlural: "works",
+    },
+    sales: {
+      title: "Recent sales",
+      price: "Price",
+      royalty: "Royalty paid",
+      viewTx: "View transaction",
+      empty: "No sales yet. The first one lands here, royalty in plain sight.",
+    },
+    people: {
+      creatorsTitle: "Featured creators",
+      collectorsTitle: "Featured collectors",
+      viewArtists: "View artists",
+      soldLabel: "sold",
+      collectedLabel: "collected",
+      purchasesSingular: "purchase",
+      purchasesPlural: "purchases",
+      empty: "When things move, the names land here.",
     },
   },
   artistProfile: {

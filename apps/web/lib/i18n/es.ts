@@ -23,6 +23,13 @@ export const es = {
     openMenu: "Abrir menú",
     closeMenu: "Cerrar menú",
     menuLabel: "Menú",
+    /** CTA primario de la barra: hoy lleva a descubrir obras */
+    start: "Empezar",
+    /** Conectar wallet — acá "iniciar sesión" ES conectar la wallet */
+    signIn: "Iniciar sesión",
+    searchPlaceholder: "Buscá artistas",
+    searchNoResults: "No encontramos artistas con ese nombre.",
+    searchLabel: "Buscar",
     megaManifestoBody:
       "No construimos esto para especular. Lo construimos para que un artista pueda vivir de su obra.",
     megaHowBody: "Una venta. Tres partes. La regalía es código, no una promesa de plataforma.",
@@ -258,6 +265,50 @@ export const es = {
       approveGeneric: "No se pudo autorizar la transferencia del NFT. Intentá de nuevo.",
       /** Error genérico o desconocido */
       failed: "La transacción falló. Intentá de nuevo.",
+    },
+  },
+  landing: {
+    counters: {
+      works: "Obras",
+      artists: "Artistas",
+      collected: "Obras coleccionadas",
+    },
+    tagline: {
+      /** Bajada del bloque central — la promesa, dicha con precisión */
+      description:
+        "Un mercado de arte digital en Stellar donde artistas y coleccionistas se encuentran. Acá la regalía no es una promesa: está escrita en el contrato de cada obra y se paga en cada venta en Molotov.",
+      cta: "Empezar",
+    },
+    hero: {
+      forSale: "En venta",
+      viewWork: "Ver obra",
+      slideLabel: "Ir a la obra",
+    },
+    trending: {
+      collectionsTitle: "Colecciones en tendencia",
+      worksTitle: "Obras en tendencia",
+      viewCollections: "Ver colecciones",
+      viewWorks: "Ver todas las obras",
+      soldBadge: "Vendida",
+      piecesSingular: "obra",
+      piecesPlural: "obras",
+    },
+    sales: {
+      title: "Ventas recientes",
+      price: "Precio",
+      royalty: "Regalía pagada",
+      viewTx: "Ver transacción",
+      empty: "Todavía no hay ventas. La primera queda acá, con su regalía a la vista.",
+    },
+    people: {
+      creatorsTitle: "Creadores destacados",
+      collectorsTitle: "Compradores destacados",
+      viewArtists: "Ver artistas",
+      soldLabel: "vendido",
+      collectedLabel: "comprado",
+      purchasesSingular: "compra",
+      purchasesPlural: "compras",
+      empty: "Cuando haya movimiento, acá van a estar los nombres.",
     },
   },
   artistProfile: {
