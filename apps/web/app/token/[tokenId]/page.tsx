@@ -8,6 +8,7 @@ import { BuyButton } from "@/components/buy-button";
 import { Nav } from "@/components/nav";
 import { ReferralCapture } from "@/components/referral-capture";
 import { ShareButton } from "@/components/share-button";
+import { WorkViewTracker } from "@/components/work-view-tracker";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
 
@@ -118,6 +119,7 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
       <Suspense fallback={null}>
         <ReferralCapture tokenId={id} />
       </Suspense>
+      <WorkViewTracker tokenId={id} listed={Boolean(listing)} />
       <div className="grid grid-cols-1 md:grid-cols-2 md:min-h-[calc(100vh-3rem)]">
         {/* Left — artwork, full-height, contained so nothing is cropped */}
         <div className="relative w-full min-h-[60vw] md:min-h-0 bg-[var(--carbon)] flex items-center justify-center">

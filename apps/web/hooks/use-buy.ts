@@ -8,6 +8,7 @@ import {
 import { useWallet } from "@/hooks/use-wallet";
 import { RPC_URL, isUserRejection } from "@/lib/stellar";
 import { contractErrorKey, type ContractErrorKey } from "@/lib/contract-errors";
+import { track } from "@/lib/analytics";
 
 export type BuyState = "idle" | "buying" | "success" | "error";
 
@@ -34,6 +35,10 @@ export function useBuy() {
 
       try {
         setState("buying");
+        track("purchase_signing", {
+          listingId: listingId.toString(),
+          referred: Boolean(effectiveReferrer),
+        });
         const client = new MarketClient({
           contractId: marketNetworks.testnet.contractId,
           networkPassphrase: marketNetworks.testnet.networkPassphrase,
@@ -57,6 +62,13 @@ export function useBuy() {
           "";
         setTxHash(hash);
         setState("success");
+        track("purchase_confirmed", {
+          listingId: listingId.toString(),
+          referred: Boolean(effectiveReferrer),
+        });
+        if (effectiveReferrer) {
+          track("purchase_via_referral", { listingId: listingId.toString() });
+        }
         return { txHash: hash };
       } catch (err) {
         console.error("[buy] transaction failed", err);

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@/hooks/use-wallet";
 import { useI18n } from "@/lib/i18n";
+import { track } from "@/lib/analytics";
 
 type Props = {
   /** App-relative path to share, e.g. `/token/7` or `/artist/lucia`. */
@@ -41,6 +42,7 @@ export function ShareButton({ path }: Props) {
         if (resetTimer.current) clearTimeout(resetTimer.current);
         resetTimer.current = setTimeout(() => setCopied(false), 2000);
       }
+      track("work_shared", { path, withReferral: Boolean(address) });
     } catch {
       /* user dismissed the share sheet — nothing to do */
       return;
