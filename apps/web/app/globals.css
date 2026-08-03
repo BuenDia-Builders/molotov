@@ -149,6 +149,17 @@
 }
 
 /* Breathing dot for the hero eyebrow: opacity 1 -> 0.4 -> 1, ~2s loop. */
+/* Artwork copy deterrence (paired with components/artwork-protection.tsx):
+   no drag-out and no iOS long-press save sheet on images. Deterrence only —
+   screenshots are an OS matter and the files live on public IPFS; ownership
+   and the royalty live in the contract. */
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 /* Get-started: blue Molotov flames drifting in the dark */
 @keyframes flame-drift {
   0%,
