@@ -260,6 +260,23 @@ export const es = {
       failed: "La transacción falló. Intentá de nuevo.",
     },
   },
+  artistProfile: {
+    /** Etiqueta chica sobre el nombre */
+    kicker: "Artista",
+    worksTitle: "Obras",
+    worksEmpty: "Todavía no subió obras.",
+    salesTitle: "Ventas recientes",
+    salesEmpty: "Todavía no hay ventas. La primera queda registrada acá, con su regalía.",
+    salePrice: "Precio",
+    saleRoyalty: "Regalía pagada",
+    saleTx: "Ver transacción",
+    royaltyBadge: "de regalía",
+    /** Sobre el bloque de compartir el perfil */
+    shareTitle: "Difundí este perfil",
+    registered: "Artista registrada en Molotov",
+    notFound: "No encontramos ese perfil.",
+    backToArtists: "Ver artistas",
+  },
   share: {
     cta: "Compartir",
     copied: "Link copiado",

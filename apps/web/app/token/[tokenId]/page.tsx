@@ -159,9 +159,12 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
                 Artist
               </span>
-              <span className="font-mono text-[10px] text-[var(--offwhite)]">
+              <Link
+                href={`/artist/${token.artist}`}
+                className="font-mono text-[10px] text-[var(--offwhite)] underline-offset-4 hover:underline"
+              >
                 {truncateAddress(token.artist)}
-              </span>
+              </Link>
             </div>
             <div className="flex items-baseline justify-between">
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
