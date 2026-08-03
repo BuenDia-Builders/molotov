@@ -115,7 +115,7 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
           disabled={isConnecting || privyLoading}
           className="min-h-[44px] bg-[var(--blue)] text-white hover:bg-[var(--blue-light)]"
         >
-          {isConnecting || privyLoading ? t("wallet.connecting") : "Connect"}
+          {isConnecting || privyLoading ? t("wallet.connecting") : t("nav.signIn")}
         </Button>
         {menuOpen && (
           <div className="absolute right-0 z-50 mt-2 min-w-48 border border-black/10 bg-[var(--offwhite)] p-1 shadow-md">
