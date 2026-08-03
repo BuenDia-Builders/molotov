@@ -31,6 +31,15 @@ export const es = {
     searchNoResults: "No encontramos artistas con ese nombre.",
     searchLabel: "Buscar",
     faq: "Preguntas frecuentes",
+    createMenu: {
+      /** Bajada del panel Crear — la promesa en una línea */
+      tagline: "Tu obra, con regalía de por vida",
+      workTitle: "Subí una obra",
+      workBody: "Convertí tu creación en una pieza digital con la regalía grabada en el contrato.",
+      collectionTitle: "Armá una colección",
+      collectionBody: "Agrupá tus obras y presentalas juntas, como una muestra.",
+      soon: "Pronto",
+    },
     megaManifestoBody:
       "No construimos esto para especular. Lo construimos para que un artista pueda vivir de su obra.",
     megaHowBody: "Una venta. Tres partes. La regalía es código, no una promesa de plataforma.",
