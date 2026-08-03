@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/use-wallet";
-import { IS_TESTNET, STELLAR_NETWORK_NAME, truncateAddress } from "@/lib/stellar";
+import { HORIZON_URL, IS_TESTNET, STELLAR_NETWORK_NAME, truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
 import { useStellarWallet, getOrCreateLocalKeypair } from "@/lib/privy-stellar";
 import { LoginModal } from "@/components/login-modal";
@@ -142,24 +143,141 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
           : truncateAddress(address)}
       </Button>
       {menuOpen && (
-        <div
-          role="menu"
-          className="absolute right-0 z-50 mt-2 min-w-44 border border-white/12 bg-[var(--black)] p-1"
-        >
-          {IS_TESTNET && (
-            <div className="mb-1 border-b border-white/12 px-3 py-2 text-xs text-[var(--offwhite)]/60">
-              {t("wallet.networkLabel")} · {STELLAR_NETWORK_NAME}
-            </div>
-          )}
-          <button
-            role="menuitem"
-            className="flex w-full min-h-11 items-center px-3 text-left text-sm text-[var(--offwhite)] hover:bg-white/5"
-            onClick={handleDisconnect}
-          >
-            {t("wallet.disconnect")}
-          </button>
-        </div>
+        <AccountPanel
+          address={address}
+          displayName={
+            isPrivyMode
+              ? privyEmail.length > 22
+                ? privyEmail.slice(0, 20) + "…"
+                : privyEmail
+              : truncateAddress(address, 6, 6)
+          }
+          onClose={() => setMenuOpen(false)}
+          onSignOut={handleDisconnect}
+        />
       )}
+    </div>
+  );
+}
+
+/**
+ * objkt-style account panel: identity, XLM balance, the places that are
+ * yours (profile, works, earnings) and sign-out. Balance comes from a
+ * lightweight Horizon read; an unfunded account is a normal state, not an
+ * error.
+ */
+function AccountPanel({
+  address,
+  displayName,
+  onClose,
+  onSignOut,
+}: {
+  address: string;
+  displayName: string;
+  onClose: () => void;
+  onSignOut: () => void;
+}) {
+  const { t } = useI18n();
+  const [balance, setBalance] = useState<string | null | "unfunded">(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${HORIZON_URL}/accounts/${address}`)
+      .then(async (res) => {
+        if (cancelled) return;
+        if (res.status === 404) {
+          setBalance("unfunded");
+          return;
+        }
+        const data = await res.json();
+        const native = (data.balances ?? []).find(
+          (b: { asset_type: string }) => b.asset_type === "native",
+        );
+        if (!cancelled && native) setBalance(Number(native.balance).toFixed(2));
+      })
+      .catch(() => {
+        /* leave the row blank on network failure */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [address]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* clipboard blocked */
+    }
+  };
+
+  const linkClass =
+    "flex w-full min-h-11 items-center px-4 text-left font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)] hover:bg-white/5";
+
+  return (
+    <div
+      role="menu"
+      className="absolute right-0 z-50 mt-2 w-72 border border-white/12 bg-[var(--black)] pb-2"
+    >
+      {/* Identity */}
+      <div className="border-b border-white/10 px-4 py-4">
+        <p className="font-[family-name:var(--font-mono)] text-[13px] text-[var(--offwhite)]">
+          {displayName}
+        </p>
+        <button
+          onClick={copy}
+          className="mt-1 font-[family-name:var(--font-mono)] text-[10px] text-[var(--smoke)] hover:text-[var(--offwhite)]"
+        >
+          {copied
+            ? t("account.copied")
+            : `${truncateAddress(address, 8, 8)} · ${t("account.copyAddress")}`}
+        </button>
+        {IS_TESTNET && (
+          <p className="mt-2 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.2em] text-[var(--smoke)]">
+            {t("wallet.networkLabel")} · {STELLAR_NETWORK_NAME}
+          </p>
+        )}
+      </div>
+
+      {/* Balance */}
+      <div className="flex items-baseline justify-between border-b border-white/10 px-4 py-3">
+        <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
+          {t("account.balance")}
+        </span>
+        <span className="font-[family-name:var(--font-mono)] text-[13px] text-[var(--offwhite)]">
+          {balance === "unfunded"
+            ? t("account.balanceUnavailable")
+            : balance
+              ? `${balance} XLM`
+              : "…"}
+        </span>
+      </div>
+
+      {/* Your places */}
+      <nav className="py-1">
+        <Link href={`/artist/${address}`} className={linkClass} onClick={onClose}>
+          {t("account.profile")}
+        </Link>
+        <Link href="/my-work" className={linkClass} onClick={onClose}>
+          {t("nav.myWork")}
+        </Link>
+        <Link href="/earnings" className={linkClass} onClick={onClose}>
+          {t("nav.earnings")}
+        </Link>
+      </nav>
+
+      <div className="border-t border-white/10 pt-1">
+        <button
+          role="menuitem"
+          onClick={onSignOut}
+          className="flex w-full min-h-11 items-center px-4 text-left font-[family-name:var(--font-mono)] text-[12px] text-red-400 hover:bg-white/5"
+        >
+          {t("account.signOut")}
+        </button>
+      </div>
     </div>
   );
 }

@@ -267,6 +267,14 @@ export const es = {
       failed: "La transacción falló. Intentá de nuevo.",
     },
   },
+  account: {
+    balance: "Saldo",
+    balanceUnavailable: "Cuenta sin fondos todavía",
+    profile: "Perfil",
+    copyAddress: "Copiar dirección",
+    copied: "Copiada",
+    signOut: "Cerrar sesión",
+  },
   auth: {
     title: "Iniciá sesión para seguir",
     google: "Continuar con Google",
@@ -337,6 +345,11 @@ export const es = {
   artistProfile: {
     /** Etiqueta chica sobre el nombre */
     kicker: "Artista",
+    kickerCollector: "Coleccionista",
+    tabCreated: "Creado",
+    tabOwned: "En posesión",
+    tabActivity: "Actividad",
+    ownedEmpty: "No tiene obras en posesión.",
     worksTitle: "Obras",
     worksEmpty: "Todavía no subió obras.",
     salesTitle: "Ventas recientes",
