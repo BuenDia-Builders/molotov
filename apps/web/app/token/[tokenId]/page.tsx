@@ -1,13 +1,60 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense, cache } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isDbConfigured, findTokenById, findActiveListingByToken, stroopsToXlm } from "@/lib/db";
 import { BuyButton } from "@/components/buy-button";
 import { Nav } from "@/components/nav";
+import { ReferralCapture } from "@/components/referral-capture";
+import { ShareButton } from "@/components/share-button";
+import { WorkViewTracker } from "@/components/work-view-tracker";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
 
-async function getTokenData(tokenId: number) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tokenId: string }>;
+}): Promise<Metadata> {
+  const fallback: Metadata = { title: "Obra — Molotov" };
+  try {
+    const { tokenId } = await params;
+    const id = Number(tokenId);
+    if (isNaN(id)) return fallback;
+
+    const data = await getTokenData(id);
+    if (!data || "error" in data) return fallback;
+
+    const { token, listing, title } = data;
+    const displayTitle = title || `Obra #${token.token_id}`;
+    const artist = truncateAddress(token.artist);
+    const royaltyPct = (token.royalty_bps / 100).toFixed(0);
+    const description = listing
+      ? `${artist} · ${stroopsToXlm(listing.price)} XLM · ${royaltyPct}% de regalía para quien la creó, en cada venta en Molotov.`
+      : `${artist} · ${royaltyPct}% de regalía para quien la creó, en cada venta en Molotov.`;
+
+    return {
+      title: `${displayTitle} — Molotov`,
+      description,
+      openGraph: {
+        title: `${displayTitle} — Molotov`,
+        description,
+        type: "article",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${displayTitle} — Molotov`,
+        description,
+      },
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+// cache(): generateMetadata and the page render both need this — one fetch per request.
+const getTokenData = cache(async (tokenId: number) => {
   if (!isDbConfigured()) return { error: true as const };
 
   const [token, listing] = await Promise.all([
@@ -31,7 +78,7 @@ async function getTokenData(tokenId: number) {
   }
 
   return { token, listing, imageUrl, title };
-}
+});
 
 export default async function TokenPage({ params }: { params: Promise<{ tokenId: string }> }) {
   const { tokenId } = await params;
@@ -69,6 +116,10 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
   return (
     <div className="min-h-screen bg-[var(--black)]">
       <Nav />
+      <Suspense fallback={null}>
+        <ReferralCapture tokenId={id} />
+      </Suspense>
+      <WorkViewTracker tokenId={id} listed={Boolean(listing)} />
       <div className="grid grid-cols-1 md:grid-cols-2 md:min-h-[calc(100vh-3rem)]">
         {/* Left — artwork, full-height, contained so nothing is cropped */}
         <div className="relative w-full min-h-[60vw] md:min-h-0 bg-[var(--carbon)] flex items-center justify-center">
@@ -110,9 +161,12 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
                 Artist
               </span>
-              <span className="font-mono text-[10px] text-[var(--offwhite)]">
+              <Link
+                href={`/artist/${token.artist}`}
+                className="font-mono text-[10px] text-[var(--offwhite)] underline-offset-4 hover:underline"
+              >
                 {truncateAddress(token.artist)}
-              </span>
+              </Link>
             </div>
             <div className="flex items-baseline justify-between">
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
@@ -131,6 +185,11 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
                 {token.recipients_count === 1 ? "recipient" : "recipients"}
               </span>
             </div>
+          </div>
+
+          {/* Share — the growth loop: the link carries the sharer's referral */}
+          <div className="mt-8">
+            <ShareButton path={`/token/${token.token_id}`} />
           </div>
 
           {/* Manage link — shown when not listed */}

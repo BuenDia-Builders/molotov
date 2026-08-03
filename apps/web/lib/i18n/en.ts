@@ -250,6 +250,29 @@ export const en = {
       failed: "The transaction failed. Please try again.",
     },
   },
+  artistProfile: {
+    kicker: "Artist",
+    worksTitle: "Works",
+    worksEmpty: "No works published yet.",
+    salesTitle: "Recent sales",
+    salesEmpty: "No sales yet. The first one lands here, royalty included.",
+    salePrice: "Price",
+    saleRoyalty: "Royalty paid",
+    saleTx: "View transaction",
+    royaltyBadge: "royalty",
+    shareTitle: "Share this profile",
+    registered: "Registered artist on Molotov",
+    notFound: "We couldn't find that profile.",
+    backToArtists: "Browse artists",
+  },
+  share: {
+    cta: "Share",
+    copied: "Link copied",
+    hintConnected:
+      "Your link carries your name: if someone buys through it, part of the fee is yours. It comes out of Molotov's cut, not the price of the work.",
+    hintDisconnected:
+      "Connect your wallet before sharing and the link carries your name: if someone buys through it, part of the fee is yours.",
+  },
   earnings: {
     title: "What you earned",
     connectWallet: "Connect your wallet to see what you earned",

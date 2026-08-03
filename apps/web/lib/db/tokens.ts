@@ -64,6 +64,17 @@ export async function getAllTokens(): Promise<
   return data ?? [];
 }
 
+export async function getTokensByArtist(
+  artist: string,
+): Promise<Pick<DbToken, "token_id" | "token_uri" | "royalty_bps">[]> {
+  const { data } = await getDb()
+    .from("tokens")
+    .select("token_id, token_uri, royalty_bps")
+    .eq("artist", artist)
+    .order("token_id", { ascending: false });
+  return data ?? [];
+}
+
 export async function getTokensOwnedByWallet(wallet: string): Promise<DbTokenWithOwner[]> {
   const { data, error } = await getDb()
     .from("token_effective_owner")

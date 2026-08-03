@@ -17,6 +17,7 @@ import {
   type StellarWalletsKit,
 } from "@/lib/stellar";
 import { WalletSelectModal } from "@/components/wallet-select-modal";
+import { track } from "@/lib/analytics";
 
 const SELECTED_WALLET_KEY = "molotov:selectedWalletId";
 
@@ -126,6 +127,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         // pairing would be restored on the next load, popping the QR unprompted.
         window.localStorage.setItem(SELECTED_WALLET_KEY, option.id);
         setAddress(address);
+        track("wallet_connected", { method: option.id });
         setModalWallets([]); // success: close for good
         walletCallbackRef.current = null;
       } catch (err) {
@@ -181,6 +183,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     walletModeRef.current = "privy";
     privySignerRef.current = signer;
     setAddress(addr);
+    track("wallet_connected", { method: "privy" });
   }, []);
 
   const disconnect = useCallback(async () => {

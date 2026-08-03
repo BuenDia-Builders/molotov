@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { isDbConfigured, getActiveArtistAddresses, getAllTokens } from "@/lib/db";
+import {
+  isDbConfigured,
+  getActiveArtistAddresses,
+  getAllTokens,
+  getHandlesByAddress,
+} from "@/lib/db";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
@@ -14,6 +19,8 @@ export const metadata: Metadata = {
 type ArtistCard = {
   address: string;
   short: string;
+  /** Team-curated handle; the card shows it when it exists. */
+  handle: string | null;
   tokenCount: number;
   latestTokenId: number | null;
   latestImage: string | null;
@@ -29,6 +36,8 @@ async function getArtists(): Promise<ArtistCard[]> {
   ]);
 
   if (!artistAddressList.length) return [];
+
+  const handles = await getHandlesByAddress(artistAddressList);
 
   const artistSet = new Set(artistAddressList);
   const tokens = allTokens.filter((t) => artistSet.has(t.artist));
@@ -61,6 +70,7 @@ async function getArtists(): Promise<ArtistCard[]> {
       return {
         address,
         short: `${address.slice(0, 6)}…${address.slice(-6)}`,
+        handle: handles.get(address) ?? null,
         tokenCount: artistTokens.length,
         latestTokenId: latest?.token_id ?? null,
         latestImage,
@@ -104,7 +114,7 @@ function ArtistCard({ artist }: { artist: ArtistCard }) {
           Artist
         </p>
         <p className="font-[family-name:var(--font-mono)] text-sm text-[var(--offwhite)] truncate">
-          {artist.short}
+          {artist.handle ?? artist.short}
         </p>
         {artist.latestTitle && (
           <p className="mt-1 font-[family-name:var(--font-display)] text-[var(--smoke)] text-sm truncate [font-variation-settings:'opsz'_18]">
@@ -115,10 +125,7 @@ function ArtistCard({ artist }: { artist: ArtistCard }) {
     </article>
   );
 
-  if (artist.latestTokenId) {
-    return <Link href={`/token/${artist.latestTokenId}`}>{card}</Link>;
-  }
-  return card;
+  return <Link href={`/artist/${artist.handle ?? artist.address}`}>{card}</Link>;
 }
 
 export default async function ArtistsPage() {

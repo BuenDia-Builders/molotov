@@ -6,6 +6,7 @@ import { useWallet } from "@/hooks/use-wallet";
 import { useBuy } from "@/hooks/use-buy";
 import { WalletButton } from "@/components/wallet-button";
 import { useI18n } from "@/lib/i18n";
+import { clearReferralAttribution, getReferralAttribution } from "@/lib/referral";
 
 type Props = {
   listingId: bigint;
@@ -21,6 +22,9 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
 
   useEffect(() => {
     if (state === "success") {
+      // The attribution did its job — a repeat purchase should not keep
+      // crediting a link followed before this sale.
+      clearReferralAttribution(tokenId);
       const timer = setTimeout(() => router.push(`/my-work/${tokenId}`), 2000);
       return () => clearTimeout(timer);
     }
@@ -87,7 +91,7 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
     <button
       onClick={async () => {
         try {
-          await buy({ listingId });
+          await buy({ listingId, referrer: getReferralAttribution(tokenId) });
         } catch {
           // error state handled by hook
         }
