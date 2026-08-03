@@ -30,6 +30,7 @@ export const en = {
     searchPlaceholder: "Search artists",
     searchNoResults: "No artists match that name.",
     searchLabel: "Search",
+    faq: "FAQ",
     megaManifestoBody:
       "We didn't build this for speculation. We built it so an artist can live from their work.",
     megaHowBody: "One sale. Three cuts. The royalty is code, not a platform promise.",
@@ -274,6 +275,7 @@ export const en = {
   getStarted: {
     title: "Get started with Molotov",
     cta: "Sign up free",
+    ctaConnected: "You're in. Browse the works",
     faq: {
       q1: "What is Molotov?",
       a1: "A digital art market on Stellar. Every work carries its royalty written into the contract at upload time: between 1% and 15%, set by its creator, and nobody — not even us — can change it. On every sale on Molotov, the royalty is paid before the deal closes.",
@@ -295,6 +297,7 @@ export const en = {
       description:
         "A digital art market on Stellar where artists and collectors meet. Here the royalty is not a promise: it is written into each work's contract and paid on every sale on Molotov.",
       cta: "Get started",
+      ctaConnected: "Browse works",
     },
     hero: {
       forSale: "For sale",

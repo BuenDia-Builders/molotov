@@ -12,6 +12,7 @@ const PRODUCT_LINKS = [
   { href: "/my-work", labelKey: "nav.myWork" },
   { href: "/earnings", labelKey: "nav.earnings" },
   { href: "/#manifesto", labelKey: "nav.manifesto" },
+  { href: "/get-started", labelKey: "nav.faq" },
   { href: "/about", labelKey: "nav.about" },
   { href: "/team", labelKey: "nav.team" },
 ] as const;

@@ -30,6 +30,7 @@ export const es = {
     searchPlaceholder: "Buscá artistas",
     searchNoResults: "No encontramos artistas con ese nombre.",
     searchLabel: "Buscar",
+    faq: "Preguntas frecuentes",
     megaManifestoBody:
       "No construimos esto para especular. Lo construimos para que un artista pueda vivir de su obra.",
     megaHowBody: "Una venta. Tres partes. La regalía es código, no una promesa de plataforma.",
@@ -287,6 +288,7 @@ export const es = {
   getStarted: {
     title: "Empezá con Molotov",
     cta: "Registrate gratis",
+    ctaConnected: "Ya estás adentro. Mirá las obras",
     faq: {
       q1: "¿Qué es Molotov?",
       a1: "Un mercado de arte digital sobre Stellar. Cada obra lleva su regalía escrita en el contrato al momento de subirse: entre el 1% y el 15%, la fija quien la crea y nadie —ni nosotros— puede cambiarla. En cada venta en Molotov, la regalía se paga antes de que la operación cierre.",
@@ -309,6 +311,8 @@ export const es = {
       description:
         "Un mercado de arte digital en Stellar donde artistas y coleccionistas se encuentran. Acá la regalía no es una promesa: está escrita en el contrato de cada obra y se paga en cada venta en Molotov.",
       cta: "Empezar",
+      /** Con sesión iniciada el onboarding ya no aplica: invitamos a mirar obras */
+      ctaConnected: "Ver obras",
     },
     hero: {
       forSale: "En venta",
