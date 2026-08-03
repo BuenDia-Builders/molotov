@@ -7,11 +7,11 @@ import { useWallet } from "@/hooks/use-wallet";
 import { IS_TESTNET, STELLAR_NETWORK_NAME, truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
 import { useStellarWallet, getOrCreateLocalKeypair } from "@/lib/privy-stellar";
+import { LoginModal } from "@/components/login-modal";
 
 export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
-  const { address, isConnected, isConnecting, connect, prewarm, disconnect, connectViaPrivy } =
-    useWallet();
-  const { login, logout, ready, authenticated, user: privyUser } = usePrivy();
+  const { address, isConnected, isConnecting, prewarm, disconnect, connectViaPrivy } = useWallet();
+  const { logout, ready, authenticated, user: privyUser } = usePrivy();
   const privyEmail = privyUser?.email?.address ?? privyUser?.google?.email ?? null;
   const isPrivyMode = authenticated && !!privyEmail;
   const { wallet: privyNativeWallet, address: privyNativeAddress } = useStellarWallet();
@@ -84,16 +84,6 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
     connectViaPrivy,
   ]);
 
-  const handlePrivyLogin = async () => {
-    if (authenticated) return;
-    setPrivyLoading(true);
-    try {
-      await login();
-    } catch {
-      setPrivyLoading(false);
-    }
-  };
-
   const handleDisconnect = async () => {
     setMenuOpen(false);
     await disconnect();
@@ -105,45 +95,17 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
       <div ref={containerRef} className="relative">
         <Button
           onClick={() => {
-            setMenuOpen((o) => {
-              // Opening the menu is the earliest signal the user intends to connect —
-              // start warming the kit now so WalletConnect is ready when picked.
-              if (!o) prewarm();
-              return !o;
-            });
+            // Opening the sign-in modal is the earliest signal the user
+            // intends to connect — warm the kit so WalletConnect is ready.
+            prewarm();
+            setMenuOpen(true);
           }}
           disabled={isConnecting || privyLoading}
           className="min-h-[44px] bg-[var(--blue)] text-white hover:bg-[var(--blue-light)]"
         >
-          {isConnecting || privyLoading ? t("wallet.connecting") : "Connect"}
+          {isConnecting || privyLoading ? t("wallet.connecting") : t("nav.signIn")}
         </Button>
-        {menuOpen && (
-          <div className="absolute right-0 z-50 mt-2 min-w-48 border border-black/10 bg-[var(--offwhite)] p-1 shadow-md">
-            <button
-              className="flex w-full min-h-11 items-center px-3 text-left text-sm text-[var(--black)] hover:bg-black/5"
-              onClick={() => {
-                setMenuOpen(false);
-                void connect();
-              }}
-            >
-              {t("wallet.connect")}
-            </button>
-            {IS_TESTNET && (
-              <>
-                <div className="my-1 border-t border-black/8" />
-                <button
-                  className="flex w-full min-h-11 items-center px-3 text-left text-sm text-[var(--black)]/70 hover:bg-black/5"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    void handlePrivyLogin();
-                  }}
-                >
-                  Sign in with email
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        <LoginModal open={menuOpen} onClose={() => setMenuOpen(false)} />
       </div>
     );
   }

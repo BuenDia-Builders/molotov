@@ -23,6 +23,13 @@ export const es = {
     openMenu: "Abrir menú",
     closeMenu: "Cerrar menú",
     menuLabel: "Menú",
+    /** CTA primario de la barra: hoy lleva a descubrir obras */
+    start: "Empezar",
+    /** Conectar wallet — acá "iniciar sesión" ES conectar la wallet */
+    signIn: "Iniciar sesión",
+    searchPlaceholder: "Buscá artistas",
+    searchNoResults: "No encontramos artistas con ese nombre.",
+    searchLabel: "Buscar",
     megaManifestoBody:
       "No construimos esto para especular. Lo construimos para que un artista pueda vivir de su obra.",
     megaHowBody: "Una venta. Tres partes. La regalía es código, no una promesa de plataforma.",
@@ -258,6 +265,73 @@ export const es = {
       approveGeneric: "No se pudo autorizar la transferencia del NFT. Intentá de nuevo.",
       /** Error genérico o desconocido */
       failed: "La transacción falló. Intentá de nuevo.",
+    },
+  },
+  auth: {
+    title: "Iniciá sesión para seguir",
+    google: "Continuar con Google",
+    x: "Continuar con X",
+    stellar: "Conectar una wallet de Stellar",
+    /** La diferencia con el resto: entrar con una red social TAMBIÉN te da wallet */
+    note: "Con Google o X te creamos una wallet en el momento: sin frase secreta, sin instalar nada. Si ya usás una wallet de Stellar, conectala directo.",
+    close: "Cerrar",
+  },
+  getStarted: {
+    title: "Empezá con Molotov",
+    cta: "Registrate gratis",
+    faq: {
+      q1: "¿Qué es Molotov?",
+      a1: "Un mercado de arte digital sobre Stellar. Cada obra lleva su regalía escrita en el contrato al momento de subirse: entre el 1% y el 15%, la fija quien la crea y nadie —ni nosotros— puede cambiarla. En cada venta en Molotov, la regalía se paga antes de que la operación cierre.",
+      q2: "¿Qué es una wallet?",
+      a2: "Tu llave y tu firma. Acá no hay usuario y contraseña: tu wallet es tu identidad. Podés usar una que ya tengas (Freighter, xBull, LOBSTR y más) o entrar con Google o X y te creamos una en el momento, sin frase secreta.",
+      q3: "¿Cómo colecciono arte?",
+      a3: "Entrás, mirás las obras y comprás la que te mueva. El pago viaja directo: a quien vende y a quien la creó, su regalía incluida. Hoy estamos en testnet: podés probar todo el circuito sin plata real.",
+      q4: "¿Cómo subo mi obra?",
+      a4: "El registro de artistas es curado. Una vez adentro, subís tu imagen, fijás tu regalía para siempre y publicás tu precio. Cada vez que tu obra se venda en Molotov, cobrás vos. Siempre.",
+    },
+  },
+  landing: {
+    counters: {
+      works: "Obras",
+      artists: "Artistas",
+      collected: "Obras coleccionadas",
+    },
+    tagline: {
+      /** Bajada del bloque central — la promesa, dicha con precisión */
+      description:
+        "Un mercado de arte digital en Stellar donde artistas y coleccionistas se encuentran. Acá la regalía no es una promesa: está escrita en el contrato de cada obra y se paga en cada venta en Molotov.",
+      cta: "Empezar",
+    },
+    hero: {
+      forSale: "En venta",
+      viewWork: "Ver obra",
+      slideLabel: "Ir a la obra",
+    },
+    trending: {
+      collectionsTitle: "Colecciones en tendencia",
+      worksTitle: "Obras en tendencia",
+      viewCollections: "Ver colecciones",
+      viewWorks: "Ver todas las obras",
+      soldBadge: "Vendida",
+      piecesSingular: "obra",
+      piecesPlural: "obras",
+    },
+    sales: {
+      title: "Ventas recientes",
+      price: "Precio",
+      royalty: "Regalía pagada",
+      viewTx: "Ver transacción",
+      empty: "Todavía no hay ventas. La primera queda acá, con su regalía a la vista.",
+    },
+    people: {
+      creatorsTitle: "Creadores destacados",
+      collectorsTitle: "Compradores destacados",
+      viewArtists: "Ver artistas",
+      soldLabel: "vendido",
+      collectedLabel: "comprado",
+      purchasesSingular: "compra",
+      purchasesPlural: "compras",
+      empty: "Cuando haya movimiento, acá van a estar los nombres.",
     },
   },
   artistProfile: {

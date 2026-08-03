@@ -8,8 +8,7 @@ export function Manifesto() {
 
   return (
     <section id="manifesto" className="bg-[var(--offwhite)] scroll-mt-24">
-      <div className="mx-auto max-w-7xl px-6 py-40 md:px-10 md:py-60 lg:px-20">
-
+      <div className="mx-auto max-w-7xl px-6 py-20 md:px-10 md:py-28 lg:px-20">
         {/* Label — small, left, dark */}
         <div className="mb-16 md:mb-20">
           <p className="font-[family-name:var(--font-display)] text-xl text-[var(--black)] [font-variation-settings:'opsz'_40]">
@@ -45,7 +44,6 @@ export function Manifesto() {
             </div>
           </div>
         </div>
-
       </div>
     </section>
   );
