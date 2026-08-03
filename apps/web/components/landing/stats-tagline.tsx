@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import { START_HREF } from "@/lib/routes";
 import type { LandingStats } from "@/lib/db/landing";
 
 /**
@@ -96,8 +97,9 @@ export function StatsTagline({ stats }: { stats: LandingStats }) {
         {t("landing.tagline.description")}
       </p>
 
+      {/* Same destination as the nav's Empezar — one constant, one change. */}
       <Link
-        href="/works"
+        href={START_HREF}
         className="mt-8 inline-flex h-11 items-center bg-[var(--black)] px-8 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--offwhite)] transition-colors hover:bg-[var(--blue)]"
       >
         {t("landing.tagline.cta")}

@@ -4,12 +4,16 @@ import Link from "next/link";
 import { NFT_CONTRACT_ID, contractExplorerUrl, truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
 
+// Site navigation lives here, objkt-style — the nav bar has no menu overlay.
 const PRODUCT_LINKS = [
-  { href: "#how", labelKey: "nav.howYouEarn" },
-  { href: "#activity", labelKey: "nav.activity" },
-  { href: "#manifesto", labelKey: "nav.manifesto" },
+  { href: "/works", labelKey: "nav.discover" },
   { href: "/create", labelKey: "footer.mintWork" },
   { href: "/artists", labelKey: "footer.artists" },
+  { href: "/my-work", labelKey: "nav.myWork" },
+  { href: "/earnings", labelKey: "nav.earnings" },
+  { href: "/#manifesto", labelKey: "nav.manifesto" },
+  { href: "/about", labelKey: "nav.about" },
+  { href: "/team", labelKey: "nav.team" },
 ] as const;
 
 const SOCIAL_LINKS = [

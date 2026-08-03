@@ -83,6 +83,26 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
         </span>
       </Link>
 
+      {/* Prev / next arrows */}
+      {slides.length > 1 && (
+        <>
+          <button
+            aria-label="‹"
+            onClick={() => setIndex((i) => (i - 1 + slides.length) % slides.length)}
+            className="absolute left-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center bg-black/30 text-2xl leading-none text-white/80 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white md:left-5"
+          >
+            ‹
+          </button>
+          <button
+            aria-label="›"
+            onClick={() => setIndex((i) => (i + 1) % slides.length)}
+            className="absolute right-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center bg-black/30 text-2xl leading-none text-white/80 backdrop-blur-sm transition-colors hover:bg-black/50 hover:text-white md:right-5"
+          >
+            ›
+          </button>
+        </>
+      )}
+
       {/* Dots */}
       {slides.length > 1 && (
         <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2">
