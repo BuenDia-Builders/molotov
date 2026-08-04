@@ -1,0 +1,234 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { BuyButton } from "@/components/buy-button";
+import { ShareButton } from "@/components/share-button";
+import { useI18n } from "@/lib/i18n";
+import { truncateAddress } from "@/lib/stellar";
+
+export type TokenMeta = {
+  title: string;
+  imageUrl: string;
+  tags: string[];
+  category: string | null;
+  license: string | null;
+  nsfw: boolean;
+  flashing: boolean;
+  attributes: Array<{ trait_type: string; value: string }>;
+};
+
+export type TokenViewProps = {
+  token: {
+    token_id: number;
+    artist: string;
+    owner: string;
+    royalty_bps: number;
+    recipients_count: number;
+  };
+  listing: {
+    listing_id: string;
+    kind: string;
+    editions_total: number | null;
+    editions_sold: number | null;
+  } | null;
+  priceXlm: string | null;
+  meta: TokenMeta;
+};
+
+const CATEGORY_LABEL_KEY = {
+  illustration: "mint.form.categories.illustration",
+  photography: "mint.form.categories.photography",
+  painting: "mint.form.categories.painting",
+  generative: "mint.form.categories.generative",
+  "3d": "mint.form.categories.3d",
+  animation: "mint.form.categories.animation",
+  collage: "mint.form.categories.collage",
+  "pixel-art": "mint.form.categories.pixel-art",
+  other: "mint.form.categories.other",
+} as const;
+
+const LICENSE_LABEL_KEY = {
+  "CC-BY-4.0": "mint.form.licenses.ccBy",
+  "CC-BY-SA-4.0": "mint.form.licenses.ccBySa",
+  "CC-BY-NC-4.0": "mint.form.licenses.ccByNc",
+  "CC-BY-NC-SA-4.0": "mint.form.licenses.ccByNcSa",
+  "CC0-1.0": "mint.form.licenses.cc0",
+} as const;
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
+  const { t } = useI18n();
+  // Sensitive works ship blurred and reveal only on an explicit tap.
+  const [revealed, setRevealed] = useState(!meta.nsfw);
+
+  const imageSrc = meta.imageUrl || "/icon-512.png";
+  const title = meta.title || `#${token.token_id}`;
+
+  const categoryKey =
+    meta.category && meta.category in CATEGORY_LABEL_KEY
+      ? CATEGORY_LABEL_KEY[meta.category as keyof typeof CATEGORY_LABEL_KEY]
+      : null;
+  const licenseKey =
+    meta.license && meta.license in LICENSE_LABEL_KEY
+      ? LICENSE_LABEL_KEY[meta.license as keyof typeof LICENSE_LABEL_KEY]
+      : null;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 md:min-h-[calc(100vh-3rem)]">
+      {/* ── Artwork ── */}
+      <div className="relative flex min-h-[60vw] w-full items-center justify-center bg-[var(--carbon)] md:min-h-0">
+        <Image
+          src={imageSrc}
+          alt={title}
+          fill
+          className={`object-contain transition-[filter] duration-300 ${revealed ? "" : "blur-2xl"}`}
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority
+        />
+        {!revealed && (
+          <button
+            onClick={() => setRevealed(true)}
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/40"
+          >
+            <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-[var(--offwhite)]">
+              {t("tokenPage.sensitive")}
+            </span>
+            <span className="border border-white/40 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white">
+              {t("tokenPage.sensitiveShow")}
+            </span>
+          </button>
+        )}
+      </div>
+
+      {/* ── Details ── */}
+      <div className="flex flex-col justify-center px-8 py-14 md:px-12 md:py-20 lg:px-16">
+        <div className="mb-8 flex items-center gap-4">
+          <Link
+            href="/works"
+            className="font-mono text-[10px] uppercase tracking-[0.25em] text-[var(--smoke)] transition-colors hover:text-[var(--offwhite)]"
+          >
+            ← {t("tokenPage.back")}
+          </Link>
+          <span className="font-mono text-[10px] text-[var(--smoke)]/40">
+            #{String(token.token_id).padStart(4, "0")}
+          </span>
+        </div>
+
+        {meta.title && (
+          <h1 className="mb-8 font-[family-name:var(--font-display)] text-[clamp(2rem,4.5vw,3.75rem)] font-semibold leading-[0.96] tracking-[-0.025em] text-[var(--offwhite)] [font-variation-settings:'opsz'_72]">
+            {meta.title}
+          </h1>
+        )}
+
+        {meta.flashing && (
+          <p className="mb-6 max-w-md border border-yellow-500/30 px-3 py-2 font-mono text-[10px] leading-relaxed text-yellow-200/80">
+            ⚠ {t("tokenPage.flashingWarn")}
+          </p>
+        )}
+
+        <div className="space-y-3 border-t border-[var(--ember)] pt-6">
+          <Row label={t("tokenPage.artist")}>
+            <Link
+              href={`/artist/${token.artist}`}
+              className="font-mono text-[10px] text-[var(--offwhite)] underline-offset-4 hover:underline"
+            >
+              {truncateAddress(token.artist)}
+            </Link>
+          </Row>
+          <Row label={t("tokenPage.owner")}>
+            <span className="font-mono text-[10px] text-[var(--offwhite)]">
+              {truncateAddress(token.owner)}
+            </span>
+          </Row>
+          <Row label={t("tokenPage.royalty")}>
+            <span className="font-mono text-[10px] text-[var(--blue)]">
+              {(token.royalty_bps / 100).toFixed(0)}% · {token.recipients_count}{" "}
+              {token.recipients_count === 1
+                ? t("tokenPage.recipientSingular")
+                : t("tokenPage.recipientPlural")}
+            </span>
+          </Row>
+          {categoryKey && (
+            <Row label={t("tokenPage.category")}>
+              <span className="font-mono text-[10px] text-[var(--offwhite)]">{t(categoryKey)}</span>
+            </Row>
+          )}
+          <Row label={t("tokenPage.license")}>
+            <span className="font-mono text-[10px] text-[var(--offwhite)]">
+              {licenseKey ? t(licenseKey) : t("tokenPage.licenseAllRights")}
+            </span>
+          </Row>
+          {meta.attributes.map((attr) => (
+            <Row key={attr.trait_type} label={attr.trait_type}>
+              <span className="font-mono text-[10px] text-[var(--offwhite)]">{attr.value}</span>
+            </Row>
+          ))}
+        </div>
+
+        {meta.tags.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {meta.tags.map((tag) => (
+              <span
+                key={tag}
+                className="border border-white/12 px-2.5 py-1 font-mono text-[10px] text-[var(--offwhite)]/70"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Share — the growth loop: the link carries the sharer's referral */}
+        <div className="mt-8">
+          <ShareButton path={`/token/${token.token_id}`} />
+        </div>
+
+        {!listing && (
+          <div className="mt-6">
+            <Link
+              href={`/my-work/${token.token_id}`}
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)] underline-offset-4 transition-colors hover:text-[var(--offwhite)] hover:underline"
+            >
+              {t("tokenPage.listForSale")}
+            </Link>
+          </div>
+        )}
+
+        {listing && priceXlm && (
+          <div className="mt-8 border border-[var(--blue)]/30 p-6">
+            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
+              {t("tokenPage.forSale")}
+            </p>
+            <p className="mb-1 font-mono text-2xl text-[var(--offwhite)]">
+              {priceXlm} <span className="text-sm text-[var(--smoke)]">XLM</span>
+            </p>
+            {listing.kind === "open_edition" && (
+              <p className="mb-4 font-mono text-[10px] text-[var(--smoke)]">
+                {listing.editions_sold}/{listing.editions_total} {t("tokenPage.editionsSold")}
+              </p>
+            )}
+            <div className="mt-4">
+              <BuyButton
+                listingId={BigInt(listing.listing_id)}
+                priceXlm={priceXlm}
+                tokenId={token.token_id}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
