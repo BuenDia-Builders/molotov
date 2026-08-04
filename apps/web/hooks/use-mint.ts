@@ -6,6 +6,12 @@ import { useWallet } from "@/hooks/use-wallet";
 import { uploadImage, uploadMetadata } from "@/lib/ipfs";
 import { RPC_URL, isUserRejection } from "@/lib/stellar";
 import { MolotovError } from "@/lib/errors";
+import { buildTokenMetadata, type AttributeInput } from "@/lib/metadata";
+
+/** The contract mints one token per call, one signature each — editions are
+ *  sequential mints sharing the same URI, so the cap keeps the signing
+ *  session humane. */
+export const MAX_EDITIONS = 10;
 
 export type MintState =
   | "idle"
@@ -24,9 +30,17 @@ export type MintParams = {
   description: string;
   royaltyBps: number;
   royaltyRecipients: Array<{ address: string; shareBps: number }>;
+  tags?: string[];
+  category?: string | null;
+  license?: string | null;
+  nsfw?: boolean;
+  flashing?: boolean;
+  attributes?: AttributeInput[];
+  /** 1..MAX_EDITIONS copies sharing one URI — one signature per copy. */
+  editions?: number;
 };
 
-export type MintResult = { tokenId: number; txHash: string };
+export type MintResult = { tokenId: number; tokenIds: number[]; txHash: string };
 
 // Derive a stable key from file identity + title so the draft survives a page reload
 // but is invalidated when the user picks a different file or changes the title.
@@ -63,10 +77,13 @@ export function useMint() {
   const { address, signTransaction } = useWallet();
   const [state, setState] = useState<MintState>("idle");
   const [errorKind, setErrorKind] = useState<MintErrorKind>(null);
+  /** Editions progress: how many copies confirmed, out of how many asked. */
+  const [progress, setProgress] = useState<{ minted: number; total: number } | null>(null);
 
   const reset = useCallback(() => {
     setState("idle");
     setErrorKind(null);
+    setProgress(null);
   }, []);
 
   const mint = useCallback(
@@ -83,13 +100,17 @@ export function useMint() {
           const { cid: imageCid } = await uploadImage(params.imageFile);
 
           setState("uploading_metadata");
-          const metadata = {
-            name: params.title,
+          const metadata = buildTokenMetadata({
+            title: params.title,
             description: params.description,
-            image: `ipfs://${imageCid}`,
-            external_url: "",
-            attributes: [] as unknown[],
-          };
+            imageCid,
+            tags: params.tags,
+            category: params.category,
+            license: params.license,
+            nsfw: params.nsfw,
+            flashing: params.flashing,
+            attributes: params.attributes,
+          });
           const { cid: metaCid } = await uploadMetadata(metadata);
           tokenUri = `ipfs://${metaCid}`;
           saveDraft(key, tokenUri);
@@ -119,28 +140,40 @@ export function useMint() {
           },
         });
 
-        const tx = await client.mint({
-          artist: address,
-          recipient: address,
-          token_uri: tokenUri,
-          royalty_bps: params.royaltyBps,
-          recipients: params.royaltyRecipients.map((r) => ({
-            address: r.address,
-            share_bps: r.shareBps,
-          })),
-        });
+        const editions = Math.min(Math.max(params.editions ?? 1, 1), MAX_EDITIONS);
+        const tokenIds: number[] = [];
+        let lastHash = "";
 
-        setState("signing");
-        const sent = await tx.signAndSend();
+        // One mint call — one signature — per copy, all sharing the same URI.
+        // A failure mid-run leaves every already-minted copy fully valid;
+        // `progress` tells the form how many landed so the artist can retry
+        // just the remainder.
+        for (let copy = 0; copy < editions; copy++) {
+          setProgress(editions > 1 ? { minted: tokenIds.length, total: editions } : null);
+          const tx = await client.mint({
+            artist: address,
+            recipient: address,
+            token_uri: tokenUri,
+            royalty_bps: params.royaltyBps,
+            recipients: params.royaltyRecipients.map((r) => ({
+              address: r.address,
+              share_bps: r.shareBps,
+            })),
+          });
 
-        const tokenId = Number(sent.result);
-        const txHash =
-          (sent as { sendTransactionResponse?: { hash?: string } }).sendTransactionResponse?.hash ??
-          "";
+          setState("signing");
+          const sent = await tx.signAndSend();
+
+          tokenIds.push(Number(sent.result));
+          lastHash =
+            (sent as { sendTransactionResponse?: { hash?: string } }).sendTransactionResponse
+              ?.hash ?? "";
+          setProgress(editions > 1 ? { minted: tokenIds.length, total: editions } : null);
+        }
 
         clearDraft(key);
         setState("success");
-        return { tokenId, txHash };
+        return { tokenId: tokenIds[0], tokenIds, txHash: lastHash };
       } catch (err) {
         if (err instanceof MolotovError) throw err;
         console.error("[mint] transaction failed", err);
@@ -160,5 +193,5 @@ export function useMint() {
     [address, signTransaction],
   );
 
-  return { mint, state, errorKind, reset };
+  return { mint, state, errorKind, progress, reset };
 }
