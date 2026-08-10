@@ -6,6 +6,7 @@ import { useWallet } from "@/hooks/use-wallet";
 import { useBuy } from "@/hooks/use-buy";
 import { WalletButton } from "@/components/wallet-button";
 import { useI18n } from "@/lib/i18n";
+import { clearReferralAttribution, getReferralAttribution } from "@/lib/referral";
 
 type Props = {
   listingId: bigint;
@@ -21,6 +22,9 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
 
   useEffect(() => {
     if (state === "success") {
+      // The attribution did its job — a repeat purchase should not keep
+      // crediting a link followed before this sale.
+      clearReferralAttribution(tokenId);
       const timer = setTimeout(() => router.push(`/my-work/${tokenId}`), 2000);
       return () => clearTimeout(timer);
     }
@@ -29,7 +33,7 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
   if (!isConnected) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="font-mono text-[10px] text-[var(--smoke)]">Connect your wallet to buy</p>
+        <p className="font-mono text-[10px] text-[var(--smoke)]">{t("buy.connectPrompt")}</p>
         <WalletButton />
       </div>
     );
@@ -38,9 +42,7 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
   if (state === "buying") {
     return (
       <div className="flex flex-col gap-2">
-        <p className="font-mono text-[10px] text-[var(--smoke)]">
-          Confirm the transaction in your wallet…
-        </p>
+        <p className="font-mono text-[10px] text-[var(--smoke)]">{t("buy.confirming")}</p>
         <div className="relative h-0.5 w-full overflow-hidden bg-white/12">
           <span className="progress-fill" />
         </div>
@@ -52,7 +54,7 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
     return (
       <div className="flex flex-col gap-3">
         <p className="font-mono text-[10px] text-[var(--blue)] uppercase tracking-widest">
-          Purchase confirmed
+          {t("buy.confirmed")}
         </p>
         {txHash && (
           <a
@@ -61,7 +63,7 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
             rel="noopener noreferrer"
             className="font-mono text-[10px] text-[var(--smoke)] underline underline-offset-2"
           >
-            View transaction →
+            {t("buy.viewTx")}
           </a>
         )}
       </div>
@@ -77,7 +79,7 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
           onClick={reset}
           className="font-mono text-[10px] text-[var(--smoke)] underline underline-offset-2"
         >
-          Try again
+          {t("buy.tryAgain")}
         </button>
       </div>
     );
@@ -87,14 +89,14 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
     <button
       onClick={async () => {
         try {
-          await buy({ listingId });
+          await buy({ listingId, referrer: getReferralAttribution(tokenId) });
         } catch {
           // error state handled by hook
         }
       }}
       className="w-full bg-[var(--blue)] text-white font-bold text-xs tracking-widest uppercase px-8 py-4 transition-colors hover:bg-[#3493E5]"
     >
-      Buy now — {priceXlm} XLM
+      {t("buy.ctaPrefix")} {priceXlm} XLM
     </button>
   );
 }

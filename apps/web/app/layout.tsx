@@ -4,6 +4,9 @@ import "./globals.css";
 import { WalletProvider } from "@/providers/wallet-provider";
 import { MolotovPrivyProvider } from "@/providers/privy-provider";
 import { ServiceWorkerRegister } from "@/components/sw-register";
+import { AnalyticsPageview } from "@/components/analytics-pageview";
+import { ArtworkProtection } from "@/components/artwork-protection";
+import { Suspense } from "react";
 import { I18nProvider } from "@/lib/i18n";
 import { en } from "@/lib/i18n/en";
 import { PageLoader } from "@/components/page-loader";
@@ -69,6 +72,10 @@ export default function RootLayout({
           </MolotovPrivyProvider>
         </I18nProvider>
         <ServiceWorkerRegister />
+        <ArtworkProtection />
+        <Suspense fallback={null}>
+          <AnalyticsPageview />
+        </Suspense>
       </body>
     </html>
   );

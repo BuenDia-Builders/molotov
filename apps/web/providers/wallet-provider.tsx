@@ -17,8 +17,14 @@ import {
   type StellarWalletsKit,
 } from "@/lib/stellar";
 import { WalletSelectModal } from "@/components/wallet-select-modal";
+import { track } from "@/lib/analytics";
 
 const SELECTED_WALLET_KEY = "molotov:selectedWalletId";
+
+/** Wallets whose getAddress requires user interaction (web-intent wallets):
+ *  connecting works, but auto-restoring on page load would fire a redirect.
+ *  Ids match @creit.tech/stellar-wallets-kit module ids. */
+const NON_RESTORABLE_WALLET_IDS = ["albedo"];
 
 // The WalletConnect module fires SignClient.init() from its constructor without
 // awaiting it, and reports isAvailable() = true immediately. Since we build the kit
@@ -99,6 +105,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const savedId = window.localStorage.getItem(SELECTED_WALLET_KEY);
     if (!savedId) return;
+    // Albedo cannot be restored passively: asking it for the address IS
+    // opening albedo.link (a redirect on phones — the app "enters Albedo"
+    // before the user touches anything). skipRequestAccess is a Freighter
+    // option; Albedo ignores it. Drop the selection and let the user
+    // reconnect explicitly when they actually want to sign something.
+    if (NON_RESTORABLE_WALLET_IDS.includes(savedId)) {
+      window.localStorage.removeItem(SELECTED_WALLET_KEY);
+      return;
+    }
     ensureKit()
       .then(async (kit) => {
         kit.setWallet(savedId);
@@ -126,6 +141,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         // pairing would be restored on the next load, popping the QR unprompted.
         window.localStorage.setItem(SELECTED_WALLET_KEY, option.id);
         setAddress(address);
+        track("wallet_connected", { method: option.id });
         setModalWallets([]); // success: close for good
         walletCallbackRef.current = null;
       } catch (err) {
@@ -181,6 +197,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     walletModeRef.current = "privy";
     privySignerRef.current = signer;
     setAddress(addr);
+    track("wallet_connected", { method: "privy" });
   }, []);
 
   const disconnect = useCallback(async () => {

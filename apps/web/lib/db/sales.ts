@@ -111,6 +111,41 @@ function primaryNet(price: bigint, feePaid: bigint): bigint {
   return price - feePaid;
 }
 
+export type PublicSale = {
+  tokenId: number;
+  txHash: string;
+  closedAt: string | null;
+  priceXlm: string;
+  royaltyXlm: string;
+};
+
+/**
+ * Recent sales of a set of tokens, for the public artist profile. Only what
+ * the chain already makes public: price, royalty paid, when. No buyer/seller
+ * addresses and no aggregation — the private earnings view stays /earnings.
+ */
+export async function getRecentSalesForTokens(
+  tokenIds: number[],
+  limit = 10,
+): Promise<PublicSale[]> {
+  if (!tokenIds.length) return [];
+  const { data, error } = await getDb()
+    .from("sales")
+    .select("token_id, tx_hash, closed_at, price, royalty_paid, ledger, event_index")
+    .in("token_id", tokenIds)
+    .order("ledger", { ascending: false })
+    .order("event_index", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((s) => ({
+    tokenId: s.token_id,
+    txHash: s.tx_hash,
+    closedAt: s.closed_at,
+    priceXlm: stroopsToXlm(BigInt(s.price)),
+    royaltyXlm: stroopsToXlm(BigInt(s.royalty_paid)),
+  }));
+}
+
 export async function getArtistEarnings(wallet: string): Promise<ArtistEarnings> {
   const db = getDb();
 
