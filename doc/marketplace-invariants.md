@@ -98,9 +98,17 @@ Tests (NFT): `test_set_default_royalty_is_immutable`, `test_set_token_royalty_is
   once `ends_at` passes, and the seller reclaims unsold inventory via `cancel`.
 - **Currency allowlist:** the settlement SAC must be owner-allowlisted at both `list`
   and `buy`; the contract never calls an arbitrary token.
+- **NFT allowlist:** the NFT contract must be owner-allowlisted at both `list` and
+  `buy`. A token from an un-allowlisted contract is rejected at `list` **before any
+  escrow or cross-contract call**, so hostile NFT code never executes — a malicious
+  contract with a no-op `transfer` and a self-dealing `get_royalty_info` cannot take a
+  buyer's payment while delivering nothing. `cancel` is intentionally ungated so a
+  seller can always reclaim an escrowed token even after the NFT is de-listed.
 
 Tests: `list_rejects_price_below_minimum`, `list_accepts_minimum_price`,
-`list_rejects_non_future_ends_at`, `oe_buy_*_expiry_*`, `list_rejects_disallowed_currency`.
+`list_rejects_non_future_ends_at`, `oe_buy_*_expiry_*`, `list_rejects_disallowed_currency`,
+`list_accepts_allowlisted_nft`, `list_rejects_non_allowlisted_nft`,
+`list_rejects_hostile_nft_attack`, `buy_rejects_delisted_nft`.
 
 ## Custody & atomicity
 
@@ -111,11 +119,12 @@ Tests: `list_rejects_price_below_minimum`, `list_accepts_minimum_price`,
   **before** any token or payment moves, so a repeat or re-entrant `buy` on the same
   listing fails.
 - **Access control:** `list`/`cancel` require the seller's auth (and `cancel` matches the
-  stored seller); `buy` requires the buyer's auth; `set_allowed_currency` and `upgrade`
-  are owner-gated.
+  stored seller); `buy` requires the buyer's auth; `set_allowed_currency`,
+  `set_allowed_nft` and `upgrade` are owner-gated.
 
 Tests: `p3_*_buy_conserves_zero_residual`, `p13_second_buy_fails`, `cancel_only_seller`,
-`cancel_only_active`, `set_allowed_currency_requires_owner_auth`, `upgrade_requires_owner_auth`.
+`cancel_only_active`, `set_allowed_currency_requires_owner_auth`,
+`set_allowed_nft_requires_owner_auth`, `upgrade_requires_owner_auth`.
 
 ## Storage lifetime
 

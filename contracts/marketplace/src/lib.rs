@@ -84,6 +84,11 @@ pub enum MarketError {
     /// A non-zero `ends_at` that is not strictly in the future — a listing must not
     /// be born already expired.
     InvalidEndsAt = 20,
+    /// The NFT contract is not on the owner's allowlist. `list` refuses to escrow a
+    /// token from an unvetted NFT and `buy` refuses to settle one — a hostile
+    /// contract could no-op `transfer` and point `get_royalty_info` at its own
+    /// wallets, taking the buyer's payment while delivering nothing.
+    NftNotAllowed = 21,
 }
 
 /// One wallet of a primary-sale split: a share of the post-fee proceeds in bps.
@@ -201,6 +206,9 @@ pub enum DataKey {
     Treasury,
     /// Allowlist of payment SACs. Absent/false = not allowed.
     AllowedCurrency(Address),
+    /// Allowlist of NFT contracts the marketplace will escrow/settle. Absent/false
+    /// = not allowed.
+    AllowedNft(Address),
     Listing(u64),
     NextListingId,
 }
@@ -406,6 +414,22 @@ impl MolotovMarketplace {
         );
     }
 
+    /// Allowlist (or de-list) an NFT contract. Owner-gated. `list` refuses to escrow
+    /// a token from a contract that is not allowlisted, and `buy` refuses to settle
+    /// one — so a hostile NFT (no-op `transfer`, self-dealing `get_royalty_info`)
+    /// can never take a buyer's payment while delivering nothing.
+    pub fn set_allowed_nft(e: &Env, nft: Address, allowed: bool) {
+        enforce_owner_auth(e);
+        e.storage()
+            .persistent()
+            .set(&DataKey::AllowedNft(nft.clone()), &allowed);
+        e.storage().persistent().extend_ttl(
+            &DataKey::AllowedNft(nft),
+            TTL_BUMP_THRESHOLD,
+            TTL_BUMP_AMOUNT,
+        );
+    }
+
     /// Create a listing and escrow the token(s) into the contract. Returns the new
     /// listing id.
     ///
@@ -468,6 +492,25 @@ impl MolotovMarketplace {
         }
         e.storage().persistent().extend_ttl(
             &DataKey::AllowedCurrency(currency.clone()),
+            TTL_BUMP_THRESHOLD,
+            TTL_BUMP_AMOUNT,
+        );
+
+        // Never escrow from an NFT contract that is not allowlisted — a hostile
+        // contract could no-op `transfer` and self-deal `get_royalty_info`. Checked
+        // here, before any cross-contract call into `nft` (the P9 `royalty_bps` read
+        // and the B1 `minter_of` read both come after this point), so hostile code
+        // never executes.
+        let nft_allowed: bool = e
+            .storage()
+            .persistent()
+            .get(&DataKey::AllowedNft(nft.clone()))
+            .unwrap_or(false);
+        if !nft_allowed {
+            panic_with_error!(e, MarketError::NftNotAllowed);
+        }
+        e.storage().persistent().extend_ttl(
+            &DataKey::AllowedNft(nft.clone()),
             TTL_BUMP_THRESHOLD,
             TTL_BUMP_AMOUNT,
         );
@@ -681,6 +724,23 @@ impl MolotovMarketplace {
         }
         e.storage().persistent().extend_ttl(
             &DataKey::AllowedCurrency(listing.currency.clone()),
+            TTL_BUMP_THRESHOLD,
+            TTL_BUMP_AMOUNT,
+        );
+
+        // Same NFT allowlist gate as `list`: a contract de-listed after the listing
+        // was created can no longer settle (revocation). `cancel` stays ungated so
+        // the seller can always reclaim an escrowed token.
+        let nft_allowed: bool = e
+            .storage()
+            .persistent()
+            .get(&DataKey::AllowedNft(listing.nft.clone()))
+            .unwrap_or(false);
+        if !nft_allowed {
+            panic_with_error!(e, MarketError::NftNotAllowed);
+        }
+        e.storage().persistent().extend_ttl(
+            &DataKey::AllowedNft(listing.nft.clone()),
             TTL_BUMP_THRESHOLD,
             TTL_BUMP_AMOUNT,
         );
