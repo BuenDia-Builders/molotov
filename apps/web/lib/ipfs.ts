@@ -5,6 +5,72 @@ import { IPFS_GATEWAYS } from "@/lib/ipfs-gateways";
 
 export type IpfsResult = { cid: string; gatewayUrl: string };
 
+/** Thrown when a token_uri / image URL is not a URL we are willing to fetch. */
+export class IpfsUriError extends Error {}
+
+// Derived from the single source of truth (IPFS_GATEWAYS) so the allowlist can
+// never drift from what we actually fetch. A token_uri is minter-controlled, so
+// a full https URL is only fetched when its host is one of our gateways.
+const ALLOWED_HTTPS_HOSTS = new Set(
+  IPFS_GATEWAYS.map((gw) => new URL(gw.url).hostname.toLowerCase()),
+);
+
+// The subset that carries a non-empty auth token in the gateway config gets the
+// credential; every other host is fetched anonymously. Derived, not hardcoded —
+// today this is just gateway.pinata.cloud.
+const PINATA_AUTH_HOSTS = new Set(
+  IPFS_GATEWAYS.filter((gw) => gw.auth !== "").map((gw) => new URL(gw.url).hostname.toLowerCase()),
+);
+
+/**
+ * True only for IP *literals* in private, loopback or link-local ranges.
+ * Hostnames are never matched here (e.g. "fd-cdn.com" must not trip the IPv6
+ * unique-local check) — the allowlist is what rejects unknown hostnames. This
+ * is defense-in-depth for the day this runs outside a lambda.
+ */
+function isBlockedAddress(hostname: string): boolean {
+  const h = hostname.replace(/^\[|\]$/g, "").toLowerCase();
+
+  const v4 = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (v4) {
+    const octets = v4.slice(1).map(Number);
+    if (octets.some((o) => o > 255)) return false; // not a real v4 literal
+    const [a, b] = octets;
+    if (a === 10) return true; // 10.0.0.0/8
+    if (a === 127) return true; // loopback
+    if (a === 0) return true; // 0.0.0.0/8
+    if (a === 192 && b === 168) return true; // 192.168.0.0/16
+    if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12
+    if (a === 169 && b === 254) return true; // link-local incl. 169.254.169.254
+    return false;
+  }
+
+  // IPv6 literals contain a colon; DNS hostnames never do.
+  if (h.includes(":")) {
+    if (h === "::1" || h === "::") return true; // loopback / unspecified
+    if (h.startsWith("fe80:")) return true; // link-local
+    if (h.startsWith("fc") || h.startsWith("fd")) return true; // unique-local
+    if (h.startsWith("::ffff:")) return isBlockedAddress(h.slice("::ffff:".length)); // v4-mapped
+    return false;
+  }
+
+  return false;
+}
+
+/** Reject anything that is not https:// to an allowlisted, non-private host. */
+function assertFetchableHttps(url: URL): void {
+  if (url.protocol !== "https:") {
+    throw new IpfsUriError(`Refusing non-https token_uri: ${url.protocol}`);
+  }
+  const host = url.hostname.toLowerCase();
+  if (isBlockedAddress(host)) {
+    throw new IpfsUriError(`Refusing private/link-local host: ${host}`);
+  }
+  if (!ALLOWED_HTTPS_HOSTS.has(host)) {
+    throw new IpfsUriError(`Host not in gateway allowlist: ${host}`);
+  }
+}
+
 /**
  * Client-side: resolves ipfs:// to our own proxy (/api/ipfs/{cid}) so the
  * browser never hits the rate-limited public Pinata gateway directly.
@@ -22,15 +88,34 @@ export async function fetchIpfs(
   opts?: { revalidate?: number; signal?: AbortSignal },
 ): Promise<Response> {
   if (!uri.startsWith("ipfs://")) {
-    const jwt = process.env.PINATA_JWT ?? "";
-    return fetch(uri, {
+    // A full URL from minter-controlled data. Validate the host BEFORE fetching,
+    // and only send the Pinata credential to Pinata's own gateway.
+    let url: URL;
+    try {
+      url = new URL(uri);
+    } catch {
+      throw new IpfsUriError(`token_uri is not a valid absolute URL: ${uri}`);
+    }
+    assertFetchableHttps(url);
+
+    // redirect: "manual" — do not trust fetch to strip Authorization on a
+    // cross-origin redirect; a 3xx surfaces as non-ok and callers fall back.
+    const jwt = PINATA_AUTH_HOSTS.has(url.hostname.toLowerCase())
+      ? (process.env.PINATA_JWT ?? "")
+      : "";
+    return fetch(url.toString(), {
       headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
+      redirect: "manual",
       next: { revalidate: opts?.revalidate ?? 3600 },
       signal: opts?.signal,
     });
   }
 
   const path = uri.slice("ipfs://".length);
+  // The CID segment is minter-controlled; keep it from climbing out of /ipfs.
+  if (path.split("/").some((seg) => seg === "..")) {
+    throw new IpfsUriError(`Refusing path traversal in ipfs uri: ${uri}`);
+  }
   let lastResponse: Response | undefined;
   let lastError: unknown;
 
