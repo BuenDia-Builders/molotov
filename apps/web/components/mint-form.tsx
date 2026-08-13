@@ -15,7 +15,7 @@ import {
 } from "@/lib/metadata";
 
 const MAX_BYTES = 30 * 1024 * 1024; // 30 MB
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
+const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 /** License codes carry dots (CC-BY-4.0), which the i18n dot-path reader would
  *  split — so codes map to dot-free label keys. */

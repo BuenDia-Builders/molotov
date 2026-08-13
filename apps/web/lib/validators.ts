@@ -6,9 +6,7 @@ export const stellarAddress = z.string().regex(/^G[A-Z2-7]{55}$/, "Invalid Stell
 export const tokenId = z.coerce.number().int().positive().max(10_000_000);
 
 export const uploadFile = z.object({
-  type: z
-    .string()
-    .regex(/^image\/(jpeg|png|webp|gif|svg\+xml)$|^application\/json$/, "Unsupported format"),
+  type: z.string().regex(/^image\/(jpeg|png|webp|gif)$|^application\/json$/, "Unsupported format"),
   size: z.number().max(30 * 1024 * 1024, "File exceeds 30 MB"),
 });
 
