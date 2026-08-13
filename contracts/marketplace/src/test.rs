@@ -725,6 +725,36 @@ impl MockNft {
     }
 }
 
+// A malicious NFT that documents *why* the allowlist gate exists — read this in a
+// year instead of guessing what "NftNotAllowed" defends against. Its `transfer` is
+// an inert no-op: it never moves a token, so both the escrow-in at `list` and the
+// delivery at `buy` are pure theater. Its `get_royalty_info` is self-dealing: it
+// routes the ENTIRE sale price to the attacker's own wallet. Listed and bought
+// without the gate, the buyer pays in full, the attacker collects the "royalty",
+// and the buyer receives nothing. The allowlist stops it dead at `list`.
+#[contract]
+pub struct HostileNft;
+
+#[contractimpl]
+impl HostileNft {
+    pub fn __constructor(e: &Env, attacker: Address) {
+        e.storage().instance().set(&symbol_short!("ATK"), &attacker);
+    }
+    // No-op: pretends to move the token but changes no state. "Ownership" is a lie.
+    pub fn transfer(_e: &Env, _from: Address, _to: Address, _token_id: u32) {}
+    // Self-dealing: the whole sale price comes back to the attacker as "royalty".
+    pub fn get_royalty_info(e: &Env, _token_id: u32, sale_price: i128) -> Vec<(Address, i128)> {
+        let attacker: Address = e.storage().instance().get(&symbol_short!("ATK")).unwrap();
+        vec![e, (attacker, sale_price)]
+    }
+    pub fn royalty_bps(_e: &Env, _token_id: u32) -> u32 {
+        0
+    }
+    pub fn minter_of(_e: &Env, _token_id: u32) -> Option<Address> {
+        None
+    }
+}
+
 const FUND: i128 = 10_000_000_000; // buyer's SAC balance
 const PRICE: i128 = 1_000_000_000; // 100 XLM
 const FEE_BPS: u32 = 500; // 5%
@@ -756,6 +786,7 @@ fn setup() -> Ctx {
 
     token::StellarAssetClient::new(&e, &sac).mint(&buyer, &FUND);
     MolotovMarketplaceClient::new(&e, &mkt).set_allowed_currency(&sac, &true);
+    MolotovMarketplaceClient::new(&e, &mkt).set_allowed_nft(&nft, &true);
 
     Ctx { e, mkt, nft, sac, treasury, seller, buyer, artist }
 }
@@ -1211,6 +1242,102 @@ fn list_rejects_disallowed_currency() {
         &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
     );
     assert!(r.is_err());
+}
+
+// ======================= NFT allowlist (hostile-NFT gate) =======================
+
+/// Happy path: an allowlisted NFT lists and escrows normally.
+#[test]
+fn list_accepts_allowlisted_nft() {
+    let c = setup(); // setup() allowlists c.nft
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let id = mkt_client(&c).list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+    assert_eq!(id, 0);
+    assert_eq!(nft_owner(&c, 0), c.mkt); // escrowed into the contract
+}
+
+/// A token from an NFT contract that is not on the allowlist is rejected at `list`,
+/// before any escrow — the mechanism of the gate, shown with a benign NFT.
+#[test]
+fn list_rejects_non_allowlisted_nft() {
+    let c = setup();
+    let rogue = c.e.register(MockNft, ()); // a second NFT, never allowlisted
+    MockNftClient::new(&c.e, &rogue).mint(&c.seller, &0u32, &c.artist, &2000u32);
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let r = mkt_client(&c).try_list(
+        &c.seller, &rogue, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+    assert_eq!(r, Err(Ok(MarketError::NftNotAllowed.into())));
+    assert_eq!(MockNftClient::new(&c.e, &rogue).owner_of(&0u32), c.seller); // nothing escrowed
+}
+
+/// Executable documentation of the attack the NFT allowlist prevents.
+///
+/// A hostile NFT contract (no-op `transfer`, self-dealing `get_royalty_info`) is the
+/// concrete threat: without the gate a seller could list it, and a buyer would pay
+/// the full price while the "royalty" is routed to the attacker and no token is ever
+/// delivered. The gate rejects it at `list`, before escrow and before a single
+/// cross-contract call into the hostile code.
+#[test]
+fn list_rejects_hostile_nft_attack() {
+    let c = setup();
+    let attacker = Address::generate(&c.e);
+    let hostile = c.e.register(HostileNft, (attacker.clone(),)); // never allowlisted
+
+    // The attack mechanics, made explicit: the hostile contract would have handed
+    // the entire sale price to the attacker as "royalty"…
+    let info = HostileNftClient::new(&c.e, &hostile).get_royalty_info(&0u32, &PRICE);
+    assert_eq!(info, vec![&c.e, (attacker.clone(), PRICE)]);
+    // …and its "transfer" moves nothing (delivery is theater) — it cannot even panic.
+    HostileNftClient::new(&c.e, &hostile).transfer(&c.mkt, &c.buyer, &0u32);
+
+    // The gate stops all of that at `list`: an un-allowlisted NFT is rejected before
+    // escrow and before the marketplace calls into the contract at all.
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let r = mkt_client(&c).try_list(
+        &c.seller, &hostile, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+    assert_eq!(r, Err(Ok(MarketError::NftNotAllowed.into())));
+
+    // No listing was created — the seller never handed off a payment path.
+    let stored = c.e.as_contract(&c.mkt, || {
+        c.e.storage()
+            .persistent()
+            .get::<_, Listing>(&DataKey::Listing(0u64))
+    });
+    assert!(stored.is_none());
+}
+
+/// `buy` re-checks the allowlist: an NFT de-listed after the listing exists can no
+/// longer settle, while `cancel` still reclaims the token (cancel is not gated).
+#[test]
+fn buy_rejects_delisted_nft() {
+    let c = setup();
+    seed_listing(&c, 2000, None, 0, ListingKind::FixedPrice, &c.sac);
+    mkt_client(&c).set_allowed_nft(&c.nft, &false); // owner de-lists after listing
+    let no_ref: Option<Address> = None;
+    let r = mkt_client(&c).try_buy(&c.buyer, &0u64, &no_ref);
+    assert_eq!(r, Err(Ok(MarketError::NftNotAllowed.into())));
+    mkt_client(&c).cancel(&c.seller, &0u64); // seller still reclaims
+    assert_eq!(nft_owner(&c, 0), c.seller);
+}
+
+/// Only the owner can allowlist an NFT (no auth mocked → the gate panics).
+#[test]
+#[should_panic]
+fn set_allowed_nft_requires_owner_auth() {
+    let e = Env::default();
+    let admin = Address::generate(&e);
+    let treasury = Address::generate(&e);
+    let mkt = e.register(MolotovMarketplace, (admin, FEE_BPS, treasury));
+    let nft = Address::generate(&e);
+    MolotovMarketplaceClient::new(&e, &mkt).set_allowed_nft(&nft, &true);
 }
 
 #[test]
