@@ -27,17 +27,31 @@ type ArtistCard = {
   latestTitle: string | null;
 };
 
-async function getArtists(): Promise<ArtistCard[]> {
-  if (!isDbConfigured()) return [];
+type ArtistsResult =
+  | { status: "ok"; artists: ArtistCard[] }
+  | { status: "empty" }
+  | { status: "error" };
 
-  const [artistAddressList, allTokens] = await Promise.all([
-    getActiveArtistAddresses(),
-    getAllTokens(),
-  ]);
+async function getArtists(): Promise<ArtistsResult> {
+  // An unconfigured or erroring DB is an ERROR, not an empty catalog — otherwise a
+  // broken backend is indistinguishable from "no artists yet".
+  if (!isDbConfigured()) return { status: "error" };
 
-  if (!artistAddressList.length) return [];
+  let artistAddressList: Awaited<ReturnType<typeof getActiveArtistAddresses>>;
+  let allTokens: Awaited<ReturnType<typeof getAllTokens>>;
+  let handles: Awaited<ReturnType<typeof getHandlesByAddress>>;
+  try {
+    [artistAddressList, allTokens] = await Promise.all([
+      getActiveArtistAddresses(),
+      getAllTokens(),
+    ]);
 
-  const handles = await getHandlesByAddress(artistAddressList);
+    if (!artistAddressList.length) return { status: "empty" };
+
+    handles = await getHandlesByAddress(artistAddressList);
+  } catch {
+    return { status: "error" };
+  }
 
   const artistSet = new Set(artistAddressList);
   const tokens = allTokens.filter((t) => artistSet.has(t.artist));
@@ -80,7 +94,8 @@ async function getArtists(): Promise<ArtistCard[]> {
   );
 
   // Only show artists that have at least one work, sorted by token count desc
-  return cards.filter((c) => c.tokenCount > 0).sort((a, b) => b.tokenCount - a.tokenCount);
+  const visible = cards.filter((c) => c.tokenCount > 0).sort((a, b) => b.tokenCount - a.tokenCount);
+  return visible.length ? { status: "ok", artists: visible } : { status: "empty" };
 }
 
 function ArtistCard({ artist }: { artist: ArtistCard }) {
@@ -129,7 +144,7 @@ function ArtistCard({ artist }: { artist: ArtistCard }) {
 }
 
 export default async function ArtistsPage() {
-  const artists = await getArtists();
+  const result = await getArtists();
 
   return (
     <div className="relative z-10 flex flex-1 flex-col min-h-screen">
@@ -145,14 +160,25 @@ export default async function ArtistsPage() {
               Artists
             </h1>
           </div>
-          {artists.length > 0 && (
+          {result.status === "ok" && (
             <span className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] text-[var(--smoke)] uppercase">
-              {artists.length} {artists.length === 1 ? "artist" : "artists"}
+              {result.artists.length} {result.artists.length === 1 ? "artist" : "artists"}
             </span>
           )}
         </div>
 
-        {artists.length === 0 ? (
+        {result.status === "error" && (
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] uppercase text-red-500">
+              Could not load artists
+            </p>
+            <p className="mt-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] uppercase text-[var(--smoke)]">
+              On-chain data is unavailable right now.
+            </p>
+          </div>
+        )}
+
+        {result.status === "empty" && (
           <div className="flex flex-col items-center justify-center py-32 text-center">
             <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--smoke)] mb-6">
               No artists registered yet
@@ -164,9 +190,11 @@ export default async function ArtistsPage() {
               Be the first — Mint now
             </Link>
           </div>
-        ) : (
+        )}
+
+        {result.status === "ok" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
-            {artists.map((artist) => (
+            {result.artists.map((artist) => (
               <ArtistCard key={artist.address} artist={artist} />
             ))}
           </div>
