@@ -110,9 +110,25 @@ export function truncateAddress(address: string, prefix = 4, suffix = 4): string
 /** Funded testnet account used only as the source for read-only simulations. */
 export const READ_SOURCE = "GANXCETUVUUILGJPVEZWM7EH66IZM5OICUPMNUWNXKIBRK425MUKZERM";
 
+/**
+ * Best-effort message extraction. Stellar Wallets Kit's `parseError()` returns a
+ * plain `{ code, message, ext }` object for every wallet rejection — never an
+ * `Error` instance — so a bare `String(err)` would yield `"[object Object]"` and
+ * lose the message. Handle Error, string, and `{ message }` objects alike.
+ */
+function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  if (err && typeof err === "object" && "message" in err) {
+    const m = (err as { message?: unknown }).message;
+    if (typeof m === "string") return m;
+  }
+  return String(err);
+}
+
 /** Detects wallet rejection errors across different wallet extensions. */
 export function isUserRejection(err: unknown): boolean {
-  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  const msg = errorMessage(err).toLowerCase();
   return (
     msg.includes("reject") ||
     msg.includes("denied") ||
