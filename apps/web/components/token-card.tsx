@@ -62,10 +62,9 @@ export function TokenCard({ token_id, token_uri, artist, royalty_bps, price }: T
       href={`/token/${token_id}`}
       className="mockup-card token-card border border-white/12 bg-[var(--carbon)] aspect-[3/4] flex flex-col overflow-hidden relative p-7 select-none transition-colors hover:border-[var(--blue)]/40 rounded-none group"
     >
-      {/* Media container */}
-      <div className="tc-image flex-1 bg-gradient-to-br from-[var(--blue-deep)] to-[#1564FF] relative overflow-hidden -mx-7 -mt-7">
-        <div className="tc-image-overlay absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(21,100,255,0.3)_0%,transparent_60%)] pointer-events-none" />
-
+      {/* Media container — a neutral gallery mat so any aspect ratio sits inside a
+          consistent frame (object-contain) without cropping the work. */}
+      <div className="tc-image flex-1 bg-[var(--ember)] relative overflow-hidden -mx-7 -mt-7 p-5">
         {loading ? (
           <div className="w-full h-full animate-pulse bg-white/5" />
         ) : imageUrl ? (
@@ -73,7 +72,7 @@ export function TokenCard({ token_id, token_uri, artist, royalty_bps, price }: T
           <img
             src={imageUrl}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center font-[family-name:var(--font-mono)] text-[10px] text-white/40 uppercase tracking-widest p-4 text-center">
