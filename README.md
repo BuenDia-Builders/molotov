@@ -6,6 +6,8 @@
 
 🌐 **Live:** [molotov-web.vercel.app](https://molotov-web.vercel.app) · ⛓️ **Stellar testnet** · 🎨 Built for artists in Latin America
 
+📄 **What is actually deployed** (and what isn't): [`doc/status.md`](doc/status.md) — read this before the roadmap.
+
 ---
 
 ## 💡 The problem
@@ -143,7 +145,7 @@ The contracts implement the Stellar ecosystem standards that let a third party i
 
 Claims here are checkable by cloning the repo and running the commands.
 
-- **106 contract tests** — `cd contracts && cargo test --workspace`. Property-based tests over the distribution math (conservation, dust, non-negativity, clean overflow), boundary cases, TTL lifetime tests, and XDR-level event assertions.
+- **111 contract tests** — `cd contracts && cargo test --workspace`. Property-based tests over the distribution math (conservation, dust, non-negativity, clean overflow), boundary cases, TTL lifetime tests, and XDR-level event assertions.
 - **Mutation testing** (cargo-mutants) — a full run over all three contracts generates **140 mutants**; the suite currently catches **125**, with 15 unviable and **0 surviving**. Reproduce with `cd contracts && cargo mutants`.
 
   <sub>The four that survived the first full run were real gaps, all in the NFT: nothing asserted that a royalty of _exactly_ 1% or _exactly_ 15% is accepted (only that outside the range is rejected), that `get_royalty_info` tolerates a zero sale price, or that `burn_from` does anything at all. Tests were added rather than the claim narrowed.</sub>
@@ -218,7 +220,7 @@ pnpm dev
 | `pnpm lint`                              | ESLint                              |
 | `pnpm typecheck`                         | `tsc --noEmit` across the workspace |
 | `pnpm --filter=web test`                 | Web + indexer unit tests            |
-| `cd contracts && cargo test --workspace` | The 102 contract tests              |
+| `cd contracts && cargo test --workspace` | The 111 contract tests              |
 
 > `pnpm test` at the root also runs `@molotov/indexer-db-tests`, an integration suite that needs a local Supabase (`supabase start`, requires Docker). Without the local stack those tests fail on a connection error — use the scoped commands above instead.
 
@@ -243,7 +245,7 @@ Nothing in this section exists yet.
 - Move the upgrade key to a multisig with a timelock. Today all three contracts share a single owner key, which means "immutable" is only as strong as that key.
 - Replace the Privy email path with smart accounts + passkeys, so onboarding does not require a browser extension and no secret ever lives in `localStorage`.
 - Centralize network configuration; today the testnet/mainnet switch is not a single source of truth.
-- Add an emergency pause and an allowlist of NFT contracts the marketplace will settle.
+- Add an emergency pause (`Pausable`) to the marketplace. _(The allowlist of NFT contracts the marketplace will settle is already implemented in the contract — `set_allowed_nft`, checked in `list`/`buy` — and pending deployment; see [`doc/status.md`](doc/status.md).)_
 - Decide and document the royalty-recipient trustline requirement.
 
 **Product**
