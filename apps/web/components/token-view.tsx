@@ -86,9 +86,12 @@ export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
       : null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 md:min-h-[calc(100vh-3rem)]">
-      {/* ── Artwork ── */}
-      <div className="relative flex min-h-[60vw] w-full items-center justify-center bg-[var(--carbon)] md:min-h-0">
+    <div className="grid grid-cols-1 md:grid-cols-2 md:items-start">
+      {/* ── Artwork ── the hero. A reserved 4:5 frame on mobile (no layout shift as
+          the image loads) and a viewport-tall sticky column on desktop, so the work
+          leads and stays in view while the sale details scroll. object-contain holds
+          any aspect ratio without cropping. */}
+      <div className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden bg-[var(--carbon)] md:sticky md:top-12 md:aspect-auto md:h-[calc(100vh-3rem)]">
         <Image
           src={imageSrc}
           alt={title}
