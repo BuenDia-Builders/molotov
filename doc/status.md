@@ -67,8 +67,7 @@ Activating the gate is one owner call: `NFT.set_registry(<real registry>)`.
   not to a real-time indexer. No sub-daily cron on Vercel Hobby.
 - **The projection is read-only and derived.** The chain is the source of truth, but
   outside the RPC retention window the Supabase mirror is the only copy of historical
-  events — a stalled or reset cursor beyond the window needs manual recovery
-  (`doc/indexer-operations.md`).
+  events — a stalled or reset cursor beyond the window needs manual recovery.
 - **The database security suite has no CI.** `@molotov/indexer-db-tests` (RLS, the
   `SECURITY DEFINER` writers, `apply_*` idempotency) needs a local Supabase/Docker and is
   excluded from CI — it runs only when someone runs it by hand.
