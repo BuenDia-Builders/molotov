@@ -101,15 +101,11 @@ The browser is a trust boundary: every API route is read-only, no key ever touch
 
 ## ✅ What's live
 
-> Deployed and verified on **Stellar testnet**.
+> Deployed on **Stellar testnet**. **[`doc/status.md`](doc/status.md)** is the single source for what is live right now — the network, the deployed contract IDs, and exactly which features are on or off.
 
 ### Contracts
 
-| Contract       | ID                                                                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| MolotovNFT     | [`CBS6UQE5…C7XWS`](https://stellar.expert/explorer/testnet/contract/CBS6UQE542PLU54SVUIK76EKWUJ3CNPOQ35IB4WXKF3BU6YDIBEC7XWS)   |
-| ArtistRegistry | [`CC37LTUP…RGU533`](https://stellar.expert/explorer/testnet/contract/CC37LTUPS5WLNBQSVNJJGBMZK4QCUJ76EFGW4RGY7XNVLKFKXCRGU533)  |
-| Marketplace    | [`CB6T6DOY…B72K7DU`](https://stellar.expert/explorer/testnet/contract/CB6T6DOYV2JCD36ZE43ESXNGCL2GBDARCZNRVYQWOXGTZNJBWB72K7DU) |
+The deployed contract IDs (with explorer links) and the active network live in **[`doc/status.md`](doc/status.md)** — kept in one place rather than restated here, so they cannot drift out of sync.
 
 ### Product
 
@@ -145,7 +141,7 @@ The contracts implement the Stellar ecosystem standards that let a third party i
 
 Claims here are checkable by cloning the repo and running the commands.
 
-- **111 contract tests** — `cd contracts && cargo test --workspace`. Property-based tests over the distribution math (conservation, dust, non-negativity, clean overflow), boundary cases, TTL lifetime tests, and XDR-level event assertions.
+- **Contract tests** — `cd contracts && cargo test --workspace`. Property-based tests over the distribution math (conservation, dust, non-negativity, clean overflow), boundary cases, TTL lifetime tests, and XDR-level event assertions.
 - **Mutation testing** (cargo-mutants) — a full run over all three contracts generates **140 mutants**; the suite currently catches **125**, with 15 unviable and **0 surviving**. Reproduce with `cd contracts && cargo mutants`.
 
   <sub>The four that survived the first full run were real gaps, all in the NFT: nothing asserted that a royalty of _exactly_ 1% or _exactly_ 15% is accepted (only that outside the range is rejected), that `get_royalty_info` tolerates a zero sale price, or that `burn_from` does anything at all. Tests were added rather than the claim narrowed.</sub>
@@ -220,7 +216,7 @@ pnpm dev
 | `pnpm lint`                              | ESLint                              |
 | `pnpm typecheck`                         | `tsc --noEmit` across the workspace |
 | `pnpm --filter=web test`                 | Web + indexer unit tests            |
-| `cd contracts && cargo test --workspace` | The 111 contract tests              |
+| `cd contracts && cargo test --workspace` | The contract test suite             |
 
 > `pnpm test` at the root also runs `@molotov/indexer-db-tests`, an integration suite that needs a local Supabase (`supabase start`, requires Docker). Without the local stack those tests fail on a connection error — use the scoped commands above instead.
 
