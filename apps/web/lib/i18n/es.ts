@@ -182,6 +182,7 @@ export const es = {
       uploading_metadata: "Grabando los datos…",
       signing: "Firmá la transacción en tu wallet.",
       confirming: "El contrato está procesando.",
+      reconciling: "Verificando si la transacción entró…",
       fallback: "Procesando…",
       dontClose: "No cierres esta pantalla",
     },
