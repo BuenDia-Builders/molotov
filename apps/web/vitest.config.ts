@@ -12,7 +12,12 @@ export default defineConfig({
     environment: "node",
     // Must cover lib/ too: a test file outside `include` does not fail, it simply
     // never runs — which looks identical to passing.
-    include: ["app/api/**/*.test.ts", "hooks/**/*.test.ts", "lib/**/*.test.ts"],
+    include: [
+      "app/api/**/*.test.ts",
+      "hooks/**/*.test.ts",
+      "lib/**/*.test.ts",
+      "components/**/*.test.tsx",
+    ],
     testTimeout: 120_000,
     hookTimeout: 120_000,
   },
