@@ -197,10 +197,20 @@ owns, kept separate from the account.
 - **Royalty recipient:** a Stellar G-address the artist supplies in their profile, validated
   as not being a memo-required address, and required before the artist can mint.
 - **Wallet-less artists** are pointed at Decaf ([decaf.so](https://www.decaf.so/)) or LOBSTR
-  ([lobstr.co](https://lobstr.co/)) — both non-custodial, both offer social-login onboarding,
-  both yield a memo-free G-address, and both support withdrawal to Argentine banks (Decaf
-  withdraws to local bank transfer in 184 currencies,
-  [Stellar case study](https://stellar.org/case-studies/decaf)).
+  ([lobstr.co](https://lobstr.co/)). What both genuinely share — and the only thing Option D
+  requires — is that each gives the artist a **memo-free G-address they control**. Their fiat
+  paths differ, and only sourced claims are made for each:
+  - **Decaf** — non-custodial, with email / Google / Apple social-login onboarding and no
+    seed phrase
+    ([create an account](https://intercom.help/decaf/en/articles/10984824-create-an-account-with-decaf));
+    it withdraws to local bank transfer or cash in 184 currencies, ARS among them
+    ([Google Play listing](https://play.google.com/store/apps/details?id=so.decaf.wallet)),
+    over the MoneyGram / Stellar ramp ([Stellar case study](https://stellar.org/case-studies/decaf)).
+  - **LOBSTR** — non-custodial, gives a memo-free G-address; its fiat conversion is handled
+    off-chain through the token's issuer/anchor (the Stellar SEP-24 interactive-anchor
+    mechanism), **not** a direct Argentine bank withdrawal, and it is not a social-login
+    wallet
+    ([depositing crypto and fiat on LOBSTR](https://lobstr.freshdesk.com/support/solutions/articles/151000001280-basics-depositing-crypto-and-fiat-on-lobstr)).
 - **Signing:** unchanged for now (Stellar Wallets Kit,
   `apps/web/providers/wallet-provider.tsx:222-226`). Passkey smart accounts remain a possible
   future improvement to the signing experience only — never to the receiving address.
