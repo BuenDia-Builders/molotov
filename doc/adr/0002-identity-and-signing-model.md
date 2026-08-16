@@ -1,6 +1,6 @@
 # ADR 0002 — Identity and signing model
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-08-16
 
 ## Context
@@ -49,6 +49,73 @@ _addresses_ are part of that config. So whatever address type an artist uses as 
 recipient at the **first mainnet mint is locked to that token forever** — if that address
 later becomes unusable, the royalties for that token are unrecoverable. The identity model
 is not a UI preference; it is baked into every token minted under it.
+
+## Evidence: how live Stellar products handle this
+
+Rather than reason from first principles, we looked at how products already moving real
+money on Stellar handle the same constraint. Three independent sources point the same way.
+
+### 1. Payout architecture in production
+
+GrantFox, an SCF-funded platform that pays contributors on Stellar, separates the account
+from the payout address entirely:
+
+- The account is social login only — GitHub or Google — with no wallet at signup
+  ([contributor login guide](https://docs.grantfox.xyz/user-manual-guides/ux-bounties-guide/contributor-guide/logging-in)).
+- The payout wallet is a separate profile field, supplied by the user after signup, and
+  changeable ([wallets and payments](https://docs.grantfox.xyz/key-concepts/wallets-and-payments)).
+- Payouts go only to non-custodial Stellar wallets that do not require a memo (they
+  recommend LOBSTR, Decaf and Freighter). Memo-required destinations — exchange deposit
+  addresses, custodial wallets, Binance deposit wallets, Meru — are explicitly unsupported,
+  on the stated grounds that such payments may fail, be delayed, or be lost unrecoverably.
+
+Plainly: a production system paying users at scale does not try to solve the memo problem.
+It routes around it — paying to addresses the user controls, and leaving the exchange hop
+to the user.
+
+### 2. Protocol position on contract accounts and memos
+
+Two Stellar documentation pages currently disagree. Both are recorded rather than picking
+the convenient one:
+
+- [Send and receive with contract accounts](https://developers.stellar.org/docs/build/guides/transactions/send-and-receive-c-accounts)
+  (updated 2026-08-13) describes the solution: a contract account paying a memo-requiring
+  recipient encodes the memo id in a muxed address, and the receiving side reads
+  `to_muxed_id` instead of the memo field — made ingestible by Unified Asset Events
+  (CAP-67, Protocol 23).
+- [Smart wallets](https://developers.stellar.org/docs/build/apps/smart-wallets) still states
+  that transfers from contract accounts are not supported by exchanges.
+
+Conclusion: the protocol supports it, but whether any given exchange has implemented
+muxed-ID ingestion cannot be verified from outside. Because royalty recipients are
+immutable, that is not a dependency we can accept for a permanent destination.
+
+### 3. Argentine off-ramp reality
+
+This corrects an assumption in `doc/flows.md` section F1, which names alfredpay and BlindPay
+— B2B infrastructure, not apps our artists hold.
+
+The destinations Argentine artists actually use are heterogeneous, and none of them is a
+valid permanent royalty recipient:
+
+- Lemon supports USDC over Stellar but **requires a memo**
+  ([cómo ingreso crypto en Lemon](https://help.lemon.me/es/articles/5473779-como-ingreso-crypto-en-lemon)).
+- Belo does not support the Stellar network at all. Its supported-networks page (updated
+  2026-01-19) lists Bitcoin, Lightning, Ethereum, TRON, BNB Chain, Polygon, Optimism,
+  Arbitrum, Solana, Plasma and Base — no Stellar
+  ([which networks are supported by Belo](https://help.belo.app/en/articles/5964418-which-networks-are-supported-by-belo)).
+- The memo requirement is universal for custodial destinations, not a Lemon quirk: Binance,
+  Kraken, Bitfinex and WazirX all require a memo for XLM deposits. Crypto.com states the rule
+  directly — a memo is required when sending to a centralized wallet, and not required when
+  the recipient controls their own recovery phrase
+  ([how to send and receive XRP and XLM](https://help.crypto.com/en/articles/3957426-how-to-send-and-receive-xrp-and-xlm)).
+
+Structural conclusion: custodial destinations require a memo; non-custodial wallets do not.
+The set of exchanges supporting Stellar today is not the set that will support it in five
+years, and an artist may switch apps at any time. Royalty recipients are immutable, so they
+cannot be bound to a moving landscape. The artist's own non-custodial wallet is the only
+stable point; which exchange they move funds to afterwards is their decision and can change
+freely.
 
 ## Options
 
@@ -119,24 +186,76 @@ Keep both address types behind the existing single `signTransaction` interface
 - **Migration cost later:** you cannot cleanly retire either path without stranding the
   tokens minted under it. Highest optionality up front; highest permanent complexity.
 
-## Open questions
+### D. Social account, artist-supplied G-address for royalties
 
-- **Off-ramp reality for C-addresses:** can the exchanges and anchors the target artists
-  (Latin America) actually use send to / receive from a Soroban contract account? This gates
-  option B and the C-address side of C.
-- **C-address recovery:** if a device or passkey is lost, does the chosen smart wallet support
-  adding or rotating signers, and who runs the resolver that maps a passkey to its C-address?
-- **Relayer ownership:** who operates and funds the relayer, and what is the fallback if it is
-  down — can a C-address user still sign and submit without it?
-- **Any acceptable email path:** the Privy path stores a secret in `localStorage`
-  (`apps/web/lib/privy-stellar.ts:11-14`) and must be off for mainnet regardless. Is there an
-  email-onboarding path that yields a _recoverable_ G-address, or does email onboarding
-  necessarily require smart accounts?
-- **Heterogeneity vs. commitment:** given immutability, do we accept permanent mixed
-  provenance (C), or commit to one address type before the first mainnet mint (A or B)?
+Identity in the app is a social login; the royalty destination is a G-address the artist
+owns, kept separate from the account.
+
+- **Account and login:** social (Google), already wired through Privy
+  (`apps/web/providers/wallet-provider.tsx:196-201`). It creates no key and holds no funds —
+  it is identity inside the app, nothing more.
+- **Royalty recipient:** a Stellar G-address the artist supplies in their profile, validated
+  as not being a memo-required address, and required before the artist can mint.
+- **Wallet-less artists** are pointed at Decaf ([decaf.so](https://www.decaf.so/)) or LOBSTR
+  ([lobstr.co](https://lobstr.co/)) — both non-custodial, both offer social-login onboarding,
+  both yield a memo-free G-address, and both support withdrawal to Argentine banks (Decaf
+  withdraws to local bank transfer in 184 currencies,
+  [Stellar case study](https://stellar.org/case-studies/decaf)).
+- **Signing:** unchanged for now (Stellar Wallets Kit,
+  `apps/web/providers/wallet-provider.tsx:222-226`). Passkey smart accounts remain a possible
+  future improvement to the signing experience only — never to the receiving address.
+
+The same four questions:
+
+- **Clears browser storage:** safe. The app holds no key — the social login is identity only,
+  and the royalty G-address lives in the artist's own wallet and their profile row, not in
+  browser storage.
+- **Second device:** the social login resumes on any device; the royalty address is a profile
+  field, not device state. The artist's wallet is restored from its own seed, independently.
+- **Exchanges / off-ramps:** the artist supplies a memo-free non-custodial G-address, which is
+  universally receivable; moving funds onward to an exchange (memo and all) is the artist's own
+  step, unconstrained by anything immutable.
+- **Migration cost later:** low. The receiving address is a portable standalone keypair; the
+  social login and signing layer can change without touching any minted token.
+
+Costs, stated honestly rather than sold:
+
+- It adds a **required step before an artist can mint** — friction at exactly the moment we
+  would rather have none.
+- It gives up "saw it on social, tapped, collected" onboarding **for artists**. Buyers are
+  unaffected: a buyer receives nothing immutable, so a frictionless buyer path stays open.
+- It depends on **third-party wallets (Decaf, LOBSTR)** for the wallet-less artist's first
+  step, which we do not control.
 
 ## Decision
 
-**TBD — see open questions.** This ADR is proposed, not decided: it lays out the evidence and
-the trade-offs so a human can choose before the first mainnet mint locks the choice into
-every token.
+**Option D.** In three points:
+
+1. Royalty recipients are immutable, so the receiving address must be maximally portable and
+   must not depend on infrastructure Molotov operates or on an integration a third party may
+   or may not have built.
+2. A G-address is a keypair that works standalone, indefinitely, with no maintained
+   infrastructure behind it. A contract account is a contract that depends on a relayer and on
+   exchange-side support (see Evidence §2). For something that can never be changed, that
+   difference outweighs the onboarding convenience.
+3. This **supersedes rather than replaces** the current Privy path: the random keypair
+   persisted to `localStorage` (`apps/web/lib/privy-stellar.ts:28,30`) is to be removed, not
+   migrated.
+
+What would reopen this: if memo-free receipt from contract accounts becomes verifiable across
+the ramps our artists use, option B becomes viable again for signing **and** receiving, and
+this ADR should be revisited.
+
+## Consequences
+
+Follow-up work this decision implies. None of it is implemented in this ADR.
+
+- [ ] Remove the localStorage keypair path from the Privy flow
+      (`apps/web/lib/privy-stellar.ts:15-32`).
+- [ ] Add a wallet-address field to the artist profile, with validation rejecting
+      memo-required addresses, required before mint.
+- [ ] Add onboarding copy for artists without a wallet, pointing at Decaf and LOBSTR.
+- [ ] Update `doc/flows.md` section 1 (artist onboarding) and section F1 (fiat), which
+      currently describe the Privy path and name alfredpay / BlindPay.
+- [ ] Update `doc/status.md` to reflect the decided identity model.
+- [ ] Note for a future ADR: passkey smart accounts as a signing-only improvement.
