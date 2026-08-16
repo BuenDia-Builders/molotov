@@ -39,6 +39,7 @@ wins — say so instead of following the doc.**
 
 | Question                            | Read                                                                         |
 | ----------------------------------- | ---------------------------------------------------------------------------- |
+| What is actually live right now     | `doc/status.md`                                                              |
 | Royalty and marketplace invariants  | `doc/marketplace-invariants.md` (the copy under `contracts/` is a duplicate) |
 | Why a decision was made             | `doc/adr/`                                                                   |
 | Deployed contract IDs, network, RPC | `apps/web/lib/stellar.ts`                                                    |
