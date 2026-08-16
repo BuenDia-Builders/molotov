@@ -14,6 +14,12 @@ function networkPassphrase(): string {
     : "Test SDF Network ; September 2015";
 }
 
+// DEPRECATED — superseded by ADR 0002 (Accepted, Option D). Deriving a Stellar wallet
+// from the social account is no longer the plan: the royalty recipient is an
+// artist-supplied G-address they control, not one Privy manages. This hook is kept only
+// so that if Privy ships native Stellar support it does not silently wire a signing
+// wallet in behind the social login. Remove it when the profile wallet field lands; do
+// not add new callers.
 export function useStellarWallet(): {
   wallet: PrivyStellarSigner | null;
   address: string | null;
