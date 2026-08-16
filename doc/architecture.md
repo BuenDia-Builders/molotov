@@ -6,8 +6,13 @@ This document describes the Molotov application architecture: what it does, whic
 Stellar tools it uses, how the contracts and the off-chain layer fit together, and the
 flows that connect them. Diagrams use [Mermaid](https://mermaid.js.org/) and render on
 GitHub. The imperative, phase-by-phase build order lives in `doc/BUILD_PLAN.md`; this
-document is the *what* and the *why*, written so a coding agent can map work directly
+document is the _what_ and the _why_, written so a coding agent can map work directly
 to files.
+
+> **Design intent, not current state.** What is actually deployed, enabled, and wired
+> **right now** — which contracts are live, whether the artist gate is on, which login
+> paths ship — lives in **[`doc/status.md`](status.md)**. Where this document and
+> `status.md` disagree, `status.md` wins.
 
 ---
 
@@ -76,10 +81,11 @@ resale. Three Soroban contracts hold the on-chain logic: `MolotovNft` (the token
 `ArtistRegistry` (the minting gate), and `Marketplace` (listings, sales, and the
 atomic distribution of money). Media and metadata live on **IPFS** via Pinata. Browse,
 profiles, and activity are served from **Supabase**, which is a projection rebuilt from
-on-chain events — the chain is always the source of truth. Onboarding has two paths:
-**Stellar Wallets Kit** for users who already have a wallet, and **Passkey Kit +
-Launchtube** smart wallets for newcomers who sign up with a biometric/email and never
-see a seed phrase.
+on-chain events — the chain is always the source of truth. Onboarding is **designed**
+around two paths: **Stellar Wallets Kit** for users who already have a wallet, and
+**Passkey Kit + Launchtube** smart wallets for newcomers who sign up with a
+biometric/email and never see a seed phrase. Which paths actually ship today is in
+[`doc/status.md`](status.md).
 
 ---
 
@@ -87,11 +93,11 @@ see a seed phrase.
 
 ### 2.1 User roles
 
-| Role | Main actions |
-| --- | --- |
-| **Artist / Creator** | Connect wallet or create a passkey smart wallet, get registered (gate), mint a work (image → IPFS → Soroban mint with immutable royalty + optional multi-wallet split), list it for primary sale, set the resale royalty. |
-| **Collector / Buyer** | Browse, open a work, buy (atomic payment + NFT transfer), resell (secondary listing), transfer/gift, burn, share a work with a referral link. |
-| **Admin / Curator** | Register/revoke artists in the gate, set the marketplace fee and treasury, hold (then hand off to multisig) the upgrade keys. |
+| Role                  | Main actions                                                                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Artist / Creator**  | Connect wallet or create a passkey smart wallet, get registered (gate), mint a work (image → IPFS → Soroban mint with immutable royalty + optional multi-wallet split), list it for primary sale, set the resale royalty. |
+| **Collector / Buyer** | Browse, open a work, buy (atomic payment + NFT transfer), resell (secondary listing), transfer/gift, burn, share a work with a referral link.                                                                             |
+| **Admin / Curator**   | Register/revoke artists in the gate, set the marketplace fee and treasury, hold (then hand off to multisig) the upgrade keys.                                                                                             |
 
 ### 2.2 Primary mint + sale flow
 
@@ -180,20 +186,20 @@ flowchart LR
   Dashboard --> Create
 ```
 
-| Route | Type | Description |
-| --- | --- | --- |
-| `/` | Public | Landing (hero, economy-flow, activity feed, manifesto). |
-| `/works` | Public | Browse and filter works (reads Supabase). |
-| `/work/[id]` | Public | Work page: buy, share (referral link), transfer, burn, provenance. |
-| `/artist/[address]` | Public | Artist profile: About · Created · Owned · Collections · Activity. |
-| `/manifesto` | Public | Editorial manifesto page. |
-| `/create` | Creator | Mint flow: upload → IPFS → royalty/split → sign mint. |
-| `/my-work/[tokenId]` | Creator | Certificate page with on-chain + IPFS metadata. |
-| `/work/[id]/list` | Creator | List for primary or secondary sale (price, currency, split, referral). |
-| `/dashboard` | Creator | Creator dashboard (works, listings, activity). |
-| `/api/ipfs` | API | Server-side Pinata pinning (keeps the JWT off the client). |
-| `/api/indexer` | API | Cron/worker that ingests on-chain events into Supabase. |
-| `/api/og/[id]` | API | Open Graph images for shared work links. |
+| Route                | Type    | Description                                                            |
+| -------------------- | ------- | ---------------------------------------------------------------------- |
+| `/`                  | Public  | Landing (hero, economy-flow, activity feed, manifesto).                |
+| `/works`             | Public  | Browse and filter works (reads Supabase).                              |
+| `/work/[id]`         | Public  | Work page: buy, share (referral link), transfer, burn, provenance.     |
+| `/artist/[address]`  | Public  | Artist profile: About · Created · Owned · Collections · Activity.      |
+| `/manifesto`         | Public  | Editorial manifesto page.                                              |
+| `/create`            | Creator | Mint flow: upload → IPFS → royalty/split → sign mint.                  |
+| `/my-work/[tokenId]` | Creator | Certificate page with on-chain + IPFS metadata.                        |
+| `/work/[id]/list`    | Creator | List for primary or secondary sale (price, currency, split, referral). |
+| `/dashboard`         | Creator | Creator dashboard (works, listings, activity).                         |
+| `/api/ipfs`          | API     | Server-side Pinata pinning (keeps the JWT off the client).             |
+| `/api/indexer`       | API     | Cron/worker that ingests on-chain events into Supabase.                |
+| `/api/og/[id]`       | API     | Open Graph images for shared work links.                               |
 
 ---
 
@@ -230,20 +236,20 @@ flowchart TB
   Next --> Pinata
 ```
 
-| Layer | Technology | Notes |
-| --- | --- | --- |
-| **Contracts** | Rust + [`soroban-sdk`](https://crates.io/crates/soroban-sdk) | Three contracts in a Cargo workspace under `contracts/`. |
-| **NFT standard** | [OpenZeppelin Stellar Contracts](https://github.com/OpenZeppelin/stellar-contracts) — `stellar-tokens` (SEP-50), `stellar-access` (ownable/roles) | Audited base; SEP-50 NFT + SEP-49 upgradeability. |
-| **Web** | [Next.js](https://nextjs.org) + React + Tailwind | `apps/web`. PWA, i18n ES/EN. |
-| **Mobile** | [Expo](https://expo.dev) | `apps/mobile`, later phase. Reuses shared packages. |
-| **Stellar SDK** | [`@stellar/stellar-sdk`](https://github.com/stellar/js-stellar-sdk) | Build/sign/submit, RPC reads, simulation. |
-| **Wallets** | [Stellar Wallets Kit](https://stellarwalletskit.dev/) (SEP-43) | Freighter, xBull, Albedo, LOBSTR, Hana, etc. |
-| **Smart-wallet onboarding** | [Passkey Kit](https://github.com/kalepail/passkey-kit) + [Launchtube](https://developers.stellar.org/docs/build/apps/smart-wallets) | Biometric/email sign-up, fee-abstracted submission. |
-| **Payments** | [Stellar Asset Contract](https://developers.stellar.org/docs/tokens/stellar-asset-contract) (XLM, later USDC) | Marketplace settles in a SAC token. |
-| **Media** | [Pinata](https://pinata.cloud) (IPFS) | Pinned via a server API route. |
-| **Off-chain DB** | [Supabase](https://supabase.com) (Postgres) | Projection of on-chain state for browse/profiles. |
-| **Indexing** | Stellar RPC `getEvents`, or [Mercury/Zephyr](https://www.mercurydata.app) | Custom poller v1; managed Mercury as an option. |
-| **CLI / bindings** | [Stellar CLI](https://developers.stellar.org/docs/tools/cli) | `stellar contract build / deploy / bindings typescript`. |
+| Layer                       | Technology                                                                                                                                        | Notes                                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Contracts**               | Rust + [`soroban-sdk`](https://crates.io/crates/soroban-sdk)                                                                                      | Three contracts in a Cargo workspace under `contracts/`. |
+| **NFT standard**            | [OpenZeppelin Stellar Contracts](https://github.com/OpenZeppelin/stellar-contracts) — `stellar-tokens` (SEP-50), `stellar-access` (ownable/roles) | Audited base; SEP-50 NFT + SEP-49 upgradeability.        |
+| **Web**                     | [Next.js](https://nextjs.org) + React + Tailwind                                                                                                  | `apps/web`. PWA, i18n ES/EN.                             |
+| **Mobile**                  | [Expo](https://expo.dev)                                                                                                                          | `apps/mobile`, later phase. Reuses shared packages.      |
+| **Stellar SDK**             | [`@stellar/stellar-sdk`](https://github.com/stellar/js-stellar-sdk)                                                                               | Build/sign/submit, RPC reads, simulation.                |
+| **Wallets**                 | [Stellar Wallets Kit](https://stellarwalletskit.dev/) (SEP-43)                                                                                    | Freighter, xBull, Albedo, LOBSTR, Hana, etc.             |
+| **Smart-wallet onboarding** | [Passkey Kit](https://github.com/kalepail/passkey-kit) + [Launchtube](https://developers.stellar.org/docs/build/apps/smart-wallets)               | Biometric/email sign-up, fee-abstracted submission.      |
+| **Payments**                | [Stellar Asset Contract](https://developers.stellar.org/docs/tokens/stellar-asset-contract) (XLM, later USDC)                                     | Marketplace settles in a SAC token.                      |
+| **Media**                   | [Pinata](https://pinata.cloud) (IPFS)                                                                                                             | Pinned via a server API route.                           |
+| **Off-chain DB**            | [Supabase](https://supabase.com) (Postgres)                                                                                                       | Projection of on-chain state for browse/profiles.        |
+| **Indexing**                | Stellar RPC `getEvents`, or [Mercury/Zephyr](https://www.mercurydata.app)                                                                         | Custom poller v1; managed Mercury as an option.          |
+| **CLI / bindings**          | [Stellar CLI](https://developers.stellar.org/docs/tools/cli)                                                                                      | `stellar contract build / deploy / bindings typescript`. |
 
 ---
 
@@ -327,15 +333,15 @@ Non-fungible token on the OpenZeppelin SEP-50 base. `transfer`, `burn`, `owner_o
 Royalty config is written at mint and is **immutable** forever (no setters; the
 standard royalty stubs panic).
 
-| Function | Role |
-| --- | --- |
-| `__constructor(admin, registry, name, symbol)` | Init; `admin` is owner for upgrades only. |
-| `mint(artist, recipient, token_uri, royalty_bps, recipients)` | Gated + validated mint; persists URI and immutable royalty config. |
-| `get_royalty_info(token_id, sale_price) -> Vec<(Address, i128)>` | Royalty distribution for a sale; consumed by the Marketplace. |
-| `royalty_bps(token_id)`, `registry()` | Reads. |
-| `set_registry(new)` | Owner-gated; lets the gate be activated/rotated without redeploy. |
-| `upgrade(new_wasm_hash)` | Owner-gated (SEP-49 pattern). |
-| `set_default_royalty` / `set_token_royalty` | Stubs that always panic (immutability guard). |
+| Function                                                         | Role                                                               |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `__constructor(admin, registry, name, symbol)`                   | Init; `admin` is owner for upgrades only.                          |
+| `mint(artist, recipient, token_uri, royalty_bps, recipients)`    | Gated + validated mint; persists URI and immutable royalty config. |
+| `get_royalty_info(token_id, sale_price) -> Vec<(Address, i128)>` | Royalty distribution for a sale; consumed by the Marketplace.      |
+| `royalty_bps(token_id)`, `registry()`                            | Reads.                                                             |
+| `set_registry(new)`                                              | Owner-gated; lets the gate be activated/rotated without redeploy.  |
+| `upgrade(new_wasm_hash)`                                         | Owner-gated (SEP-49 pattern).                                      |
+| `set_default_royalty` / `set_token_royalty`                      | Stubs that always panic (immutability guard).                      |
 
 Constants: `MIN_ROYALTY_BPS = 100` (1%), `MAX_ROYALTY_BPS = 1500` (15%),
 `MAX_RECIPIENTS = 10`. Editions are modeled as N distinct tokens sharing one URI.
@@ -345,26 +351,26 @@ Event: `MintedEvent { token_id (topic), artist, recipient, royalty_bps, recipien
 
 The minting gate. Admin-curated (not self-registration).
 
-| Function | Role |
-| --- | --- |
-| `__constructor(admin)` | Set owner. |
-| `register(artist)` / `revoke(artist)` | Admin-gated; emit events. |
-| `is_registered(artist) -> bool` | Exact signature the NFT calls cross-contract. |
-| `upgrade(new_wasm_hash)` | Owner-gated. |
+| Function                              | Role                                          |
+| ------------------------------------- | --------------------------------------------- |
+| `__constructor(admin)`                | Set owner.                                    |
+| `register(artist)` / `revoke(artist)` | Admin-gated; emit events.                     |
+| `is_registered(artist) -> bool`       | Exact signature the NFT calls cross-contract. |
+| `upgrade(new_wasm_hash)`              | Owner-gated.                                  |
 
 ### 5.3 Marketplace
 
 Listings, sales, and atomic money distribution. **Escrow** model: the NFT moves into
 the contract on listing. Settles in a SAC token from an allowlist.
 
-| Function | Role |
-| --- | --- |
-| `__constructor(admin, fee_bps, treasury)` | Platform fee + treasury. |
+| Function                                                                                           | Role                                                                  |
+| -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `__constructor(admin, fee_bps, treasury)`                                                          | Platform fee + treasury.                                              |
 | `list(seller, nft, token_id, price, currency, kind, editions, primary_split, referral_bps) -> u64` | Create listing; escrow token(s); validate currency against allowlist. |
-| `buy(buyer, listing_id, referrer)` | Atomic purchase + distribution (see §6). |
-| `cancel(seller, listing_id)` | Return escrowed token(s). |
-| `set_allowed_currency(currency, allowed)` | Admin allowlist of payment SACs. |
-| `set_fee` / `set_treasury` / `upgrade` | Admin/owner-gated. |
+| `buy(buyer, listing_id, referrer)`                                                                 | Atomic purchase + distribution (see §6).                              |
+| `cancel(seller, listing_id)`                                                                       | Return escrowed token(s).                                             |
+| `set_allowed_currency(currency, allowed)`                                                          | Admin allowlist of payment SACs.                                      |
+| `set_fee` / `set_treasury` / `upgrade`                                                             | Admin/owner-gated.                                                    |
 
 `ListingKind = FixedPrice | OpenEdition | Auction`. `Auction` is defined now but its
 logic panics `NotImplemented`, enabled later via upgrade. Events `ListingCreated`,
@@ -377,10 +383,10 @@ logic panics `NotImplemented`, enabled later via upgrade. Events `ListingCreated
 
 Two distinct splits, not to be conflated:
 
-| | Trigger | Distribution |
-| --- | --- | --- |
-| **Primary split** | First sale (`primary_split = Some(...)`) | Proceeds split per the artist's chosen wallets (cap 10), minus fee, minus referral. Enables open-call / NGO fundraising. |
-| **Secondary royalty** | Resale (`primary_split = None`) | Royalty paid to the artist via `get_royalty_info`, minus fee, minus referral; remainder to a single seller wallet (v1). |
+|                       | Trigger                                  | Distribution                                                                                                             |
+| --------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Primary split**     | First sale (`primary_split = Some(...)`) | Proceeds split per the artist's chosen wallets (cap 10), minus fee, minus referral. Enables open-call / NGO fundraising. |
+| **Secondary royalty** | Resale (`primary_split = None`)          | Royalty paid to the artist via `get_royalty_info`, minus fee, minus referral; remainder to a single seller wallet (v1).  |
 
 ```mermaid
 flowchart LR
@@ -404,23 +410,25 @@ would break composability. This is the accepted industry standard, stated openly
 
 ## 7. Sale types
 
-| Type | Model | v1 |
-| --- | --- | --- |
-| One-of-one (1/1) | One token, fixed-price listing. | Yes |
-| Open Edition (OE) | N tokens, same URI; time window (`ends_at`). Artist pre-mints N; sold from inventory. | Yes (pre-mint) |
-| Collection | Off-chain grouping (Supabase metadata referencing the artist's tokens). | Yes (off-chain) |
-| Auction | `Auction` enum variant; logic via upgrade. | Structure yes, logic later |
+| Type              | Model                                                                                 | v1                         |
+| ----------------- | ------------------------------------------------------------------------------------- | -------------------------- |
+| One-of-one (1/1)  | One token, fixed-price listing.                                                       | Yes                        |
+| Open Edition (OE) | N tokens, same URI; time window (`ends_at`). Artist pre-mints N; sold from inventory. | Yes (pre-mint)             |
+| Collection        | Off-chain grouping (Supabase metadata referencing the artist's tokens).               | Yes (off-chain)            |
+| Auction           | `Auction` enum variant; logic via upgrade.                                            | Structure yes, logic later |
 
 ---
 
 ## 8. Onboarding and wallets
 
-**Identity model — wallet-first.** Molotov has no email/password accounts: there is
-no server-side auth, no password to store, no session to forge. Identity *is* the
-Stellar address, so "log in" means "connect a wallet" — this path is already built
-(Stellar Wallets Kit, §8). Easy passkey sign-up that mints an invisible smart wallet
-for newcomers (Passkey Kit + Launchtube) is **planned**, not yet built; until then,
-onboarding assumes the user already has a wallet.
+**Identity model — wallet-first (design intent).** In the intended model there is no
+server-side auth, no password to store, no session to forge: identity _is_ the Stellar
+address, so "log in" means "connect a wallet." For newcomers the plan is easy passkey
+sign-up that mints an invisible smart wallet (Passkey Kit + Launchtube), so they never
+see a seed phrase.
+
+For what actually ships today — which wallets connect, and the interim email-based
+onboarding path — see [`doc/status.md`](status.md).
 
 Two paths, because the audience splits between crypto-native artists and newcomers
 arriving from social media.
@@ -482,22 +490,22 @@ flowchart LR
 
 ### 9.1 Data responsibility split
 
-| Store | Owns | Source of truth for |
-| --- | --- | --- |
-| **Stellar** | NFT ownership, royalty config, listings, sales, balances | Funds, on-chain state, provenance |
-| **Supabase** | Indexed projections, collections grouping, profile metadata, activity | Fast browse/filter, profiles, feed — all rebuildable from chain |
-| **IPFS (Pinata)** | Media files + metadata JSON | The artwork bytes and its metadata |
+| Store             | Owns                                                                  | Source of truth for                                             |
+| ----------------- | --------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **Stellar**       | NFT ownership, royalty config, listings, sales, balances              | Funds, on-chain state, provenance                               |
+| **Supabase**      | Indexed projections, collections grouping, profile metadata, activity | Fast browse/filter, profiles, feed — all rebuildable from chain |
+| **IPFS (Pinata)** | Media files + metadata JSON                                           | The artwork bytes and its metadata                              |
 
 ### 9.2 Projection schema (sketch)
 
-| Table | Key columns |
-| --- | --- |
-| `artists` | `address`, `handle`, `bio`, `links`, `registered` |
-| `tokens` | `token_id`, `artist`, `owner`, `ipfs_cid`, `royalty_config`, `minted_at` |
-| `listings` | `listing_id`, `token_id`, `seller`, `price`, `currency`, `kind`, `status` |
-| `sales` | `tx_hash`, `token_id`, `buyer`, `seller`, `price`, `royalty_paid`, `referral_paid`, `fee_paid` |
-| `collections` | `id`, `artist`, `title`, `token_ids[]` (off-chain grouping) |
-| `referrals` | `referrer`, `token_id`, `tx_hash`, `amount` |
+| Table         | Key columns                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| `artists`     | `address`, `handle`, `bio`, `links`, `registered`                                              |
+| `tokens`      | `token_id`, `artist`, `owner`, `ipfs_cid`, `royalty_config`, `minted_at`                       |
+| `listings`    | `listing_id`, `token_id`, `seller`, `price`, `currency`, `kind`, `status`                      |
+| `sales`       | `tx_hash`, `token_id`, `buyer`, `seller`, `price`, `royalty_paid`, `referral_paid`, `fee_paid` |
+| `collections` | `id`, `artist`, `title`, `token_ids[]` (off-chain grouping)                                    |
+| `referrals`   | `referrer`, `token_id`, `tx_hash`, `amount`                                                    |
 
 ---
 
@@ -569,32 +577,32 @@ immutable regardless of code changes (no path rewrites it).
 
 ## 14. Testing strategy
 
-| Tier | What it covers |
-| --- | --- |
-| **Unit (Rust)** | Royalty validation, recipient cap, split + dust math, auth on privileged fns, immutability, the gate. |
+| Tier                      | What it covers                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Unit (Rust)**           | Royalty validation, recipient cap, split + dust math, auth on privileged fns, immutability, the gate.                          |
 | **Integration (testnet)** | Mint with gate, register/revoke, primary/secondary list+buy with correct distribution, referral, fee, cancel, OE sell-through. |
-| **Negative** | Missing auth, currency outside allowlist, 11 recipients, `Auction` panics. |
-| **Quality** | `cargo-mutants` to verify tests catch mutations; Scout in CI; testnet smoke before any mainnet step. |
+| **Negative**              | Missing auth, currency outside allowlist, 11 recipients, `Auction` panics.                                                     |
+| **Quality**               | `cargo-mutants` to verify tests catch mutations; Scout in CI; testnet smoke before any mainnet step.                           |
 
 ---
 
 ## 15. Environment variables
 
-| Variable | Scope | Description |
-| --- | --- | --- |
-| `NEXT_PUBLIC_STELLAR_NETWORK` | Public | `testnet` or `mainnet`. |
-| `NEXT_PUBLIC_RPC_URL` | Public | Stellar RPC endpoint. |
-| `NEXT_PUBLIC_NFT_CONTRACT_ID` | Public | MolotovNft contract ID. |
-| `NEXT_PUBLIC_REGISTRY_CONTRACT_ID` | Public | ArtistRegistry contract ID. |
-| `NEXT_PUBLIC_MARKETPLACE_CONTRACT_ID` | Public | Marketplace contract ID. |
-| `NEXT_PUBLIC_PAYMENT_SAC` | Public | Payment SAC (XLM, later USDC). |
-| `PINATA_JWT` | Server | Pinata JWT for IPFS pinning. |
-| `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase project URL. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase anon key. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server | Indexer writes to projection tables. |
-| `LAUNCHTUBE_URL` | Public | Launchtube endpoint (passkey submission). |
-| `LAUNCHTUBE_JWT` | Server | Launchtube token. |
-| `MERCURY_URL` / `MERCURY_JWT` | Public/Server | Optional Mercury/Zephyr indexing. |
+| Variable                              | Scope         | Description                               |
+| ------------------------------------- | ------------- | ----------------------------------------- |
+| `NEXT_PUBLIC_STELLAR_NETWORK`         | Public        | `testnet` or `mainnet`.                   |
+| `NEXT_PUBLIC_RPC_URL`                 | Public        | Stellar RPC endpoint.                     |
+| `NEXT_PUBLIC_NFT_CONTRACT_ID`         | Public        | MolotovNft contract ID.                   |
+| `NEXT_PUBLIC_REGISTRY_CONTRACT_ID`    | Public        | ArtistRegistry contract ID.               |
+| `NEXT_PUBLIC_MARKETPLACE_CONTRACT_ID` | Public        | Marketplace contract ID.                  |
+| `NEXT_PUBLIC_PAYMENT_SAC`             | Public        | Payment SAC (XLM, later USDC).            |
+| `PINATA_JWT`                          | Server        | Pinata JWT for IPFS pinning.              |
+| `NEXT_PUBLIC_SUPABASE_URL`            | Public        | Supabase project URL.                     |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`       | Public        | Supabase anon key.                        |
+| `SUPABASE_SERVICE_ROLE_KEY`           | Server        | Indexer writes to projection tables.      |
+| `LAUNCHTUBE_URL`                      | Public        | Launchtube endpoint (passkey submission). |
+| `LAUNCHTUBE_JWT`                      | Server        | Launchtube token.                         |
+| `MERCURY_URL` / `MERCURY_JWT`         | Public/Server | Optional Mercury/Zephyr indexing.         |
 
 ---
 
@@ -611,15 +619,15 @@ can start in parallel once bindings exist. Governance to multisig before mainnet
 
 ## 17. Open questions and known risks
 
-| Area | Question / risk |
-| --- | --- |
-| OE mint | Pre-mint (v1) vs lazy-mint (upgrade) and its mint-delegation model. |
-| Currency | When/how USDC SAC is added alongside XLM. |
-| Smart wallets | Launchtube is a prototype service with no SLA; plan a fallback signing path. |
-| Indexing | Hand-rolled `getEvents` poller vs managed Mercury/Zephyr. |
-| Fiat | Anchor (SEP-24) / MoneyGram integration scope and KYC. |
-| Resale split | Multi-wallet split on resale deferred to a later phase. |
-| AI discovery | Recommendation feed (incl. anti-echo-chamber) is off-chain, depends on the indexer; later. |
+| Area          | Question / risk                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| OE mint       | Pre-mint (v1) vs lazy-mint (upgrade) and its mint-delegation model.                        |
+| Currency      | When/how USDC SAC is added alongside XLM.                                                  |
+| Smart wallets | Launchtube is a prototype service with no SLA; plan a fallback signing path.               |
+| Indexing      | Hand-rolled `getEvents` poller vs managed Mercury/Zephyr.                                  |
+| Fiat          | Anchor (SEP-24) / MoneyGram integration scope and KYC.                                     |
+| Resale split  | Multi-wallet split on resale deferred to a later phase.                                    |
+| AI discovery  | Recommendation feed (incl. anti-echo-chamber) is off-chain, depends on the indexer; later. |
 
 ---
 

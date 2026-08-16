@@ -4,6 +4,24 @@ A single-page snapshot of the deployed system, gathered from the code and the ch
 **not** from `README.md` or `doc/architecture.md`, which describe intent and have drifted.
 When this page disagrees with those, this page (and the code it is drawn from) wins.
 
+## Which doc owns what
+
+Each doc under `doc/` is the single source for one thing. Don't restate another doc's
+facts — link to it instead.
+
+| Doc                                                        | Single source for                                                                                     |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `doc/status.md` (this file)                                | **What is live right now** — network, deployed contract IDs, which features are on/off, known gaps.   |
+| `doc/architecture.md`                                      | The **intended design** — the _what_ and _why_, system flows, contract interfaces. Not current state. |
+| `doc/marketplace-invariants.md`                            | The royalty & marketplace **invariants** and the tests that lock each one.                            |
+| `doc/indexer-spec.md`                                      | The **indexer contract** — events consumed, projection schema, decoding rules.                        |
+| `doc/indexer-operations.md`                                | The indexer **operations runbook** — retention window, scheduling, health, cursor recovery.           |
+| `doc/analytics.md`                                         | The **analytics** spec (PostHog events and tracking).                                                 |
+| `doc/adr/`                                                 | **Architecture decision records** — why a decision was made.                                          |
+| `doc/wave-moderation.md`                                   | The **contribution / wave moderation** log.                                                           |
+| `doc/branding/`                                            | **Brand assets** and design tokens.                                                                   |
+| `doc/flows.md`, `doc/contracts.md`, `doc/migration-map.md` | Legacy Spanish references (product flows, contracts, migration map); kept as-is, may have drifted.    |
+
 ## 1. Network & deployed contracts
 
 Everything is on **Stellar testnet**. There is no mainnet deployment.
