@@ -12,11 +12,11 @@ type Props = {
 };
 
 /**
- * objkt-style sign-in: social login (Privy creates an embedded Stellar wallet
- * on the spot) or a wallet the visitor already has (Stellar Wallets Kit).
- * Social buttons are testnet-gated like the rest of the Privy path — the
- * mainnet answer is passkeys (mainnet track). The post-auth wallet wiring
- * lives in WalletButton, which is always mounted via the nav.
+ * objkt-style sign-in: social login (identity only — no key is created or stored;
+ * see doc/adr/0002) or a wallet the visitor already has (Stellar Wallets Kit). A
+ * social sign-in reaches an authenticated, no-signing-wallet state; WalletButton
+ * shows that state and prompts the user to connect a wallet before minting or buying.
+ * Social buttons are testnet-gated like the rest of the Privy path.
  */
 export function LoginModal({ open, onClose }: Props) {
   const { t } = useI18n();

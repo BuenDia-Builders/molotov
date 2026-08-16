@@ -8,29 +8,6 @@ export type PrivyStellarSigner = {
   signXdr: (unsignedXdr: string) => Promise<string>;
 };
 
-// Privy v2.x does not yet expose Stellar embedded wallets through useWallets().
-// Fallback: generate a random keypair once, persist it in localStorage keyed by
-// the Privy user ID. Testnet / demo only — never store secrets in localStorage
-// in a production mainnet context.
-export async function getOrCreateLocalKeypair(
-  userId: string,
-): Promise<{ address: string; secret: string }> {
-  const storageKey = `molotov_stellar_kp_${userId}`;
-  const stored = localStorage.getItem(storageKey);
-  if (stored) {
-    try {
-      return JSON.parse(stored) as { address: string; secret: string };
-    } catch {
-      // corrupted entry — fall through and recreate
-    }
-  }
-  const { Keypair } = await import("@stellar/stellar-sdk");
-  const kp = Keypair.random();
-  const entry = { address: kp.publicKey(), secret: kp.secret() };
-  localStorage.setItem(storageKey, JSON.stringify(entry));
-  return entry;
-}
-
 function networkPassphrase(): string {
   return process.env.NEXT_PUBLIC_STELLAR_NETWORK === "MAINNET"
     ? "Public Global Stellar Network ; September 2015"

@@ -52,6 +52,7 @@ export const es = {
     disconnect: "Desconectar",
     testnetBadge: "TESTNET",
     networkLabel: "Red",
+    noWalletHint: "Iniciaste sesión. Conectá una wallet para mintear o comprar.",
   },
   common: {
     mintFirst: "Subir tu primera obra",
@@ -369,8 +370,7 @@ export const es = {
     google: "Continuar con Google",
     x: "Continuar con X",
     stellar: "Conectar una wallet de Stellar",
-    /** La diferencia con el resto: entrar con una red social TAMBIÉN te da wallet */
-    note: "Con Google o X te creamos una wallet en el momento: sin frase secreta, sin instalar nada. Si ya usás una wallet de Stellar, conectala directo.",
+    note: "Con Google o X iniciás sesión. Para mintear o comprar, conectá una wallet de Stellar — la dirección que controlás es donde cobrás tus regalías.",
     close: "Cerrar",
   },
   getStarted: {
