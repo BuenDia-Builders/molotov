@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Client, networks } from "@molotov/stellar-client/molotov-nft";
+import { scValToNative } from "@stellar/stellar-sdk";
 import { useWallet } from "@/hooks/use-wallet";
 import { uploadImage, uploadMetadata } from "@/lib/ipfs";
-import { RPC_URL, isUserRejection } from "@/lib/stellar";
+import { RPC_URL, isUserRejection, reconcileTransaction } from "@/lib/stellar";
 import { MolotovError } from "@/lib/errors";
 import { buildTokenMetadata, type AttributeInput } from "@/lib/metadata";
 
@@ -19,6 +20,7 @@ export type MintState =
   | "uploading_metadata"
   | "signing"
   | "confirming"
+  | "reconciling"
   | "success"
   | "error";
 
@@ -73,12 +75,95 @@ function clearDraft(key: string): void {
   }
 }
 
+/* ── Pending-transaction helpers ───────────────────────────────
+   A submitted mint's hash is persisted before the send resolves, so an error
+   after submission (or a page reload) can reconcile the real outcome instead of
+   assuming failure and double-minting. */
+
+const PENDING_PREFIX = "mlv_mint_pending:";
+
+function pendingKey(draftKey: string): string {
+  return `${PENDING_PREFIX}${draftKey}`;
+}
+
+function savePendingTx(key: string, txHash: string | null, address: string): void {
+  try {
+    if (typeof sessionStorage !== "undefined")
+      sessionStorage.setItem(key, JSON.stringify({ txHash, address }));
+  } catch {
+    /* storage full — proceed without reload recovery */
+  }
+}
+
+function loadPendingTx(key: string): { txHash: string | null; address: string } | null {
+  try {
+    const raw = typeof sessionStorage !== "undefined" ? sessionStorage.getItem(key) : null;
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingTx(key: string): void {
+  try {
+    if (typeof sessionStorage !== "undefined") sessionStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Finds a pending mint tx (one that actually got a hash) for the given wallet. */
+function findPendingMintKey(address: string): string | null {
+  try {
+    if (typeof sessionStorage === "undefined") return null;
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k?.startsWith(PENDING_PREFIX)) {
+        const entry = loadPendingTx(k);
+        if (entry?.address === address && entry.txHash) return k;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 export function useMint() {
   const { address, signTransaction } = useWallet();
   const [state, setState] = useState<MintState>("idle");
   const [errorKind, setErrorKind] = useState<MintErrorKind>(null);
   /** Editions progress: how many copies confirmed, out of how many asked. */
   const [progress, setProgress] = useState<{ minted: number; total: number } | null>(null);
+
+  /* Mount-time recovery: a mint from a previous session whose hash was persisted
+     but never resolved (reload mid-confirmation) is reconciled here rather than
+     left as a silent unknown. */
+  useEffect(() => {
+    if (!address) return;
+    const pKey = findPendingMintKey(address);
+    if (!pKey) return;
+    const entry = loadPendingTx(pKey);
+    if (!entry?.txHash) return;
+
+    // Defer out of the effect body so the synchronous setState doesn't cascade.
+    queueMicrotask(() => setState("reconciling"));
+    reconcileTransaction(entry.txHash)
+      .then((result) => {
+        if (result.status === "SUCCESS") {
+          clearPendingTx(pKey);
+          setState("success");
+        } else if (result.status === "FAILED") {
+          clearPendingTx(pKey);
+          setErrorKind("submit");
+          setState("error");
+        } else {
+          // NOT_FOUND: still unknown — return to idle, keep the marker for later.
+          setState("idle");
+        }
+      })
+      .catch(() => setState("idle"));
+  }, [address]);
 
   const reset = useCallback(() => {
     setState("idle");
@@ -125,6 +210,10 @@ export function useMint() {
         }
       }
 
+      const pKey = pendingKey(key);
+      let capturedHash: string | undefined;
+      const tokenIds: number[] = [];
+
       try {
         const client = new Client({
           contractId: networks.testnet.contractId,
@@ -141,7 +230,6 @@ export function useMint() {
         });
 
         const editions = Math.min(Math.max(params.editions ?? 1, 1), MAX_EDITIONS);
-        const tokenIds: number[] = [];
         let lastHash = "";
 
         // One mint call — one signature — per copy, all sharing the same URI.
@@ -162,22 +250,60 @@ export function useMint() {
           });
 
           setState("signing");
-          const sent = await tx.signAndSend();
+
+          // Reset per copy so the catch only reconciles the hash THIS copy sent.
+          capturedHash = undefined;
+
+          const sent = await tx.signAndSend({
+            watcher: {
+              // Fires once the tx is submitted (PENDING). Persist the hash so an
+              // error while waiting for confirmation, or a reload, can reconcile.
+              onSubmitted(response) {
+                capturedHash = response?.hash;
+                if (capturedHash) savePendingTx(pKey, capturedHash, address);
+              },
+            },
+          });
 
           tokenIds.push(Number(sent.result));
-          lastHash =
-            (sent as { sendTransactionResponse?: { hash?: string } }).sendTransactionResponse
-              ?.hash ?? "";
+          lastHash = sent.sendTransactionResponse?.hash ?? capturedHash ?? "";
           setProgress(editions > 1 ? { minted: tokenIds.length, total: editions } : null);
         }
 
         clearDraft(key);
+        clearPendingTx(pKey);
         setState("success");
         return { tokenId: tokenIds[0], tokenIds, txHash: lastHash };
       } catch (err) {
+        // Our own errors (e.g. upload) are not SDK failures — rethrow as-is.
         if (err instanceof MolotovError) throw err;
+
+        // The dangerous case: signAndSend threw AFTER submitting. If we captured a
+        // hash, reconcile the real outcome before declaring failure.
+        if (capturedHash) {
+          console.warn("[mint] signAndSend threw after submit — reconciling", capturedHash);
+          setState("reconciling");
+          try {
+            const result = await reconcileTransaction(capturedHash);
+            if (result.status === "SUCCESS") {
+              const tokenId = result.returnValue ? Number(scValToNative(result.returnValue)) : 0;
+              clearDraft(key);
+              clearPendingTx(pKey);
+              setState("success");
+              return { tokenId, tokenIds: [...tokenIds, tokenId], txHash: capturedHash };
+            }
+            if (result.status === "FAILED") {
+              clearPendingTx(pKey);
+            }
+            // NOT_FOUND: leave the pending marker for mount-time recovery.
+          } catch {
+            console.warn("[mint] reconcile threw — falling through to the error path");
+          }
+        }
+
         console.error("[mint] transaction failed", err);
         const rejected = isUserRejection(err);
+        if (rejected) clearPendingTx(pKey);
         setErrorKind(rejected ? "sign" : "submit");
         setState("error");
         throw new MolotovError(

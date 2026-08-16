@@ -1,3 +1,4 @@
+import { rpc, xdr } from "@stellar/stellar-sdk";
 import type {
   ISupportedWallet,
   StellarWalletsKit,
@@ -136,4 +137,44 @@ export function isUserRejection(err: unknown): boolean {
     msg.includes("cancel") ||
     msg.includes("user did not")
   );
+}
+
+/** Terminal outcome of a transaction, as seen by `getTransaction`. */
+export type ReconcileResult =
+  | { status: "SUCCESS"; returnValue?: xdr.ScVal }
+  | { status: "FAILED" }
+  | { status: "NOT_FOUND" };
+
+/**
+ * Polls `getTransaction(hash)` against the Soroban RPC to settle a transaction's
+ * real outcome. This is what lets the mint flow tell "the SDK threw while waiting
+ * for confirmation but the tx landed" apart from "the tx genuinely failed" — the
+ * difference between reporting success and causing a double-mint on retry.
+ *
+ * Mirrors the poll loop in `use-registry.ts`. A transient RPC error is retried;
+ * only a definitive SUCCESS/FAILED short-circuits, and exhausting the window is
+ * reported as NOT_FOUND (unknown — leave any pending marker for later recovery).
+ */
+export async function reconcileTransaction(
+  txHash: string,
+  maxRetries = 20,
+  delayMs = 3000,
+): Promise<ReconcileResult> {
+  const server = new rpc.Server(RPC_URL, { allowHttp: false });
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const result = await server.getTransaction(txHash);
+      if (result.status === rpc.Api.GetTransactionStatus.SUCCESS) {
+        return { status: "SUCCESS", returnValue: result.returnValue };
+      }
+      if (result.status === rpc.Api.GetTransactionStatus.FAILED) {
+        return { status: "FAILED" };
+      }
+      // NOT_FOUND (still propagating) — keep polling.
+    } catch {
+      /* transient RPC/network error — retry after the delay */
+    }
+    await new Promise((r) => setTimeout(r, delayMs));
+  }
+  return { status: "NOT_FOUND" };
 }

@@ -43,7 +43,8 @@ function ProgressView({
         {state === "uploading_image" ||
         state === "uploading_metadata" ||
         state === "signing" ||
-        state === "confirming"
+        state === "confirming" ||
+        state === "reconciling"
           ? t(`mint.progress.${state}`)
           : t("mint.progress.fallback")}
       </p>
@@ -186,6 +187,7 @@ export function MintForm() {
     state === "uploading_metadata" ||
     state === "signing" ||
     state === "confirming" ||
+    state === "reconciling" ||
     state === "success"
   ) {
     return <ProgressView state={state} progress={progress} />;
