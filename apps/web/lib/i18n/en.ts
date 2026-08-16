@@ -52,6 +52,7 @@ export const en = {
     disconnect: "Disconnect",
     testnetBadge: "TESTNET",
     networkLabel: "Network",
+    noWalletHint: "You're signed in. Connect a wallet to mint or buy.",
   },
   common: {
     mintFirst: "Upload your first work",
@@ -354,7 +355,7 @@ export const en = {
     google: "Continue with Google",
     x: "Continue with X",
     stellar: "Connect a Stellar wallet",
-    note: "With Google or X we create a wallet for you on the spot: no seed phrase, nothing to install. If you already use a Stellar wallet, connect it directly.",
+    note: "Google or X signs you in. To mint or buy, connect a Stellar wallet — the address you control is where your royalties are paid.",
     close: "Close",
   },
   getStarted: {

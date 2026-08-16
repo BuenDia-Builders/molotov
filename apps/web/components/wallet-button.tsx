@@ -7,18 +7,18 @@ import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/use-wallet";
 import { HORIZON_URL, IS_TESTNET, STELLAR_NETWORK_NAME, truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
-import { useStellarWallet, getOrCreateLocalKeypair } from "@/lib/privy-stellar";
+import { useStellarWallet } from "@/lib/privy-stellar";
 import { LoginModal } from "@/components/login-modal";
 
 export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
-  const { address, isConnected, isConnecting, prewarm, disconnect, connectViaPrivy } = useWallet();
+  const { address, isConnected, isConnecting, connect, prewarm, disconnect, connectViaPrivy } =
+    useWallet();
   const { logout, ready, authenticated, user: privyUser } = usePrivy();
   const privyEmail = privyUser?.email?.address ?? privyUser?.google?.email ?? null;
   const isPrivyMode = authenticated && !!privyEmail;
   const { wallet: privyNativeWallet, address: privyNativeAddress } = useStellarWallet();
   const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [privyLoading, setPrivyLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close menu on outside click
@@ -33,63 +33,82 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, [menuOpen]);
 
-  // When Privy auth resolves, wire up the Stellar address + signer into WalletProvider
+  // Social login is identity only. It wires a signer into WalletProvider ONLY if
+  // Privy ever exposes a native Stellar wallet — it never generates or stores a key.
+  // To mint or buy, the user connects their own wallet (Stellar Wallets Kit); that
+  // wallet's address is where royalties are paid (see doc/adr/0002).
   useEffect(() => {
     if (!IS_TESTNET) return;
     if (!ready || !authenticated || isConnected) return;
-
-    // Case 1: Privy exposes a native Stellar wallet (future)
     if (privyNativeAddress && privyNativeWallet) {
       connectViaPrivy(privyNativeAddress, privyNativeWallet.signXdr);
-      Promise.resolve().then(() => setPrivyLoading(false));
-      return;
     }
-
-    // Case 2: fallback — generate/restore keypair in localStorage keyed by Privy user ID
-    if (privyUser?.id) {
-      const userId = privyUser.id;
-      getOrCreateLocalKeypair(userId)
-        .then(({ address: localAddr, secret }) => {
-          const signer = async (unsignedXdr: string): Promise<string> => {
-            const { Keypair, Transaction } = await import("@stellar/stellar-sdk");
-            const networkPassphrase =
-              process.env.NEXT_PUBLIC_STELLAR_NETWORK === "MAINNET"
-                ? "Public Global Stellar Network ; September 2015"
-                : "Test SDF Network ; September 2015";
-            const kp = Keypair.fromSecret(secret);
-            const tx = new Transaction(unsignedXdr, networkPassphrase);
-            tx.sign(kp);
-            return tx.toEnvelope().toXDR("base64");
-          };
-          connectViaPrivy(localAddr, signer);
-          setPrivyLoading(false);
-          // Best-effort friendbot fund on first use (testnet only)
-          if (IS_TESTNET) {
-            const fundedKey = `molotov_funded_${localAddr}`;
-            if (!localStorage.getItem(fundedKey)) {
-              fetch(`https://friendbot.stellar.org?addr=${localAddr}`)
-                .then(() => localStorage.setItem(fundedKey, "1"))
-                .catch(() => {});
-            }
-          }
-        })
-        .catch(() => setPrivyLoading(false));
-    }
-  }, [
-    ready,
-    authenticated,
-    isConnected,
-    privyNativeAddress,
-    privyNativeWallet,
-    privyUser?.id,
-    connectViaPrivy,
-  ]);
+  }, [ready, authenticated, isConnected, privyNativeAddress, privyNativeWallet, connectViaPrivy]);
 
   const handleDisconnect = async () => {
     setMenuOpen(false);
     await disconnect();
     if (authenticated) await logout();
   };
+
+  // Signed in with a social account but no signing wallet yet. Identity only:
+  // shown honestly, not as a silent failure — they connect a wallet to mint or buy.
+  if ((!isConnected || !address) && isPrivyMode) {
+    const socialName = privyEmail.length > 22 ? privyEmail.slice(0, 20) + "…" : privyEmail;
+    return (
+      <div ref={containerRef} className="relative">
+        <Button
+          variant="outline"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          className="min-h-[44px] bg-transparent font-[family-name:var(--font-mono)] border-white/15 text-[var(--offwhite)] hover:bg-white/5 hover:text-[var(--offwhite)]"
+        >
+          {IS_TESTNET && (
+            <span className="mr-2 border border-white/15 px-1.5 py-0.5 text-[12px] uppercase text-[var(--offwhite)]/60">
+              {t("wallet.testnetBadge")}
+            </span>
+          )}
+          {socialName}
+        </Button>
+        {menuOpen && (
+          <div
+            role="menu"
+            className="absolute right-0 z-50 mt-2 w-72 border border-white/12 bg-[var(--black)] pb-2"
+          >
+            <div className="border-b border-white/10 px-4 py-4">
+              <p className="font-[family-name:var(--font-mono)] text-[13px] text-[var(--offwhite)]">
+                {socialName}
+              </p>
+              <p className="mt-2 font-[family-name:var(--font-mono)] text-[10px] leading-relaxed text-[var(--smoke)]">
+                {t("wallet.noWalletHint")}
+              </p>
+            </div>
+            <div className="p-2">
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  void connect();
+                }}
+                className="flex min-h-11 w-full items-center justify-center bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[12px] text-white hover:bg-[var(--blue-light)]"
+              >
+                {t("wallet.connect")}
+              </button>
+            </div>
+            <div className="border-t border-white/10 pt-1">
+              <button
+                role="menuitem"
+                onClick={handleDisconnect}
+                className="flex min-h-11 w-full items-center px-4 text-left font-[family-name:var(--font-mono)] text-[12px] text-red-400 hover:bg-white/5"
+              >
+                {t("account.signOut")}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (!isConnected || !address) {
     return (
@@ -101,10 +120,10 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
             prewarm();
             setMenuOpen(true);
           }}
-          disabled={isConnecting || privyLoading}
+          disabled={isConnecting}
           className="min-h-[44px] bg-[var(--blue)] text-white hover:bg-[var(--blue-light)]"
         >
-          {isConnecting || privyLoading ? t("wallet.connecting") : t("nav.signIn")}
+          {isConnecting ? t("wallet.connecting") : t("nav.signIn")}
         </Button>
         <LoginModal open={menuOpen} onClose={() => setMenuOpen(false)} />
       </div>
