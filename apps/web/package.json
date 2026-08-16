@@ -41,7 +41,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
-    "jsdom": "^30.0.1",
+    "jsdom": "^26.1.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "typescript": "^5",
