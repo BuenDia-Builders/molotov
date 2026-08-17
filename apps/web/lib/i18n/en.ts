@@ -59,7 +59,7 @@ export const en = {
     noWalletGuideDecaf:
       "If you have never used crypto, get Decaf: sign in with Gmail or Apple, no phrase to write down, and you get paid straight to your bank. Fastest on a phone.",
     noWalletGuideLobstr:
-      "If you already use crypto, LOBSTR: the account is yours too, but with a recovery phrase.",
+      "If you already use crypto, LOBSTR: it gives you a recovery phrase to keep safe.",
   },
   common: {
     mintFirst: "Upload your first work",
