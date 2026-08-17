@@ -53,6 +53,13 @@ export const es = {
     testnetBadge: "TESTNET",
     networkLabel: "Red",
     noWalletHint: "Iniciaste sesión. Conectá una wallet para mintear o comprar.",
+    /** Sin wallet: qué app bajar y por qué. Decaf primero, LOBSTR como alternativa. */
+    noWalletGuideLead:
+      "¿No tenés una? Es una app gratis y la dirección que te da queda a tu nombre.",
+    noWalletGuideDecaf:
+      "Decaf es la más simple si nunca usaste cripto: entrás con Gmail o Apple, no tenés que anotar ninguna frase, y podés retirar a tu banco en pesos. Desde el celular es el camino más corto.",
+    noWalletGuideLobstr:
+      "LOBSTR es la otra opción: la dirección también es tuya, pero te da una frase de recuperación que guardás vos.",
   },
   common: {
     mintFirst: "Subir tu primera obra",
