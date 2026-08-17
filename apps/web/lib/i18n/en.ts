@@ -55,11 +55,11 @@ export const en = {
     noWalletHint: "You're signed in. Connect a wallet to mint or buy.",
     /** No wallet: which app to get and why. Decaf first, LOBSTR as the alternative. */
     noWalletGuideLead:
-      "No wallet yet? It's a free app. That's where your account lives and where your royalties land. Nobody else can touch it, not even us.",
+      "No wallet yet? It's a free app and the account is yours: not even we can touch it.",
     noWalletGuideDecaf:
-      "Decaf is the simplest if you have never used crypto: sign in with Gmail or Apple, no phrase to write down, and you get paid straight to your bank. On a phone it is the shortest path.",
+      "If you have never used crypto, get Decaf: sign in with Gmail or Apple, no phrase to write down, and you get paid straight to your bank. Fastest on a phone.",
     noWalletGuideLobstr:
-      "LOBSTR works if you already use crypto: the account is yours too, but it gives you a recovery phrase you have to keep safe.",
+      "If you already use crypto, LOBSTR: the account is yours too, but with a recovery phrase.",
   },
   common: {
     mintFirst: "Upload your first work",
