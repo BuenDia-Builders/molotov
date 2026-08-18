@@ -15,7 +15,8 @@ type Props = {
  * objkt-style sign-in: social login (identity only — no key is created or stored;
  * see doc/adr/0002) or a wallet the visitor already has (Stellar Wallets Kit). A
  * social sign-in reaches an authenticated, no-signing-wallet state; WalletButton
- * shows that state and prompts the user to connect a wallet before minting or buying.
+ * shows that state as signed in (they can browse) and prompts for a wallet
+ * only when they want to mint or buy.
  * Social buttons are testnet-gated like the rest of the Privy path.
  */
 export function LoginModal({ open, onClose }: Props) {
@@ -24,12 +25,12 @@ export function LoginModal({ open, onClose }: Props) {
   const { login, authenticated } = usePrivy();
 
   const privyLogin = useCallback(
-    (method: "google" | "twitter") => {
+    (method: "email" | "google" | "twitter") => {
       onClose();
       if (authenticated) return;
       try {
         // Narrows Privy's modal to the chosen provider so each button feels
-        // like a direct OAuth flow.
+        // like a direct OAuth flow. Email is identity only — no key is created.
         login({ loginMethods: [method] });
       } catch {
         /* Privy not configured — the button simply does nothing harmful */
@@ -68,6 +69,15 @@ export function LoginModal({ open, onClose }: Props) {
         <div className="flex flex-col gap-3">
           {IS_TESTNET && (
             <>
+              <button
+                onClick={() => privyLogin("email")}
+                className="flex min-h-12 w-full items-center justify-center gap-3 border border-white/15 px-4 font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)] transition-colors hover:border-white/40"
+              >
+                <span aria-hidden className="text-base">
+                  @
+                </span>
+                {t("auth.email")}
+              </button>
               <button
                 onClick={() => privyLogin("google")}
                 className="flex min-h-12 w-full items-center justify-center gap-3 border border-white/15 px-4 font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)] transition-colors hover:border-white/40"

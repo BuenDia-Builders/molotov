@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
-import { useWallet } from "@/hooks/use-wallet";
+import { useSignedIn } from "@/hooks/use-signed-in";
 import { START_HREF } from "@/lib/routes";
 import type { LandingStats } from "@/lib/db/landing";
 
@@ -57,7 +57,7 @@ function CountUp({ value }: { value: number }) {
 
 export function StatsTagline({ stats }: { stats: LandingStats }) {
   const { t } = useI18n();
-  const { isConnected } = useWallet();
+  const isSignedIn = useSignedIn();
   const [headline, setHeadline] = useState(0);
 
   useEffect(() => {
@@ -100,12 +100,13 @@ export function StatsTagline({ stats }: { stats: LandingStats }) {
       </p>
 
       {/* Signed out: same destination as the nav's Empezar (one constant).
-          Signed in: onboarding no longer applies — the invitation is the art. */}
+          Signed in (wallet or email identity): onboarding no longer applies —
+          the invitation is the art. */}
       <Link
-        href={isConnected ? "/works" : START_HREF}
+        href={isSignedIn ? "/works" : START_HREF}
         className="mt-8 inline-flex h-11 items-center bg-[var(--black)] px-8 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--offwhite)] transition-colors hover:bg-[var(--blue)]"
       >
-        {isConnected ? t("landing.tagline.ctaConnected") : t("landing.tagline.cta")}
+        {isSignedIn ? t("landing.tagline.ctaConnected") : t("landing.tagline.cta")}
       </Link>
     </section>
   );
