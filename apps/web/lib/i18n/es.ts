@@ -449,6 +449,16 @@ export const es = {
     salePrice: "Precio",
     saleRoyalty: "Regalía pagada",
     saleTx: "Ver transacción",
+    activityMinted: "Minteó",
+    activityListed: "Listó",
+    activityCancelled: "Canceló",
+    activityBought: "Compró",
+    activitySold: "Vendió",
+    activitySent: "Envió",
+    activityReceived: "Recibió",
+    activityEmpty: "Esta wallet todavía no tiene movimientos.",
+    activityLag:
+      "La actividad se sincroniza con la cadena cada unas horas. Una acción recién hecha puede tardar en aparecer.",
     royaltyBadge: "de regalía",
     /** Sobre el bloque de compartir el perfil */
     shareTitle: "Difundí este perfil",

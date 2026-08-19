@@ -5,21 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShareButton } from "@/components/share-button";
 import { useI18n } from "@/lib/i18n";
-import { truncateAddress } from "@/lib/stellar";
+import { truncateAddress, txExplorerUrl } from "@/lib/stellar";
+import type { ProfileActivity } from "@/lib/db/activity";
 
 export type ProfileWork = {
   tokenId: number;
   royaltyBps: number;
   image: string | null;
   title: string | null;
-};
-
-export type ProfileSale = {
-  tokenId: number;
-  txHash: string;
-  closedAt: string | null;
-  priceXlm: string;
-  royaltyXlm: string;
 };
 
 type Tab = "created" | "owned" | "activity";
@@ -33,7 +26,7 @@ type Props = {
   registered: boolean;
   works: ProfileWork[];
   owned: ProfileWork[];
-  sales: ProfileSale[];
+  activity: ProfileActivity[];
   /** Canonical path of this profile, for the share link. */
   path: string;
 };
@@ -45,10 +38,10 @@ export function ArtistProfile({
   registered,
   works,
   owned,
-  sales,
+  activity,
   path,
 }: Props) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const displayName = handle ?? truncateAddress(address, 6, 6);
   // Collectors land on what they own; artists on what they made.
   const [tab, setTab] = useState<Tab>(registered || works.length > 0 ? "created" : "owned");
@@ -56,7 +49,7 @@ export function ArtistProfile({
   const tabs: { id: Tab; label: string; count: number | null }[] = [
     { id: "created", label: t("artistProfile.tabCreated"), count: works.length },
     { id: "owned", label: t("artistProfile.tabOwned"), count: owned.length },
-    { id: "activity", label: t("artistProfile.tabActivity"), count: sales.length },
+    { id: "activity", label: t("artistProfile.tabActivity"), count: activity.length },
   ];
 
   return (
@@ -128,52 +121,88 @@ export function ArtistProfile({
             badge={t("artistProfile.royaltyBadge")}
           />
         )}
-        {tab === "activity" &&
-          (sales.length === 0 ? (
-            <p className="max-w-md font-mono text-[11px] leading-relaxed text-[var(--smoke)]">
-              {t("artistProfile.salesEmpty")}
-            </p>
-          ) : (
-            <ul className="divide-y divide-[var(--ember)] border-y border-[var(--ember)]">
-              {sales.map((sale) => (
-                <li
-                  key={sale.txHash}
-                  className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-3"
-                >
-                  <Link
-                    href={`/token/${sale.tokenId}`}
-                    className="font-mono text-[11px] text-[var(--offwhite)] underline-offset-4 hover:underline"
-                  >
-                    #{String(sale.tokenId).padStart(4, "0")}
-                  </Link>
-                  <span className="font-mono text-[11px] text-[var(--offwhite)]">
-                    {t("artistProfile.salePrice")} {sale.priceXlm} XLM
-                  </span>
-                  <span className="font-mono text-[11px] text-[var(--blue)]">
-                    {t("artistProfile.saleRoyalty")} {sale.royaltyXlm} XLM
-                  </span>
-                  {sale.closedAt && (
-                    <span className="font-mono text-[10px] text-[var(--smoke)]">
-                      {new Date(sale.closedAt).toLocaleDateString(
-                        locale === "es" ? "es-AR" : "en-US",
-                        { day: "numeric", month: "short", year: "numeric" },
-                      )}
-                    </span>
-                  )}
-                  <a
-                    href={`https://stellar.expert/explorer/testnet/tx/${sale.txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-auto font-mono text-[10px] text-[var(--smoke)] underline-offset-2 hover:underline"
-                  >
-                    {t("artistProfile.saleTx")} →
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ))}
+        {tab === "activity" && <ProfileActivityFeed rows={activity} />}
       </section>
     </div>
+  );
+}
+
+function ProfileActivityFeed({ rows }: { rows: ProfileActivity[] }) {
+  const { t, locale } = useI18n();
+  const labels: Record<ProfileActivity["kind"], string> = {
+    minted: t("artistProfile.activityMinted"),
+    listed: t("artistProfile.activityListed"),
+    cancelled: t("artistProfile.activityCancelled"),
+    bought: t("artistProfile.activityBought"),
+    sold: t("artistProfile.activitySold"),
+    sent: t("artistProfile.activitySent"),
+    received: t("artistProfile.activityReceived"),
+  };
+
+  if (rows.length === 0) {
+    return (
+      <div className="space-y-3">
+        <p className="max-w-md font-mono text-[11px] leading-relaxed text-[var(--smoke)]">
+          {t("artistProfile.activityEmpty")}
+        </p>
+        <p className="max-w-md font-mono text-[11px] leading-relaxed text-[var(--smoke)]/70">
+          {t("artistProfile.activityLag")}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <ul className="divide-y divide-[var(--ember)] border-y border-[var(--ember)]">
+        {rows.map((event) => (
+          <li
+            key={`${event.kind}-${event.ledger}-${event.eventIndex}`}
+            className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-3"
+          >
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--blue)]">
+              {labels[event.kind]}
+            </span>
+            <Link
+              href={`/token/${event.tokenId}`}
+              className="font-mono text-[11px] text-[var(--offwhite)] underline-offset-4 hover:underline"
+            >
+              #{String(event.tokenId).padStart(4, "0")}
+            </Link>
+            {(event.kind === "listed" || event.kind === "bought" || event.kind === "sold") && (
+              <span className="font-mono text-[11px] text-[var(--offwhite)]">
+                {t("artistProfile.salePrice")} {event.priceXlm} XLM
+              </span>
+            )}
+            {"royaltyXlm" in event && event.royaltyXlm != null && (
+              <span className="font-mono text-[11px] text-[var(--blue)]">
+                {t("artistProfile.saleRoyalty")} {event.royaltyXlm} XLM
+              </span>
+            )}
+            {event.closedAt && (
+              <span className="font-mono text-[10px] text-[var(--smoke)]">
+                {new Date(event.closedAt).toLocaleDateString(locale === "es" ? "es-AR" : "en-US", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+            )}
+            <a
+              href={txExplorerUrl(event.txHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto font-mono text-[10px] text-[var(--smoke)] underline-offset-2 hover:underline"
+            >
+              {t("artistProfile.saleTx")} →
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 font-mono text-[10px] text-[var(--smoke)]/70">
+        {t("artistProfile.activityLag")}
+      </p>
+    </>
   );
 }
 
