@@ -53,6 +53,13 @@ export const en = {
     testnetBadge: "TESTNET",
     networkLabel: "Network",
     noWalletHint: "You're signed in. Connect a wallet to mint or buy.",
+    /** No wallet: which app to get and why. Decaf first, LOBSTR as the alternative. */
+    noWalletGuideLead:
+      "No wallet yet? It's a free app and the account is yours: not even we can touch it.",
+    noWalletGuideDecaf:
+      "If you have never used crypto, get Decaf: sign in with Gmail or Apple, no phrase to write down, and you get paid straight to your bank. Fastest on a phone.",
+    noWalletGuideLobstr:
+      "If you already use crypto, LOBSTR: it gives you a recovery phrase to keep safe.",
   },
   common: {
     mintFirst: "Upload your first work",
