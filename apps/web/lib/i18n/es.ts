@@ -55,6 +55,12 @@ export const es = {
     noWalletHint:
       "Iniciaste sesión. Podés mirar las obras. Conectá una wallet para mintear o comprar.",
     browse: "Ver obras",
+    /** Sin wallet: qué app bajar y por qué. Decaf primero, LOBSTR como alternativa. */
+    noWalletGuideLead:
+      "¿Todavía no tenés wallet? Es una app gratis y la cuenta es tuya: ni nosotros podemos tocarla.",
+    noWalletGuideDecaf:
+      "Si nunca usaste cripto, bajá Decaf: entrás con Gmail o Apple, sin frase que anotar, y cobrás a tu banco en pesos. Desde el celular es lo más rápido.",
+    noWalletGuideLobstr: "Si ya usás cripto, LOBSTR: te da una frase de recuperación para guardar.",
   },
   common: {
     mintFirst: "Subir tu primera obra",
@@ -298,7 +304,10 @@ export const es = {
     ctaPrefix: "Comprar ahora —",
     confirming: "Confirmá la transacción en tu wallet…",
     confirmed: "Compra confirmada",
+    confirmedDetail: "Tu compra ya está en la red.",
+    confirmedDelay: "Puede demorar unas horas en aparecer en tu colección.",
     viewTx: "Ver transacción →",
+    viewCollection: "Ver mi colección →",
     tryAgain: "Reintentar",
   },
   artwork: {

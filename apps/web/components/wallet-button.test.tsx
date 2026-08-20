@@ -107,6 +107,33 @@ describe("WalletButton render branches", () => {
     expect(ctx.connectViaPrivy).not.toHaveBeenCalled();
   });
 
+  it("authenticated via Privy, no wallet: names both wallets and links to them", () => {
+    useWalletMock.mockReturnValue(walletCtx());
+    usePrivyMock.mockReturnValue(
+      privyCtx({ authenticated: true, user: { google: { email: "artist@example.com" } } }),
+    );
+
+    render(<WalletButton />);
+    fireEvent.click(screen.getByRole("button"));
+
+    // The guidance is what tells a newcomer which app to install at all.
+    expect(screen.getByText("wallet.noWalletGuideLead")).toBeTruthy();
+    expect(screen.getByText(/wallet\.noWalletGuideDecaf/)).toBeTruthy();
+    expect(screen.getByText(/wallet\.noWalletGuideLobstr/)).toBeTruthy();
+
+    // Links must survive a copy rewrite: assert the destinations, not the labels.
+    const decaf = screen.getByRole("link", { name: "decaf.so" });
+    const lobstr = screen.getByRole("link", { name: "lobstr.co" });
+    expect(decaf.getAttribute("href")).toBe("https://www.decaf.so/");
+    expect(lobstr.getAttribute("href")).toBe("https://lobstr.co");
+
+    // Opening a wallet site must not hand it a reference back to this tab.
+    for (const link of [decaf, lobstr]) {
+      expect(link.getAttribute("target")).toBe("_blank");
+      expect(link.getAttribute("rel")).toContain("noopener");
+    }
+  });
+
   it("not authenticated, no wallet: renders the sign-in button", () => {
     useWalletMock.mockReturnValue(walletCtx());
     usePrivyMock.mockReturnValue(privyCtx({ authenticated: false, user: null }));

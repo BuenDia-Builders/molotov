@@ -102,6 +102,44 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
                 {t("wallet.browse")}
               </Link>
             </nav>
+            {/*
+              Someone who has never used crypto does not know which app to install, and
+              the two options are not equivalent: Decaf onboards with a social login and
+              no seed phrase, LOBSTR hands over a recovery phrase to keep. Decaf leads
+              for that reason; both give the artist a memo-free address they control,
+              which is what doc/adr/0002 Option D actually requires.
+            */}
+            <div className="border-b border-white/10 px-4 py-4">
+              <p className="font-[family-name:var(--font-mono)] text-[10px] leading-relaxed text-[var(--smoke)]">
+                {t("wallet.noWalletGuideLead")}
+              </p>
+              {/*
+                The wallet name stays inside the sentence so translators get a whole
+                sentence rather than a fragment; the link is the site itself.
+              */}
+              <p className="mt-3 font-[family-name:var(--font-mono)] text-[10px] leading-relaxed text-[var(--smoke)]">
+                {t("wallet.noWalletGuideDecaf")}{" "}
+                <a
+                  href="https://www.decaf.so/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--offwhite)] underline underline-offset-2 hover:text-white"
+                >
+                  decaf.so
+                </a>
+              </p>
+              <p className="mt-2 font-[family-name:var(--font-mono)] text-[10px] leading-relaxed text-[var(--smoke)]">
+                {t("wallet.noWalletGuideLobstr")}{" "}
+                <a
+                  href="https://lobstr.co"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--offwhite)] underline underline-offset-2 hover:text-white"
+                >
+                  lobstr.co
+                </a>
+              </p>
+            </div>
             <div className="p-2">
               <button
                 onClick={() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useWallet } from "@/hooks/use-wallet";
 import { useBuy } from "@/hooks/use-buy";
 import { WalletButton } from "@/components/wallet-button";
@@ -15,7 +15,6 @@ type Props = {
 };
 
 export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
-  const router = useRouter();
   const { isConnected } = useWallet();
   const { buy, state, errorKey, txHash, reset } = useBuy();
   const { t } = useI18n();
@@ -25,10 +24,8 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
       // The attribution did its job — a repeat purchase should not keep
       // crediting a link followed before this sale.
       clearReferralAttribution(tokenId);
-      const timer = setTimeout(() => router.push(`/my-work/${tokenId}`), 2000);
-      return () => clearTimeout(timer);
     }
-  }, [state, router, tokenId]);
+  }, [state, tokenId]);
 
   if (!isConnected) {
     return (
@@ -52,10 +49,12 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
 
   if (state === "success") {
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3" role="status" aria-live="polite">
         <p className="font-mono text-[10px] text-[var(--blue)] uppercase tracking-widest">
           {t("buy.confirmed")}
         </p>
+        <p className="font-mono text-[10px] text-[var(--smoke)]">{t("buy.confirmedDetail")}</p>
+        <p className="font-mono text-[10px] text-[var(--smoke)]">{t("buy.confirmedDelay")}</p>
         {txHash && (
           <a
             href={`https://stellar.expert/explorer/testnet/tx/${txHash}`}
@@ -66,6 +65,12 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
             {t("buy.viewTx")}
           </a>
         )}
+        <Link
+          href="/my-work"
+          className="font-mono text-[10px] text-[var(--smoke)] underline underline-offset-2"
+        >
+          {t("buy.viewCollection")}
+        </Link>
       </div>
     );
   }

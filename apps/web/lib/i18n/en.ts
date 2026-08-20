@@ -54,6 +54,13 @@ export const en = {
     networkLabel: "Network",
     noWalletHint: "You're signed in. You can browse. Connect a wallet to mint or buy.",
     browse: "Browse works",
+    /** No wallet: which app to get and why. Decaf first, LOBSTR as the alternative. */
+    noWalletGuideLead:
+      "No wallet yet? It's a free app and the account is yours: not even we can touch it.",
+    noWalletGuideDecaf:
+      "If you have never used crypto, get Decaf: sign in with Gmail or Apple, no phrase to write down, and you get paid straight to your bank. Fastest on a phone.",
+    noWalletGuideLobstr:
+      "If you already use crypto, LOBSTR: it gives you a recovery phrase to keep safe.",
   },
   common: {
     mintFirst: "Upload your first work",
@@ -294,7 +301,10 @@ export const en = {
     ctaPrefix: "Buy now —",
     confirming: "Confirm the transaction in your wallet…",
     confirmed: "Purchase confirmed",
+    confirmedDetail: "Your purchase is already on the network.",
+    confirmedDelay: "It can take a few hours to show up in your collection.",
     viewTx: "View transaction →",
+    viewCollection: "View my collection →",
     tryAgain: "Try again",
   },
   artwork: {
