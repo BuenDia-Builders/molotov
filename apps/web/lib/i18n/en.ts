@@ -303,6 +303,7 @@ export const en = {
     confirmedDetail: "Your purchase is already on the network.",
     confirmedDelay: "It can take a few hours to show up in your collection.",
     viewTx: "View transaction →",
+    viewCollection: "View my collection →",
     tryAgain: "Try again",
   },
   artwork: {

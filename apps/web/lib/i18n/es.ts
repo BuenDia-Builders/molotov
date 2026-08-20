@@ -305,6 +305,7 @@ export const es = {
     confirmedDetail: "Tu compra ya está en la red.",
     confirmedDelay: "Puede demorar unas horas en aparecer en tu colección.",
     viewTx: "Ver transacción →",
+    viewCollection: "Ver mi colección →",
     tryAgain: "Reintentar",
   },
   artwork: {
