@@ -60,7 +60,7 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
   };
 
   // Signed in with a social account but no signing wallet yet. Identity only:
-  // signed in, can browse; they connect a wallet to mint or buy.
+  // shown honestly, not as a silent failure — they connect a wallet to mint or buy.
   if ((!isConnected || !address) && isPrivyMode) {
     const socialName = privyEmail.length > 22 ? privyEmail.slice(0, 20) + "…" : privyEmail;
     return (

@@ -38,13 +38,13 @@ afterEach(() => {
 });
 
 describe("Nav", () => {
-  it("hides Empezar once signed in without a wallet — collectors can browse", () => {
+  it("hides the start link when signed in", () => {
     useSignedInMock.mockReturnValue(true);
     render(<Nav />);
     expect(screen.queryByText("nav.start")).toBeNull();
   });
 
-  it("shows Empezar when signed out", () => {
+  it("shows the start link when signed out", () => {
     useSignedInMock.mockReturnValue(false);
     render(<Nav />);
     expect(screen.getByText("nav.start").closest("a")?.getAttribute("href")).toBe("/get-started");

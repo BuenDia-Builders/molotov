@@ -43,8 +43,7 @@ export function Nav() {
         {/* Right: create / start / locale / wallet */}
         <div className="ml-auto flex items-center gap-3 md:ml-0 md:gap-4">
           <CreateMenu />
-          {/* Once signed in (wallet or email identity), the account chip
-              replaces onboarding as the CTA. */}
+          {/* Once signed in, the account chip replaces onboarding as the CTA. */}
           {!isSignedIn && (
             <Link
               href={START_HREF}

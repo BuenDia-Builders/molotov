@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 describe("LoginModal", () => {
-  it("offers email as an identity-only sign-in (no wallet)", () => {
+  it("email login does not connect a wallet", () => {
     const login = vi.fn();
     const connect = vi.fn();
     const onClose = vi.fn();
@@ -43,7 +43,7 @@ describe("LoginModal", () => {
     expect(connect).not.toHaveBeenCalled();
   });
 
-  it("does not create a session when already authenticated", () => {
+  it("does not call login if already authenticated", () => {
     const login = vi.fn();
     useWalletMock.mockReturnValue({ connect: vi.fn() });
     usePrivyMock.mockReturnValue({ login, authenticated: true });

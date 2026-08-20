@@ -23,7 +23,7 @@ afterEach(() => {
 });
 
 describe("privyIdentityEmail", () => {
-  it("prefers the email address, then Google, and never invents a key", () => {
+  it("prefers email over Google", () => {
     expect(privyIdentityEmail({ email: { address: "collector@example.com" } })).toBe(
       "collector@example.com",
     );
@@ -46,7 +46,7 @@ describe("useSignedIn", () => {
     expect(renderHook(() => useSignedIn()).result.current).toBe(true);
   });
 
-  it("is true with email identity and no wallet — collectors can browse", () => {
+  it("is true with email and no wallet", () => {
     useWalletMock.mockReturnValue({ isConnected: false });
     usePrivyMock.mockReturnValue({
       authenticated: true,
@@ -55,7 +55,7 @@ describe("useSignedIn", () => {
     expect(renderHook(() => useSignedIn()).result.current).toBe(true);
   });
 
-  it("is true with Google identity and no wallet", () => {
+  it("is true with Google and no wallet", () => {
     useWalletMock.mockReturnValue({ isConnected: false });
     usePrivyMock.mockReturnValue({
       authenticated: true,
@@ -64,7 +64,7 @@ describe("useSignedIn", () => {
     expect(renderHook(() => useSignedIn()).result.current).toBe(true);
   });
 
-  it("is false when neither wallet nor Privy identity is present", () => {
+  it("is false when signed out", () => {
     useWalletMock.mockReturnValue({ isConnected: false });
     usePrivyMock.mockReturnValue({ authenticated: false, user: null });
     expect(renderHook(() => useSignedIn()).result.current).toBe(false);

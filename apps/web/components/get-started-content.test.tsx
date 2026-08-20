@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 describe("GetStartedContent", () => {
-  it("points signed-in collectors at works instead of sign-up", () => {
+  it("links to /works when already signed in", () => {
     useSignedInMock.mockReturnValue(true);
     render(<GetStartedContent />);
     expect(screen.queryByText("getStarted.cta")).toBeNull();
@@ -39,7 +39,7 @@ describe("GetStartedContent", () => {
     );
   });
 
-  it("offers sign-up when signed out", () => {
+  it("shows the sign-up button when signed out", () => {
     useSignedInMock.mockReturnValue(false);
     render(<GetStartedContent />);
     expect(screen.getByText("getStarted.cta")).toBeTruthy();

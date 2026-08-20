@@ -75,10 +75,8 @@ describe("WalletButton render branches", () => {
 
     render(<WalletButton />);
 
-    // The anonymous sign-in button is not shown in this state.
     expect(screen.queryByText("nav.signIn")).toBeNull();
 
-    // Identity is shown as the trigger; open it to reveal browse + controls.
     fireEvent.click(screen.getByRole("button"));
 
     expect(screen.getByText("wallet.noWalletHint")).toBeTruthy();
@@ -89,7 +87,6 @@ describe("WalletButton render branches", () => {
     expect(screen.getByText("wallet.connect")).toBeTruthy();
     expect(screen.getByText("account.signOut")).toBeTruthy();
     expect(screen.queryByText("nav.signIn")).toBeNull();
-    // No persistent profile for email-only collectors (issue #78).
     expect(screen.queryByText("account.profile")).toBeNull();
   });
 

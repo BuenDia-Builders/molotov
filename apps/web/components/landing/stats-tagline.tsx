@@ -100,8 +100,7 @@ export function StatsTagline({ stats }: { stats: LandingStats }) {
       </p>
 
       {/* Signed out: same destination as the nav's Empezar (one constant).
-          Signed in (wallet or email identity): onboarding no longer applies —
-          the invitation is the art. */}
+          Signed in: onboarding no longer applies — the invitation is the art. */}
       <Link
         href={isSignedIn ? "/works" : START_HREF}
         className="mt-8 inline-flex h-11 items-center bg-[var(--black)] px-8 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--offwhite)] transition-colors hover:bg-[var(--blue)]"
