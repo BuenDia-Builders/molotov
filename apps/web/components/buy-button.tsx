@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useWallet } from "@/hooks/use-wallet";
 import { useBuy } from "@/hooks/use-buy";
 import { WalletButton } from "@/components/wallet-button";
@@ -64,6 +65,12 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
             {t("buy.viewTx")}
           </a>
         )}
+        <Link
+          href="/my-work"
+          className="font-mono text-[10px] text-[var(--smoke)] underline underline-offset-2"
+        >
+          {t("buy.viewCollection")}
+        </Link>
       </div>
     );
   }
