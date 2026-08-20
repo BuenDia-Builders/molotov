@@ -300,6 +300,8 @@ export const en = {
     ctaPrefix: "Buy now —",
     confirming: "Confirm the transaction in your wallet…",
     confirmed: "Purchase confirmed",
+    confirmedDetail: "Your purchase is already on the network.",
+    confirmedDelay: "It can take a few hours to show up in your collection.",
     viewTx: "View transaction →",
     tryAgain: "Try again",
   },
