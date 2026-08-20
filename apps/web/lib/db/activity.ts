@@ -87,6 +87,8 @@ export async function getWalletActivity(address: string, limit = 50): Promise<Pr
       .from("tokens")
       .select("token_id, minted_at_ledger, minted_at_tx, minted_event_index, minted_at")
       .eq("artist", address)
+      .order("minted_at_ledger", { ascending: false })
+      .order("minted_event_index", { ascending: false })
       .limit(limit),
     db
       .from("listings")
@@ -94,6 +96,8 @@ export async function getWalletActivity(address: string, limit = 50): Promise<Pr
         "token_id, status, price, created_at_ledger, created_at_tx, created_event_index, created_at",
       )
       .eq("seller", address)
+      .order("created_at_ledger", { ascending: false })
+      .order("created_event_index", { ascending: false })
       .limit(limit),
     db
       .from("sales")
@@ -101,11 +105,15 @@ export async function getWalletActivity(address: string, limit = 50): Promise<Pr
         "token_id, buyer, seller, price, royalty_paid, ledger, event_index, tx_hash, closed_at",
       )
       .or(`buyer.eq.${address},seller.eq.${address}`)
+      .order("ledger", { ascending: false })
+      .order("event_index", { ascending: false })
       .limit(limit),
     db
       .from("token_transfers")
       .select("token_id, from_address, to_address, ledger, event_index, tx_hash, closed_at")
       .or(`from_address.eq.${address},to_address.eq.${address}`)
+      .order("ledger", { ascending: false })
+      .order("event_index", { ascending: false })
       .limit(limit),
   ]);
   if (mints.error) throw mints.error;

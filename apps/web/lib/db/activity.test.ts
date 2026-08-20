@@ -33,8 +33,15 @@ type Builder = PromiseLike<DbRow> & {
   eq: () => Builder;
   in: () => Builder;
   or: () => Builder;
+  order: (column: string) => Builder;
   limit: () => Builder;
 };
+
+/** Records every `.order(column, ...)` call, keyed by the query that made it —
+ * "tokens" ambiguously covers both the mint list and the artist lookup, so it
+ * is split by whether `.order()` was ever called (the artist lookup never
+ * orders; only the mint list does). */
+const orderCalls: Record<string, string[]> = {};
 
 function stubDb({
   tokens = [],
@@ -43,6 +50,8 @@ function stubDb({
   transfers = [],
   tokenArtists = [],
 }: Rows) {
+  for (const key of Object.keys(orderCalls)) delete orderCalls[key];
+
   mocks.from.mockImplementation((table: string) => {
     let selectCols = "";
     const pick = () => {
@@ -63,6 +72,11 @@ function stubDb({
       eq: () => builder,
       in: () => builder,
       or: () => builder,
+      order: (column: string) => {
+        const key = table === "tokens" && selectCols.includes("minted_at_ledger") ? "mints" : table;
+        (orderCalls[key] ??= []).push(column);
+        return builder;
+      },
       limit: () => builder,
     };
     return builder;
@@ -275,5 +289,26 @@ describe("getWalletActivity — ordering and cap", () => {
     });
 
     expect(await getWalletActivity(ARTIST, 2)).toHaveLength(2);
+  });
+
+  // Regression: each source query must order server-side before its own
+  // .limit(). Without it, Postgres makes no promise about which rows come
+  // back once a wallet has more than `limit` rows in a single source table —
+  // the merge-and-sort downstream would then be sorting an arbitrary subset,
+  // not necessarily the actual most recent ones.
+  it("orders every source server-side before its own limit, newest first", async () => {
+    stubDb({
+      tokens: [mint(1)],
+      listings: [listing(2)],
+      sales: [sale(3)],
+      transfers: [transfer(4)],
+    });
+
+    await getWalletActivity(ARTIST);
+
+    expect(orderCalls.mints).toEqual(["minted_at_ledger", "minted_event_index"]);
+    expect(orderCalls.listings).toEqual(["created_at_ledger", "created_event_index"]);
+    expect(orderCalls.sales).toEqual(["ledger", "event_index"]);
+    expect(orderCalls.token_transfers).toEqual(["ledger", "event_index"]);
   });
 });
