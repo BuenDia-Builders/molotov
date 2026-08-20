@@ -67,7 +67,7 @@ afterEach(() => {
 });
 
 describe("WalletButton render branches", () => {
-  it("authenticated via Privy, no wallet: connect-wallet prompt + sign-out, and NO sign-in button", () => {
+  it("authenticated via Privy, no wallet: browse + connect-wallet + sign-out, and NO sign-in button", () => {
     useWalletMock.mockReturnValue(walletCtx()); // not connected
     usePrivyMock.mockReturnValue(
       privyCtx({ authenticated: true, user: { google: { email: "artist@example.com" } } }),
@@ -75,16 +75,36 @@ describe("WalletButton render branches", () => {
 
     render(<WalletButton />);
 
-    // The anonymous sign-in button is not shown in this state.
     expect(screen.queryByText("nav.signIn")).toBeNull();
 
-    // Identity is shown as the trigger; open it to reveal the prompt + controls.
     fireEvent.click(screen.getByRole("button"));
 
     expect(screen.getByText("wallet.noWalletHint")).toBeTruthy();
+    expect(screen.getByText("wallet.browse")).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "wallet.browse" }).getAttribute("href")).toBe(
+      "/works",
+    );
     expect(screen.getByText("wallet.connect")).toBeTruthy();
     expect(screen.getByText("account.signOut")).toBeTruthy();
     expect(screen.queryByText("nav.signIn")).toBeNull();
+    expect(screen.queryByText("account.profile")).toBeNull();
+  });
+
+  it("authenticated via Privy email (not Google), no wallet: same identity-only menu", () => {
+    const ctx = walletCtx();
+    useWalletMock.mockReturnValue(ctx);
+    usePrivyMock.mockReturnValue(
+      privyCtx({ authenticated: true, user: { email: { address: "collector@example.com" } } }),
+    );
+
+    render(<WalletButton />);
+    fireEvent.click(screen.getByRole("button"));
+
+    expect(screen.getAllByText("collector@example.com").length).toBeGreaterThan(0);
+    expect(screen.getByText("wallet.browse")).toBeTruthy();
+    expect(screen.queryByText("nav.signIn")).toBeNull();
+    expect(ctx.connect).not.toHaveBeenCalled();
+    expect(ctx.connectViaPrivy).not.toHaveBeenCalled();
   });
 
   it("authenticated via Privy, no wallet: names both wallets and links to them", () => {
