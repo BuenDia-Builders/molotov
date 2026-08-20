@@ -6,7 +6,7 @@ import { GetStartedContent } from "@/components/get-started-content";
 export const metadata: Metadata = {
   title: "Empezá con Molotov",
   description:
-    "Creá tu wallet en un paso o conectá la que ya usás, y entrá al arte digital donde la regalía la garantiza el contrato.",
+    "Entrá con email o conectá la wallet que ya usás, y mirá el arte digital donde la regalía la garantiza el contrato.",
 };
 
 export default function GetStartedPage() {

@@ -6,7 +6,7 @@ import { WalletButton } from "@/components/wallet-button";
 import { SearchBox } from "@/components/search-box";
 import { CreateMenu } from "@/components/create-menu";
 import { useI18n } from "@/lib/i18n";
-import { useWallet } from "@/hooks/use-wallet";
+import { useSignedIn } from "@/hooks/use-signed-in";
 import { START_HREF } from "@/lib/routes";
 
 /**
@@ -15,7 +15,7 @@ import { START_HREF } from "@/lib/routes";
  */
 export function Nav() {
   const { t } = useI18n();
-  const { isConnected } = useWallet();
+  const isSignedIn = useSignedIn();
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-[var(--offwhite)]">
@@ -44,7 +44,7 @@ export function Nav() {
         <div className="ml-auto flex items-center gap-3 md:ml-0 md:gap-4">
           <CreateMenu />
           {/* Once signed in, the account chip replaces onboarding as the CTA. */}
-          {!isConnected && (
+          {!isSignedIn && (
             <Link
               href={START_HREF}
               className="inline-flex h-8 items-center bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-[var(--blue-light)]"

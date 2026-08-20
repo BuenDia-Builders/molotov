@@ -52,7 +52,15 @@ export const es = {
     disconnect: "Desconectar",
     testnetBadge: "TESTNET",
     networkLabel: "Red",
-    noWalletHint: "Iniciaste sesión. Conectá una wallet para mintear o comprar.",
+    noWalletHint:
+      "Iniciaste sesión. Podés mirar las obras. Conectá una wallet para mintear o comprar.",
+    browse: "Ver obras",
+    /** Sin wallet: qué app bajar y por qué. Decaf primero, LOBSTR como alternativa. */
+    noWalletGuideLead:
+      "¿Todavía no tenés wallet? Es una app gratis y la cuenta es tuya: ni nosotros podemos tocarla.",
+    noWalletGuideDecaf:
+      "Si nunca usaste cripto, bajá Decaf: entrás con Gmail o Apple, sin frase que anotar, y cobrás a tu banco en pesos. Desde el celular es lo más rápido.",
+    noWalletGuideLobstr: "Si ya usás cripto, LOBSTR: te da una frase de recuperación para guardar.",
   },
   common: {
     mintFirst: "Subir tu primera obra",
@@ -296,7 +304,10 @@ export const es = {
     ctaPrefix: "Comprar ahora —",
     confirming: "Confirmá la transacción en tu wallet…",
     confirmed: "Compra confirmada",
+    confirmedDetail: "Tu compra ya está en la red.",
+    confirmedDelay: "Puede demorar unas horas en aparecer en tu colección.",
     viewTx: "Ver transacción →",
+    viewCollection: "Ver mi colección →",
     tryAgain: "Reintentar",
   },
   artwork: {
@@ -367,10 +378,11 @@ export const es = {
   },
   auth: {
     title: "Iniciá sesión para seguir",
+    email: "Continuar con email",
     google: "Continuar con Google",
     x: "Continuar con X",
     stellar: "Conectar una wallet de Stellar",
-    note: "Con Google o X iniciás sesión. Para mintear o comprar, conectá una wallet de Stellar — la dirección que controlás es donde cobrás tus regalías.",
+    note: "Con email, Google o X iniciás sesión. Podés mirar las obras así. Para mintear o comprar, conectá una wallet de Stellar — la dirección que controlás es donde cobrás tus regalías.",
     close: "Cerrar",
   },
   getStarted: {
@@ -381,7 +393,7 @@ export const es = {
       q1: "¿Qué es Molotov?",
       a1: "Un mercado de arte digital sobre Stellar. Cada obra lleva su regalía escrita en el contrato al momento de subirse: entre el 1% y el 15%, la fija quien la crea y nadie —ni nosotros— puede cambiarla. En cada venta en Molotov, la regalía se paga antes de que la operación cierre.",
       q2: "¿Qué es una wallet?",
-      a2: "Tu llave y tu firma. Acá no hay usuario y contraseña: tu wallet es tu identidad. Podés usar una que ya tengas (Freighter, xBull, LOBSTR y más) o entrar con Google o X y te creamos una en el momento, sin frase secreta.",
+      a2: "Tu llave y tu firma. Para mintear o comprar necesitás una wallet que controles (Freighter, xBull, LOBSTR y más). Si coleccionás, podés entrar con email y mirar las obras sin wallet.",
       q3: "¿Cómo colecciono arte?",
       a3: "Entrás, mirás las obras y comprás la que te mueva. El pago viaja directo: a quien vende y a quien la creó, su regalía incluida. Hoy estamos en testnet: podés probar todo el circuito sin plata real.",
       q4: "¿Cómo subo mi obra?",

@@ -67,7 +67,7 @@ afterEach(() => {
 });
 
 describe("WalletButton render branches", () => {
-  it("authenticated via Privy, no wallet: connect-wallet prompt + sign-out, and NO sign-in button", () => {
+  it("authenticated via Privy, no wallet: browse + connect-wallet + sign-out, and NO sign-in button", () => {
     useWalletMock.mockReturnValue(walletCtx()); // not connected
     usePrivyMock.mockReturnValue(
       privyCtx({ authenticated: true, user: { google: { email: "artist@example.com" } } }),
@@ -75,16 +75,63 @@ describe("WalletButton render branches", () => {
 
     render(<WalletButton />);
 
-    // The anonymous sign-in button is not shown in this state.
     expect(screen.queryByText("nav.signIn")).toBeNull();
 
-    // Identity is shown as the trigger; open it to reveal the prompt + controls.
     fireEvent.click(screen.getByRole("button"));
 
     expect(screen.getByText("wallet.noWalletHint")).toBeTruthy();
+    expect(screen.getByText("wallet.browse")).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "wallet.browse" }).getAttribute("href")).toBe(
+      "/works",
+    );
     expect(screen.getByText("wallet.connect")).toBeTruthy();
     expect(screen.getByText("account.signOut")).toBeTruthy();
     expect(screen.queryByText("nav.signIn")).toBeNull();
+    expect(screen.queryByText("account.profile")).toBeNull();
+  });
+
+  it("authenticated via Privy email (not Google), no wallet: same identity-only menu", () => {
+    const ctx = walletCtx();
+    useWalletMock.mockReturnValue(ctx);
+    usePrivyMock.mockReturnValue(
+      privyCtx({ authenticated: true, user: { email: { address: "collector@example.com" } } }),
+    );
+
+    render(<WalletButton />);
+    fireEvent.click(screen.getByRole("button"));
+
+    expect(screen.getAllByText("collector@example.com").length).toBeGreaterThan(0);
+    expect(screen.getByText("wallet.browse")).toBeTruthy();
+    expect(screen.queryByText("nav.signIn")).toBeNull();
+    expect(ctx.connect).not.toHaveBeenCalled();
+    expect(ctx.connectViaPrivy).not.toHaveBeenCalled();
+  });
+
+  it("authenticated via Privy, no wallet: names both wallets and links to them", () => {
+    useWalletMock.mockReturnValue(walletCtx());
+    usePrivyMock.mockReturnValue(
+      privyCtx({ authenticated: true, user: { google: { email: "artist@example.com" } } }),
+    );
+
+    render(<WalletButton />);
+    fireEvent.click(screen.getByRole("button"));
+
+    // The guidance is what tells a newcomer which app to install at all.
+    expect(screen.getByText("wallet.noWalletGuideLead")).toBeTruthy();
+    expect(screen.getByText(/wallet\.noWalletGuideDecaf/)).toBeTruthy();
+    expect(screen.getByText(/wallet\.noWalletGuideLobstr/)).toBeTruthy();
+
+    // Links must survive a copy rewrite: assert the destinations, not the labels.
+    const decaf = screen.getByRole("link", { name: "decaf.so" });
+    const lobstr = screen.getByRole("link", { name: "lobstr.co" });
+    expect(decaf.getAttribute("href")).toBe("https://www.decaf.so/");
+    expect(lobstr.getAttribute("href")).toBe("https://lobstr.co");
+
+    // Opening a wallet site must not hand it a reference back to this tab.
+    for (const link of [decaf, lobstr]) {
+      expect(link.getAttribute("target")).toBe("_blank");
+      expect(link.getAttribute("rel")).toContain("noopener");
+    }
   });
 
   it("not authenticated, no wallet: renders the sign-in button", () => {

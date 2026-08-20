@@ -52,7 +52,15 @@ export const en = {
     disconnect: "Disconnect",
     testnetBadge: "TESTNET",
     networkLabel: "Network",
-    noWalletHint: "You're signed in. Connect a wallet to mint or buy.",
+    noWalletHint: "You're signed in. You can browse. Connect a wallet to mint or buy.",
+    browse: "Browse works",
+    /** No wallet: which app to get and why. Decaf first, LOBSTR as the alternative. */
+    noWalletGuideLead:
+      "No wallet yet? It's a free app and the account is yours: not even we can touch it.",
+    noWalletGuideDecaf:
+      "If you have never used crypto, get Decaf: sign in with Gmail or Apple, no phrase to write down, and you get paid straight to your bank. Fastest on a phone.",
+    noWalletGuideLobstr:
+      "If you already use crypto, LOBSTR: it gives you a recovery phrase to keep safe.",
   },
   common: {
     mintFirst: "Upload your first work",
@@ -293,7 +301,10 @@ export const en = {
     ctaPrefix: "Buy now —",
     confirming: "Confirm the transaction in your wallet…",
     confirmed: "Purchase confirmed",
+    confirmedDetail: "Your purchase is already on the network.",
+    confirmedDelay: "It can take a few hours to show up in your collection.",
     viewTx: "View transaction →",
+    viewCollection: "View my collection →",
     tryAgain: "Try again",
   },
   artwork: {
@@ -352,10 +363,11 @@ export const en = {
   },
   auth: {
     title: "Sign in to continue",
+    email: "Continue with email",
     google: "Continue with Google",
     x: "Continue with X",
     stellar: "Connect a Stellar wallet",
-    note: "Google or X signs you in. To mint or buy, connect a Stellar wallet — the address you control is where your royalties are paid.",
+    note: "Email, Google or X signs you in. You can browse that way. To mint or buy, connect a Stellar wallet — the address you control is where your royalties are paid.",
     close: "Close",
   },
   getStarted: {
@@ -366,7 +378,7 @@ export const en = {
       q1: "What is Molotov?",
       a1: "A digital art market on Stellar. Every work carries its royalty written into the contract at upload time: between 1% and 15%, set by its creator, and nobody — not even us — can change it. On every sale on Molotov, the royalty is paid before the deal closes.",
       q2: "What is a wallet?",
-      a2: "Your key and your signature. There are no usernames and passwords here: your wallet is your identity. Use one you already have (Freighter, xBull, LOBSTR and more) or sign in with Google or X and we create one for you on the spot, no seed phrase.",
+      a2: "Your key and your signature. To mint or buy you need a wallet you control (Freighter, xBull, LOBSTR and more). If you're collecting, you can sign in with email and browse without a wallet.",
       q3: "How do I collect art?",
       a3: "Come in, browse the works and buy the one that moves you. The payment travels directly: to the seller and to the creator, royalty included. We are on testnet today: you can try the whole loop without real money.",
       q4: "How do I upload my work?",

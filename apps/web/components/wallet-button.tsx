@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
+import { privyIdentityEmail } from "@/hooks/use-signed-in";
 import { useWallet } from "@/hooks/use-wallet";
 import { HORIZON_URL, IS_TESTNET, STELLAR_NETWORK_NAME, truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
@@ -14,12 +15,19 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
   const { address, isConnected, isConnecting, connect, prewarm, disconnect, connectViaPrivy } =
     useWallet();
   const { logout, ready, authenticated, user: privyUser } = usePrivy();
-  const privyEmail = privyUser?.email?.address ?? privyUser?.google?.email ?? null;
+  const privyEmail = privyIdentityEmail(privyUser);
   const isPrivyMode = authenticated && !!privyEmail;
   const { wallet: privyNativeWallet, address: privyNativeAddress } = useStellarWallet();
   const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isLight = theme === "light";
+  const chipClass = isLight
+    ? "border-black/20 text-[var(--black)] hover:bg-black/5 hover:text-[var(--black)]"
+    : "border-white/15 text-[var(--offwhite)] hover:bg-white/5 hover:text-[var(--offwhite)]";
+  const badgeClass = isLight
+    ? "border-black/15 text-[var(--black)]/60"
+    : "border-white/15 text-[var(--offwhite)]/60";
 
   // Close menu on outside click
   useEffect(() => {
@@ -62,10 +70,10 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
           onClick={() => setMenuOpen((open) => !open)}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
-          className="min-h-[44px] bg-transparent font-[family-name:var(--font-mono)] border-white/15 text-[var(--offwhite)] hover:bg-white/5 hover:text-[var(--offwhite)]"
+          className={`min-h-[44px] bg-transparent font-[family-name:var(--font-mono)] ${chipClass}`}
         >
           {IS_TESTNET && (
-            <span className="mr-2 border border-white/15 px-1.5 py-0.5 text-[12px] uppercase text-[var(--offwhite)]/60">
+            <span className={`mr-2 border px-1.5 py-0.5 text-[12px] uppercase ${badgeClass}`}>
               {t("wallet.testnetBadge")}
             </span>
           )}
@@ -82,6 +90,54 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
               </p>
               <p className="mt-2 font-[family-name:var(--font-mono)] text-[10px] leading-relaxed text-[var(--smoke)]">
                 {t("wallet.noWalletHint")}
+              </p>
+            </div>
+            <nav className="py-1">
+              <Link
+                href="/works"
+                role="menuitem"
+                onClick={() => setMenuOpen(false)}
+                className="flex min-h-11 w-full items-center px-4 text-left font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)] hover:bg-white/5"
+              >
+                {t("wallet.browse")}
+              </Link>
+            </nav>
+            {/*
+              Someone who has never used crypto does not know which app to install, and
+              the two options are not equivalent: Decaf onboards with a social login and
+              no seed phrase, LOBSTR hands over a recovery phrase to keep. Decaf leads
+              for that reason; both give the artist a memo-free address they control,
+              which is what doc/adr/0002 Option D actually requires.
+            */}
+            <div className="border-b border-white/10 px-4 py-4">
+              <p className="font-[family-name:var(--font-mono)] text-[10px] leading-relaxed text-[var(--smoke)]">
+                {t("wallet.noWalletGuideLead")}
+              </p>
+              {/*
+                The wallet name stays inside the sentence so translators get a whole
+                sentence rather than a fragment; the link is the site itself.
+              */}
+              <p className="mt-3 font-[family-name:var(--font-mono)] text-[10px] leading-relaxed text-[var(--smoke)]">
+                {t("wallet.noWalletGuideDecaf")}{" "}
+                <a
+                  href="https://www.decaf.so/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--offwhite)] underline underline-offset-2 hover:text-white"
+                >
+                  decaf.so
+                </a>
+              </p>
+              <p className="mt-2 font-[family-name:var(--font-mono)] text-[10px] leading-relaxed text-[var(--smoke)]">
+                {t("wallet.noWalletGuideLobstr")}{" "}
+                <a
+                  href="https://lobstr.co"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--offwhite)] underline underline-offset-2 hover:text-white"
+                >
+                  lobstr.co
+                </a>
               </p>
             </div>
             <div className="p-2">
@@ -130,28 +186,17 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
     );
   }
 
-  const isLight = theme === "light";
   return (
     <div ref={containerRef} className="relative">
       <Button
         variant="outline"
-        className={`min-h-[44px] bg-transparent font-[family-name:var(--font-mono)] ${
-          isLight
-            ? "border-black/20 text-[var(--black)] hover:bg-black/5 hover:text-[var(--black)]"
-            : "border-white/15 text-[var(--offwhite)] hover:bg-white/5 hover:text-[var(--offwhite)]"
-        }`}
+        className={`min-h-[44px] bg-transparent font-[family-name:var(--font-mono)] ${chipClass}`}
         onClick={() => setMenuOpen((open) => !open)}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
       >
         {IS_TESTNET && (
-          <span
-            className={`mr-2 border px-1.5 py-0.5 text-[12px] uppercase ${
-              isLight
-                ? "border-black/15 text-[var(--black)]/60"
-                : "border-white/15 text-[var(--offwhite)]/60"
-            }`}
-          >
+          <span className={`mr-2 border px-1.5 py-0.5 text-[12px] uppercase ${badgeClass}`}>
             {t("wallet.testnetBadge")}
           </span>
         )}
