@@ -385,6 +385,27 @@ export const en = {
       a4: "The artist registry is curated. Once in, you upload your image, set your royalty forever and publish your price. Every time your work sells on Molotov, you get paid. Always.",
     },
   },
+  event: {
+    pageLabel: "Quick guide",
+    title: "You're at an event with Molotov",
+    intro: "No wallet, no extra install: just follow these three steps from your phone.",
+    qrWalletLabel: "1. Get a wallet",
+    qrWalletCaption: "Scan to install Decaf. No seed phrase, sign in with your account.",
+    qrWalletAlt: "QR code to install the Decaf wallet",
+    qrMolotovLabel: "2. Open Molotov",
+    qrMolotovCaption: "Scan to open Molotov in your phone's browser.",
+    qrMolotovAlt: "QR code to open Molotov",
+    steps: {
+      step1Title: "Get a wallet",
+      step1Body:
+        "Install Decaf with your Google or Apple account. No seed phrase to write down or lose.",
+      step2Title: "Open Molotov",
+      step2Body: "Come in from your phone's browser, nothing else to download.",
+      step3Title: "Connect",
+      step3Body:
+        "Tap connect wallet on Molotov and pick the one you just installed. You're set to browse and collect.",
+    },
+  },
   landing: {
     counters: {
       works: "Works",
