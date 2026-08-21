@@ -1,0 +1,47 @@
+name: projection-backup
+
+# Periodic backup of the Supabase projection (see doc/indexer-operations.md,
+# "Backups"). Beyond the RPC retention window (~7 days on testnet), Supabase is
+# the only copy of historical events — this exists so a long indexer outage or
+# a Supabase-side incident is not permanent data loss.
+#
+# Calls GET /api/backup on the deployed app (apps/web/app/api/backup/route.ts)
+# and uploads the JSON response as a workflow artifact. That endpoint runs
+# server-side with the SUPABASE_URL / SUPABASE_SECRET_KEY already configured on
+# Vercel for the indexer — no separate credentials needed here, same pattern as
+# indexer-cron.yml.
+#
+# To restore: apps/web/scripts/restore-projection.ts (see the doc — it needs a
+# direct Postgres connection, unrelated to the secrets below).
+#
+# Required repo secrets (both already exist, shared with indexer-cron.yml):
+#   INDEXER_URL  — deployed app base URL (e.g. https://<app>.vercel.app)
+#   CRON_SECRET  — same value set as the CRON_SECRET env var on the deployment
+on:
+  schedule:
+    - cron: '17 5 * * *' # once a day; exact time doesn't matter, just needs to run
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Snapshot the projection
+        run: |
+          if [ -z "${{ secrets.INDEXER_URL }}" ] || [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "::error::INDEXER_URL and CRON_SECRET repo secrets must be set."
+            exit 1
+          fi
+          mkdir -p backups
+          code=$(curl -sS -m 60 -o backups/projection-$(date -u +%Y%m%dT%H%M%SZ).json \
+            -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.INDEXER_URL }}/api/backup")
+          echo "HTTP $code"
+          test "$code" = "200"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: projection-backup-${{ github.run_id }}
+          path: backups/
+          retention-days: 90

@@ -21,12 +21,10 @@ Implications:
   projection tables, reset the cursor to the retention floor, and replay to rebuild —
   but only for events still inside the window. Anything older is unrecoverable from
   the chain.
-- **Beyond the window, Supabase is the ONLY source of truth**, and it currently has
-  **no backups**. If the cursor falls out of the window while events happened in the
-  gap, those events are lost permanently (they were never projected and can no longer
-  be fetched). → **Action item: schedule periodic backups (e.g. `pg_dump` /
-  Supabase scheduled backups) of the projection tables** so the DB itself is
-  recoverable independent of the RPC window.
+- **Beyond the window, Supabase is the ONLY source of truth.** If the cursor falls out
+  of the window while events happened in the gap, those events are lost permanently
+  (they were never projected and can no longer be fetched) — unless a backup from
+  before the gap exists. See **Backups**, below.
 - Mainnet RPC retention is provider-dependent and can differ; re-check before relying
   on replay there.
 
@@ -114,6 +112,58 @@ active, which prevents the **free-tier inactivity pause**. That pause is exactly
 left the indexer dead in the water once (the project URL stopped resolving); the cron
 doubles as a keep-alive.
 
+## Backups
+
+Beyond the RPC retention window, Supabase is the only copy of historical events (see
+above). `.github/workflows/projection-backup.yml` calls `GET /api/backup`
+(`apps/web/app/api/backup/route.ts`) once a day (`workflow_dispatch` also works for an
+on-demand run) and uploads the JSON response as a workflow artifact, retained 90 days —
+same shape as `indexer-cron.yml` curling `/api/indexer`. The route runs server-side with
+the `SUPABASE_URL` / `SUPABASE_SECRET_KEY` already configured on Vercel for the indexer,
+so the workflow needs no secrets beyond the two `indexer-cron.yml` already has
+(**`INDEXER_URL`**, **`CRON_SECRET`**) — nothing new to provision. The route only ever
+SELECTs.
+
+For a manual, ad-hoc snapshot without going through the deployed app (e.g. against a
+local Supabase), `pnpm --filter=web backup:snapshot` runs the same logic
+(`apps/web/lib/backup.ts`) from `.env`.
+
+A snapshot is a single JSON file: `{ takenAt, retentionFloorLedger, tables: { artists,
+tokens, listings, sales, token_transfers } }`. `retentionFloorLedger` records where the
+RPC window sat when the snapshot was taken — rows below it were already unrecoverable
+from the chain at that point, which is exactly why the snapshot exists.
+
+### Restoring
+
+`apps/web/scripts/restore-projection.ts <snapshot-file>` — needs a **direct Postgres
+connection** in `DATABASE_URL` (Supabase → Project Settings → Database → Connection
+string), not the API keys used to take the snapshot. It shells out to `psql`, so `psql`
+must be on `PATH`.
+
+```bash
+DATABASE_URL=postgres://... pnpm --filter=web backup:restore backups/projection-<ts>.json
+```
+
+It inserts in FK order (artists → tokens → listings → sales → token_transfers) and is
+**idempotent**: `sales` and `token_transfers` dedupe on their existing
+`(ledger, tx_hash, event_index)` UNIQUE constraint, the other three on their primary
+key — running it twice against the same target does not duplicate rows.
+
+**Verified 2026-08-21:** applied every migration in `supabase/migrations/` to a scratch
+local Postgres (no Supabase/Docker involved — the roles migration is written to work
+against plain Postgres for exactly this), restored a synthetic snapshot covering all
+five tables including a `listings.primary_split` JSONB value, confirmed the rows landed
+correctly, and confirmed a second run inserted zero additional rows. Never run against
+the real project for this verification — no reason to touch live data to prove the
+mechanism works.
+
+### Why not Supabase's own backups
+
+Supabase Pro includes daily backups; the project is on the free plan, which does not.
+Revisit this once there is budget — it removes the `psql`/`DATABASE_URL` step above
+entirely (restore becomes a dashboard action). Until then, the GitHub Actions path
+above costs nothing.
+
 ## Deployment & CI
 
 - **Production:** `https://molotov-web.vercel.app` — Vercel project `molotov-web`
@@ -137,8 +187,9 @@ doubles as a keep-alive.
 
 ## Secrets
 
-`CRON_SECRET` gates `/api/indexer`. It must be set in **two** places with the **same**
-value:
+`CRON_SECRET` gates `/api/indexer` and, since it was added, `/api/backup` too — same
+bearer token, same fail-closed behavior. It must be set in **two** places with the
+**same** value:
 
 - **Vercel** — prod env var `CRON_SECRET` (`vercel env add CRON_SECRET production`).
   Only deployments built AFTER it is set pick it up, so redeploy (or push) after
