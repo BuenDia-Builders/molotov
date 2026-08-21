@@ -24,7 +24,7 @@ export function LoginModal({ open, onClose }: Props) {
   const { login, authenticated } = usePrivy();
 
   const privyLogin = useCallback(
-    (method: "google" | "twitter") => {
+    (method: "email" | "google" | "twitter") => {
       onClose();
       if (authenticated) return;
       try {
@@ -68,6 +68,15 @@ export function LoginModal({ open, onClose }: Props) {
         <div className="flex flex-col gap-3">
           {IS_TESTNET && (
             <>
+              <button
+                onClick={() => privyLogin("email")}
+                className="flex min-h-12 w-full items-center justify-center gap-3 border border-white/15 px-4 font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)] transition-colors hover:border-white/40"
+              >
+                <span aria-hidden className="text-base">
+                  @
+                </span>
+                {t("auth.email")}
+              </button>
               <button
                 onClick={() => privyLogin("google")}
                 className="flex min-h-12 w-full items-center justify-center gap-3 border border-white/15 px-4 font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)] transition-colors hover:border-white/40"

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LoginModal } from "@/components/login-modal";
 import { useI18n } from "@/lib/i18n";
-import { useWallet } from "@/hooks/use-wallet";
+import { useSignedIn } from "@/hooks/use-signed-in";
 
 const FAQ_KEYS = [
   ["getStarted.faq.q1", "getStarted.faq.a1"],
@@ -16,12 +16,12 @@ const FAQ_KEYS = [
 
 /**
  * The onboarding landing "Empezar" points to: one promise, one button that
- * opens the sign-in (social creates a wallet on the spot), four questions.
+ * opens the sign-in (email / Google, no wallet created), four questions.
  * The background is only Molotov's blue flames over black.
  */
 export function GetStartedContent() {
   const { t } = useI18n();
-  const { isConnected } = useWallet();
+  const isSignedIn = useSignedIn();
   const [loginOpen, setLoginOpen] = useState(false);
 
   return (
@@ -99,7 +99,7 @@ export function GetStartedContent() {
           {t("getStarted.title")}
         </h1>
         {/* Already signed in? The FAQ stays useful; the sign-up button doesn't. */}
-        {isConnected ? (
+        {isSignedIn ? (
           <Link
             href="/works"
             className="mt-10 inline-flex h-12 items-center bg-[var(--blue)] px-10 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--blue-light)]"

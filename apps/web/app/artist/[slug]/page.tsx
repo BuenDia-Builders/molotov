@@ -7,9 +7,9 @@ import {
   findArtistByAddress,
   findArtistByHandle,
   getAllTokens,
-  getRecentSalesForTokens,
   getTokensByArtist,
   getTokensOwnedByWallet,
+  getWalletActivity,
 } from "@/lib/db";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
@@ -84,10 +84,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
     (row) => row.effective_owner === artist.address && visibleIds.has(row.token_id),
   );
 
-  const sales = await getRecentSalesForTokens(
-    created.map((t) => t.token_id),
-    10,
-  );
+  const activity = await getWalletActivity(artist.address, 50);
 
   const hydrated = new Map<number, { image: string | null; title: string | null }>();
   await Promise.all(
@@ -150,7 +147,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           registered={registered}
           works={works}
           owned={ownedWorks}
-          sales={sales}
+          activity={activity}
           path={path}
         />
       </main>
