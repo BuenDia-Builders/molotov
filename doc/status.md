@@ -83,11 +83,12 @@ Activating the gate is one owner call: `NFT.set_registry(<real registry>)`.
   events are throttled to ~2–3 h in practice (not the configured `*/5`), so the Supabase
   projection trails on-chain state. `MAX_LEDGER_LAG` (5000 ledgers) is calibrated to that,
   not to a real-time indexer. No sub-daily cron on Vercel Hobby.
-- **The projection is read-only, derived, and unbacked.** The chain is the source of
-  truth, but outside the RPC retention window the Supabase mirror is the only copy of
-  historical events — and it currently has **no backups**. A long indexer outage that
-  runs past the retention window loses those events permanently; a stalled or reset
-  cursor within the window still needs manual recovery (`doc/indexer-operations.md`).
+- **The projection is read-only and derived; backups run daily.** The chain is the
+  source of truth, but outside the RPC retention window the Supabase mirror is the only
+  copy of historical events. `.github/workflows/projection-backup.yml` snapshots the
+  projection tables once a day (`doc/indexer-operations.md` § Backups, including the
+  restore procedure). A stalled or reset cursor within the retention window still needs
+  manual recovery (same doc).
 - **The database security suite has no CI.** `@molotov/indexer-db-tests` (RLS, the
   `SECURITY DEFINER` writers, `apply_*` idempotency) needs a local Supabase/Docker and is
   excluded from CI — it runs only when someone runs it by hand.

@@ -9,6 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "icons:gen": "node scripts/generate-pwa-icons.mjs",
+    "backup:snapshot": "tsx scripts/snapshot-projection.ts",
+    "backup:restore": "tsx scripts/restore-projection.ts",
     "test": "vitest run --reporter=verbose",
     "test:watch": "vitest"
   },
@@ -44,6 +46,7 @@
     "jsdom": "^26.1.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
+    "tsx": "^4.19.0",
     "typescript": "^5",
     "vitest": "^3.0.0"
   }
