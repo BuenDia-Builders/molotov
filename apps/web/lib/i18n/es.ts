@@ -23,6 +23,7 @@ export const es = {
     openMenu: "Abrir menú",
     closeMenu: "Cerrar menú",
     menuLabel: "Menú",
+    quickNav: "Enlaces rápidos",
     /** CTA primario de la barra: hoy lleva a descubrir obras */
     start: "Empezar",
     /** Conectar wallet — acá "iniciar sesión" ES conectar la wallet */

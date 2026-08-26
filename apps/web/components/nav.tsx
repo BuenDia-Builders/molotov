@@ -11,7 +11,9 @@ import { START_HREF } from "@/lib/routes";
 
 /**
  * Top bar: wordmark, artist search, create / start / sign-in. Site navigation
- * lives in the footer (objkt-style) — there is no menu overlay.
+ * lives in the footer (objkt-style) — there is no menu overlay. On mobile the
+ * search row also surfaces the two key nav links (Artists, Manifesto) so they
+ * are reachable without scrolling a long page; desktop is unchanged.
  */
 export function Nav() {
   const { t } = useI18n();
@@ -55,9 +57,27 @@ export function Nav() {
           <WalletButton theme="light" />
         </div>
       </div>
-      {/* Mobile search row */}
+      {/* Mobile search row + quick nav (md+ keeps search in the top bar) */}
       <div className="border-t border-black/5 px-5 py-2 md:hidden">
-        <SearchBox variant="block" />
+        <div className="flex items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <SearchBox variant="block" />
+          </div>
+          <nav aria-label={t("nav.quickNav")} className="flex shrink-0 items-center gap-4">
+            <Link
+              href="/artists"
+              className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--black)]/60 transition-colors hover:text-[var(--black)]"
+            >
+              {t("nav.artists")}
+            </Link>
+            <Link
+              href="/#manifesto"
+              className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--black)]/60 transition-colors hover:text-[var(--black)]"
+            >
+              {t("nav.manifesto")}
+            </Link>
+          </nav>
+        </div>
       </div>
     </header>
   );
