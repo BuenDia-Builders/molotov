@@ -365,7 +365,7 @@ export default function MyWorkPage() {
                           placeholder="Price in XLM"
                           value={priceXlm}
                           onChange={(e) => setPriceXlm(e.target.value)}
-                          className="h-12 flex-1 border border-white/20 bg-transparent px-4 font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED] placeholder:text-[#F5F4ED]/30 focus:border-[#0178DE] focus:outline-none"
+                          className="h-12 flex-1 border border-white/20 bg-transparent px-4 font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED] placeholder:text-[#F5F4ED]/30 focus:border-[#0178DE] focus-ring"
                         />
                         <span className="font-[family-name:var(--font-geist-mono)] text-sm text-[#F5F4ED]/50">
                           XLM

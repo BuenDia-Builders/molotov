@@ -328,7 +328,7 @@ export function MintForm() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t("mint.form.titlePlaceholder")}
               maxLength={120}
-              className="mt-2 w-full border-b border-white/15 bg-transparent pb-2 font-[family-name:var(--font-display)] text-2xl text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus:outline-none [font-variation-settings:'opsz'_40] md:text-3xl"
+              className="mt-2 w-full border-b border-white/15 bg-transparent pb-2 font-[family-name:var(--font-display)] text-2xl text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus-ring [font-variation-settings:'opsz'_40] md:text-3xl"
             />
           </div>
 
@@ -346,7 +346,7 @@ export function MintForm() {
               onChange={(e) => setDescription(e.target.value.slice(0, 1000))}
               rows={4}
               placeholder={t("mint.form.descriptionPlaceholder")}
-              className="mt-2 w-full resize-none border-b border-white/15 bg-transparent pb-2 text-base text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus:outline-none"
+              className="mt-2 w-full resize-none border-b border-white/15 bg-transparent pb-2 text-base text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus-ring"
             />
             <p className="mt-1 text-right font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)]/40">
               {description.length}/1000
@@ -427,7 +427,7 @@ export function MintForm() {
               onBlur={addTag}
               placeholder={t("mint.form.tagsPlaceholder")}
               disabled={tags.length >= MAX_TAGS}
-              className="mt-2 w-full border-b border-white/15 bg-transparent pb-2 text-base text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus:outline-none"
+              className="mt-2 w-full border-b border-white/15 bg-transparent pb-2 text-base text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus-ring"
             />
             <p className="mt-2 font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)]/40">
               {t("mint.form.tagsHelp")} · {tags.length}/{MAX_TAGS}
@@ -448,7 +448,7 @@ export function MintForm() {
                 id="category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="mt-2 w-full border-b border-white/15 bg-transparent pb-2 text-base text-[var(--offwhite)] focus:border-[var(--blue)] focus:outline-none [&>option]:bg-[var(--black)]"
+                className="mt-2 w-full border-b border-white/15 bg-transparent pb-2 text-base text-[var(--offwhite)] focus:border-[var(--blue)] focus-ring [&>option]:bg-[var(--black)]"
               >
                 <option value="">{t("mint.form.categoryNone")}</option>
                 {CATEGORIES.map((c) => (
@@ -469,7 +469,7 @@ export function MintForm() {
                 id="license"
                 value={license}
                 onChange={(e) => setLicense(e.target.value)}
-                className="mt-2 w-full border-b border-white/15 bg-transparent pb-2 text-base text-[var(--offwhite)] focus:border-[var(--blue)] focus:outline-none [&>option]:bg-[var(--black)]"
+                className="mt-2 w-full border-b border-white/15 bg-transparent pb-2 text-base text-[var(--offwhite)] focus:border-[var(--blue)] focus-ring [&>option]:bg-[var(--black)]"
               >
                 {LICENSES.map((code) => (
                   <option key={code} value={code}>
@@ -537,7 +537,7 @@ export function MintForm() {
                     )
                   }
                   placeholder={t("mint.form.attributeName")}
-                  className="w-1/2 border-b border-white/15 bg-transparent pb-2 text-sm text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus:outline-none"
+                  className="w-1/2 border-b border-white/15 bg-transparent pb-2 text-sm text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus-ring"
                 />
                 <input
                   value={attr.value}
@@ -547,7 +547,7 @@ export function MintForm() {
                     )
                   }
                   placeholder={t("mint.form.attributeValue")}
-                  className="w-1/2 border-b border-white/15 bg-transparent pb-2 text-sm text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus:outline-none"
+                  className="w-1/2 border-b border-white/15 bg-transparent pb-2 text-sm text-[var(--offwhite)] placeholder:text-[var(--offwhite)]/30 focus:border-[var(--blue)] focus-ring"
                 />
                 <button
                   type="button"
