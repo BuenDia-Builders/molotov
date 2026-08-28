@@ -68,12 +68,50 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
+/**
+ * Neutral stand-in for a work whose image is missing or could not be fetched.
+ * Deliberately carries no brand mark: the app icon sitting in the artwork frame
+ * reads as content an artist chose, not as an empty state. Same copy key as the
+ * browse-grid card (components/token-card.tsx), so both surfaces say the same thing.
+ */
+function ArtworkPlaceholder({ label }: { label: string }) {
+  return (
+    <div
+      role="img"
+      aria-label={label}
+      className="flex flex-col items-center justify-center gap-4 px-8 py-10 text-center"
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.25}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-10 w-10 text-white/20"
+      >
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <path d="m21 15-5-5L5 21" />
+        <line x1="2.5" y1="2.5" x2="21.5" y2="21.5" />
+      </svg>
+      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
+        {label}
+      </span>
+    </div>
+  );
+}
+
 export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
   const { t } = useI18n();
   // Sensitive works ship blurred and reveal only on an explicit tap.
   const [revealed, setRevealed] = useState(!meta.nsfw);
+  // A URL that is present but fails to load is the same state as a missing one,
+  // so next/image's onError feeds the same placeholder.
+  const [imageFailed, setImageFailed] = useState(false);
 
-  const imageSrc = meta.imageUrl || "/icon-512.png";
+  const showPlaceholder = !meta.imageUrl || imageFailed;
   const title = meta.title || `#${token.token_id}`;
 
   const categoryKey =
@@ -92,15 +130,22 @@ export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
           leads and stays in view while the sale details scroll. object-contain holds
           any aspect ratio without cropping. */}
       <div className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden bg-[var(--carbon)] md:sticky md:top-12 md:aspect-auto md:h-[calc(100vh-3rem)]">
-        <Image
-          src={imageSrc}
-          alt={title}
-          fill
-          className={`object-contain transition-[filter] duration-300 ${revealed ? "" : "blur-2xl"}`}
-          sizes="(max-width: 768px) 100vw, 50vw"
-          priority
-        />
-        {!revealed && (
+        {showPlaceholder ? (
+          <ArtworkPlaceholder label={t("artwork.imageFallback")} />
+        ) : (
+          <Image
+            src={meta.imageUrl}
+            alt={title}
+            fill
+            onError={() => setImageFailed(true)}
+            className={`object-contain transition-[filter] duration-300 ${revealed ? "" : "blur-2xl"}`}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            priority
+          />
+        )}
+        {/* Nothing sensitive to conceal once the image is gone, so the veil stays
+            with the real artwork only. */}
+        {!showPlaceholder && !revealed && (
           <button
             onClick={() => setRevealed(true)}
             className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/40"
