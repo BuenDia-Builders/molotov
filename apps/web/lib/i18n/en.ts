@@ -25,6 +25,7 @@ export const en = {
     openMenu: "Open menu",
     closeMenu: "Close menu",
     menuLabel: "Menu",
+    quickNav: "Quick links",
     start: "Get started",
     signIn: "Sign in",
     searchPlaceholder: "Search artists",
@@ -479,6 +480,21 @@ export const en = {
     registered: "Registered artist on Molotov",
     notFound: "We couldn't find that profile.",
     backToArtists: "Browse artists",
+  },
+  works: {
+    loadError: "Could not load works",
+    uploadFirst: "Upload the first work",
+  },
+  artists: {
+    previewUnavailable: "Preview unavailable",
+    artistSingular: "artist",
+    artistPlural: "artists",
+    loadError: "Could not load artists",
+    noArtistsRegistered: "No artists registered yet",
+    beTheFirstMint: "Be the first — Mint now",
+  },
+  errors: {
+    dataUnavailable: "On-chain data is unavailable right now.",
   },
   share: {
     cta: "Share",
