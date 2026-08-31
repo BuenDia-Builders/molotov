@@ -233,8 +233,10 @@ export function MintForm() {
         <div>
           <input
             ref={inputRef}
+            id="mint-file-input"
             type="file"
             accept={ACCEPTED.join(",")}
+            aria-describedby={fieldError ? "mint-file-error" : undefined}
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];
@@ -310,7 +312,16 @@ export function MintForm() {
               </span>
             </div>
           </div>
-          {fieldError && <p className="mt-3 text-sm text-red-500">{fieldError}</p>}
+          {fieldError && (
+            <p
+              id="mint-file-error"
+              role="alert"
+              aria-live="polite"
+              className="mt-3 text-sm text-red-500"
+            >
+              {fieldError}
+            </p>
+          )}
         </div>
 
         {/* Right: fields */}
