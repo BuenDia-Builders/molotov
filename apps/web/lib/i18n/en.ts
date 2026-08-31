@@ -25,6 +25,7 @@ export const en = {
     openMenu: "Open menu",
     closeMenu: "Close menu",
     menuLabel: "Menu",
+    quickNav: "Quick links",
     start: "Get started",
     signIn: "Sign in",
     searchPlaceholder: "Search artists",
