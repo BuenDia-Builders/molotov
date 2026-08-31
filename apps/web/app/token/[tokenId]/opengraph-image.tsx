@@ -36,7 +36,7 @@ export const contentType = "image/png";
 /* Brand palette — keep in sync with app/globals.css. */
 const BLACK = "#0A0A0A";
 const CARBON = "#141414";
-const SMOKE = "#6B6B6B";
+const SMOKE = "#8E8E8E";
 const OFFWHITE = "#F5F4ED";
 const BLUE = "#1564FF";
 
