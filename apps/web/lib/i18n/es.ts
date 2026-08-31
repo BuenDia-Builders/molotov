@@ -500,6 +500,21 @@ export const es = {
     notFound: "No encontramos ese perfil.",
     backToArtists: "Ver artistas",
   },
+  works: {
+    loadError: "No pudimos cargar las obras",
+    uploadFirst: "Subí la primera obra",
+  },
+  artists: {
+    previewUnavailable: "Vista previa no disponible",
+    artistSingular: "artista",
+    artistPlural: "artistas",
+    loadError: "No pudimos cargar los artistas",
+    noArtistsRegistered: "Todavía no hay artistas registrados",
+    beTheFirstMint: "Sé el primero: minteá ahora",
+  },
+  errors: {
+    dataUnavailable: "Los datos on-chain no están disponibles ahora mismo.",
+  },
   share: {
     cta: "Compartir",
     copied: "Link copiado",
