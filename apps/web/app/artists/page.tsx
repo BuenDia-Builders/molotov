@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import {
   isDbConfigured,
   getActiveArtistAddresses,
@@ -10,25 +8,17 @@ import {
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
+import { BrowsePageHeader } from "@/components/browse-page-header";
+import { BrowsePageStates } from "@/components/browse-page-states";
+import { ArtistCard, type ArtistCard as ArtistCardType } from "@/components/artist-card";
 
 export const metadata: Metadata = {
   title: "Artists — Molotov",
   description: "Discover artists publishing their work on Molotov with on-chain royalties.",
 };
 
-type ArtistCard = {
-  address: string;
-  short: string;
-  /** Team-curated handle; the card shows it when it exists. */
-  handle: string | null;
-  tokenCount: number;
-  latestTokenId: number | null;
-  latestImage: string | null;
-  latestTitle: string | null;
-};
-
 type ArtistsResult =
-  | { status: "ok"; artists: ArtistCard[] }
+  | { status: "ok"; artists: ArtistCardType[] }
   | { status: "empty" }
   | { status: "error" };
 
@@ -98,51 +88,6 @@ async function getArtists(): Promise<ArtistsResult> {
   return visible.length ? { status: "ok", artists: visible } : { status: "empty" };
 }
 
-function ArtistCard({ artist }: { artist: ArtistCard }) {
-  const card = (
-    <article className="group flex flex-col bg-[var(--carbon)] overflow-hidden transition-transform duration-300 hover:-translate-y-0.5">
-      {/* Artwork thumbnail */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[var(--blue-deep)] to-[var(--blue)]">
-        {artist.latestImage ? (
-          <Image
-            src={artist.latestImage}
-            alt={artist.latestTitle ?? artist.short}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-white/20">
-              {artist.tokenCount > 0 ? "Preview unavailable" : "No works yet"}
-            </span>
-          </div>
-        )}
-        <span className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm border border-white/15 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.15em] text-white/60">
-          {artist.tokenCount} {artist.tokenCount === 1 ? "work" : "works"}
-        </span>
-      </div>
-
-      {/* Caption */}
-      <div className="px-5 py-4">
-        <p className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.2em] text-[var(--smoke)] mb-1">
-          Artist
-        </p>
-        <p className="font-[family-name:var(--font-mono)] text-sm text-[var(--offwhite)] truncate">
-          {artist.handle ?? artist.short}
-        </p>
-        {artist.latestTitle && (
-          <p className="mt-1 font-[family-name:var(--font-display)] text-[var(--smoke)] text-sm truncate [font-variation-settings:'opsz'_18]">
-            Latest: {artist.latestTitle}
-          </p>
-        )}
-      </div>
-    </article>
-  );
-
-  return <Link href={`/artist/${artist.handle ?? artist.address}`}>{card}</Link>;
-}
-
 export default async function ArtistsPage() {
   const result = await getArtists();
 
@@ -151,46 +96,14 @@ export default async function ArtistsPage() {
       <Nav />
       <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-16 md:px-10 md:py-20 lg:px-16">
         {/* Header */}
-        <div className="flex items-baseline justify-between border-b border-[var(--ember)] pb-5 mb-10">
-          <div>
-            <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[var(--smoke)] uppercase mb-1">
-              Molotov
-            </p>
-            <h1 className="font-[family-name:var(--font-display)] font-black text-[clamp(2rem,5vw,3.5rem)] leading-none text-[var(--offwhite)]">
-              Artists
-            </h1>
-          </div>
-          {result.status === "ok" && (
-            <span className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] text-[var(--smoke)] uppercase">
-              {result.artists.length} {result.artists.length === 1 ? "artist" : "artists"}
-            </span>
-          )}
-        </div>
+        <BrowsePageHeader
+          variant="artists"
+          count={result.status === "ok" ? result.artists.length : 0}
+        />
 
-        {result.status === "error" && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] uppercase text-red-500">
-              Could not load artists
-            </p>
-            <p className="mt-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] uppercase text-[var(--smoke)]">
-              On-chain data is unavailable right now.
-            </p>
-          </div>
-        )}
+        {result.status === "error" && <BrowsePageStates status="error" variant="artists" />}
 
-        {result.status === "empty" && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <p className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.3em] text-[var(--smoke)] mb-6">
-              No artists registered yet
-            </p>
-            <Link
-              href="/create"
-              className="inline-flex h-12 items-center justify-center bg-[var(--blue)] px-8 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-widest text-white transition-opacity hover:opacity-80"
-            >
-              Be the first — Mint now
-            </Link>
-          </div>
-        )}
+        {result.status === "empty" && <BrowsePageStates status="empty" variant="artists" />}
 
         {result.status === "ok" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
