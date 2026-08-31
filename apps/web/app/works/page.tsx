@@ -5,6 +5,8 @@ import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { isDbConfigured, getRecentTokens, getActivePricesByTokenId } from "@/lib/db";
+import { BrowsePageHeader } from "@/components/browse-page-header";
+import { BrowsePageStates } from "@/components/browse-page-states";
 
 export const metadata: Metadata = {
   title: "Discover — Molotov",
@@ -125,46 +127,14 @@ export default async function WorksPage() {
       <Nav />
       <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-16 md:px-10 md:py-20 lg:px-16">
         {/* Header */}
-        <div className="flex items-baseline justify-between border-b border-[var(--ember)] pb-5 mb-10">
-          <div>
-            <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] text-[var(--smoke)] uppercase mb-1">
-              Molotov
-            </p>
-            <h1 className="font-[family-name:var(--font-display)] font-black text-[clamp(2rem,5vw,3.5rem)] leading-none text-[var(--offwhite)]">
-              Discover
-            </h1>
-          </div>
-          {result.status === "ok" && (
-            <span className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] text-[var(--smoke)] uppercase">
-              {result.works.length} works
-            </span>
-          )}
-        </div>
+        <BrowsePageHeader
+          variant="works"
+          count={result.status === "ok" ? result.works.length : 0}
+        />
 
-        {result.status === "error" && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] uppercase text-red-500">
-              Could not load works
-            </p>
-            <p className="mt-3 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] uppercase text-[var(--smoke)]">
-              On-chain data is unavailable right now.
-            </p>
-          </div>
-        )}
+        {result.status === "error" && <BrowsePageStates status="error" variant="works" />}
 
-        {result.status === "empty" && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <p className="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.3em] uppercase text-[var(--smoke)]">
-              No works yet
-            </p>
-            <a
-              href="/create"
-              className="mt-5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] uppercase text-[var(--offwhite)] underline-offset-4 hover:underline"
-            >
-              Upload the first work →
-            </a>
-          </div>
-        )}
+        {result.status === "empty" && <BrowsePageStates status="empty" variant="works" />}
 
         {result.status === "ok" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8">

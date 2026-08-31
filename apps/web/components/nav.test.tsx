@@ -49,4 +49,13 @@ describe("Nav", () => {
     render(<Nav />);
     expect(screen.getByText("nav.start").closest("a")?.getAttribute("href")).toBe("/get-started");
   });
+
+  it("surfaces the primary nav quick links with the right targets", () => {
+    useSignedInMock.mockReturnValue(false);
+    render(<Nav />);
+    const artists = screen.getByRole("link", { name: "nav.artists" });
+    expect(artists.getAttribute("href")).toBe("/artists");
+    const manifesto = screen.getByRole("link", { name: "nav.manifesto" });
+    expect(manifesto.getAttribute("href")).toBe("/#manifesto");
+  });
 });
