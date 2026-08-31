@@ -256,7 +256,7 @@ export default function AdminPage() {
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
                 disabled={actionState === "pending"}
-                className="h-11 border border-white/20 bg-transparent px-4 font-[family-name:var(--font-mono)] text-[12px] text-white placeholder:text-white/20 focus:border-[#1564FF] focus:outline-none disabled:opacity-40"
+                className="h-11 border border-white/20 bg-transparent px-4 font-[family-name:var(--font-mono)] text-[12px] text-white placeholder:text-white/20 focus:border-[#1564FF] focus-ring disabled:opacity-40"
               />
               {actionError && (
                 <p className="font-[family-name:var(--font-mono)] text-[10px] text-red-400">
