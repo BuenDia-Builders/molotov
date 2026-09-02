@@ -9,6 +9,7 @@ export type TrendingItem = {
   tokenId: number;
   title: string;
   artist: string;
+  artistHandle: string | null;
   image: string | null;
   priceXlm: string | null;
   priceUsd: string | null;
@@ -81,6 +82,7 @@ export function TrendingSection({ collections, works }: Props) {
                 title={w.title}
                 imageUrl={w.image}
                 artistAddress={w.artist}
+                artistHandle={w.artistHandle}
                 priceXlm={w.priceXlm}
                 priceUsd={w.priceUsd}
                 status={w.priceXlm ? "for-sale" : w.sold ? "sold" : "not-listed"}

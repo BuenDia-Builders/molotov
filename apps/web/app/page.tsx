@@ -15,6 +15,7 @@ import {
   getFeaturedCreators,
   getTopCollectors,
   getLandingCollections,
+  getHandlesByAddress,
   type LandingStats,
 } from "@/lib/db";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
@@ -66,6 +67,7 @@ async function getLandingData() {
     getTopCollectors(6),
     getXlmUsdRate(),
   ]);
+  const handleByAddress = await getHandlesByAddress([...new Set(works.map((w) => w.artist))]);
 
   // One hydration pass for everything the sections need.
   const uriByToken = new Map(works.map((w) => [w.tokenId, w.tokenUri]));
@@ -92,6 +94,7 @@ async function getLandingData() {
     tokenId: w.tokenId,
     title: titled(w.tokenId),
     artist: w.artist,
+    artistHandle: handleByAddress.get(w.artist) ?? null,
     image: metaByToken.get(w.tokenId)?.image ?? null,
     priceXlm: w.priceXlm,
     priceUsd: w.priceXlm ? formatUsdEstimate(w.priceXlm, usdRate) : null,
@@ -106,6 +109,7 @@ async function getLandingData() {
       image: w.image as string,
       title: w.title,
       artist: w.artist,
+      artistHandle: w.artistHandle,
       priceXlm: w.priceXlm,
       priceUsd: w.priceUsd,
     }));

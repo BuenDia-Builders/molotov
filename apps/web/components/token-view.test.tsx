@@ -43,6 +43,7 @@ const meta = (over: Partial<TokenMeta> = {}): TokenMeta => ({
 const token = {
   token_id: 7,
   artist: "GARTIST",
+  artistHandle: null,
   owner: "GOWNER",
   royalty_bps: 1000,
   recipients_count: 1,

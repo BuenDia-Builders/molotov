@@ -23,6 +23,7 @@ export type TokenViewProps = {
   token: {
     token_id: number;
     artist: string;
+    artistHandle: string | null;
     owner: string;
     royalty_bps: number;
     recipients_count: number;
@@ -193,7 +194,7 @@ export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenVie
               href={`/artist/${token.artist}`}
               className="font-mono text-[10px] text-[var(--offwhite)] underline-offset-4 hover:underline"
             >
-              {truncateAddress(token.artist)}
+              {token.artistHandle ?? truncateAddress(token.artist)}
             </Link>
           </Row>
           <Row label={t("tokenPage.owner")}>

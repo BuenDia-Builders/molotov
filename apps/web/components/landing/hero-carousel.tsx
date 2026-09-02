@@ -11,6 +11,7 @@ export type HeroSlide = {
   image: string;
   title: string;
   artist: string;
+  artistHandle: string | null;
   priceXlm: string | null;
   priceUsd: string | null;
 };
@@ -107,7 +108,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 {active.title}
               </span>
               <span className="font-[family-name:var(--font-mono)] text-[11px] text-white/70">
-                {truncateAddress(active.artist, 4, 4)}
+                {active.artistHandle ?? truncateAddress(active.artist, 4, 4)}
                 {active.priceXlm && (
                   <span className="ml-3 text-[var(--blue-light)]">
                     {t("landing.hero.forSale")} · {active.priceXlm} XLM

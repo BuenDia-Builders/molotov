@@ -2,7 +2,13 @@ import Link from "next/link";
 import { Suspense, cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { isDbConfigured, findTokenById, findActiveListingByToken, stroopsToXlm } from "@/lib/db";
+import {
+  isDbConfigured,
+  findTokenById,
+  findActiveListingByToken,
+  getHandlesByAddress,
+  stroopsToXlm,
+} from "@/lib/db";
 import { Nav } from "@/components/nav";
 import { ReferralCapture } from "@/components/referral-capture";
 import { TokenView, type TokenMeta } from "@/components/token-view";
@@ -134,7 +140,10 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
 
   const { token, listing, meta } = data;
   const priceXlm = listing ? stroopsToXlm(listing.price) : null;
-  const priceUsd = priceXlm ? formatUsdEstimate(priceXlm, await getXlmUsdRate()) : null;
+  const [priceUsd, handles] = await Promise.all([
+    priceXlm ? getXlmUsdRate().then((rate) => formatUsdEstimate(priceXlm, rate)) : null,
+    getHandlesByAddress([token.artist]),
+  ]);
 
   return (
     <div className="min-h-screen bg-[var(--black)]">
@@ -147,6 +156,7 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
         token={{
           token_id: token.token_id,
           artist: token.artist,
+          artistHandle: handles.get(token.artist) ?? null,
           owner: token.owner,
           royalty_bps: token.royalty_bps,
           recipients_count: token.recipients_count,

@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
-import { isDbConfigured, getRecentTokens, getActivePricesByTokenId } from "@/lib/db";
+import {
+  isDbConfigured,
+  getRecentTokens,
+  getActivePricesByTokenId,
+  getHandlesByAddress,
+} from "@/lib/db";
 import { getSoldTokenIds } from "@/lib/db/landing";
 import { getXlmUsdRate, formatUsdEstimate } from "@/lib/price";
 import { BrowsePageHeader } from "@/components/browse-page-header";
@@ -18,6 +23,7 @@ type Work = {
   token_id: number;
   title: string;
   artist: string;
+  artistHandle: string | null;
   royalty_bps: number;
   price_xlm?: string;
   sold: boolean;
@@ -36,11 +42,13 @@ async function getWorks(): Promise<WorksResult> {
   let priceByToken: Awaited<ReturnType<typeof getActivePricesByTokenId>>;
   let soldIds: Set<number>;
   let usdRate: number | null;
+  let handleByAddress: Map<string, string>;
   try {
     [tokens, priceByToken] = await Promise.all([getRecentTokens(48), getActivePricesByTokenId()]);
-    [soldIds, usdRate] = await Promise.all([
+    [soldIds, usdRate, handleByAddress] = await Promise.all([
       getSoldTokenIds(tokens.map((t) => t.token_id)),
       getXlmUsdRate(),
+      getHandlesByAddress([...new Set(tokens.map((t) => t.artist))]),
     ]);
   } catch {
     return { status: "error" };
@@ -66,6 +74,7 @@ async function getWorks(): Promise<WorksResult> {
         token_id: t.token_id,
         title,
         artist: t.artist,
+        artistHandle: handleByAddress.get(t.artist) ?? null,
         royalty_bps: t.royalty_bps,
         price_xlm: priceByToken.get(t.token_id),
         sold: soldIds.has(t.token_id),
@@ -107,6 +116,7 @@ export default async function WorksPage() {
                   title={work.title}
                   imageUrl={work.image ?? null}
                   artistAddress={work.artist}
+                  artistHandle={work.artistHandle}
                   royaltyPct={royaltyPct}
                   priceXlm={work.price_xlm ?? null}
                   priceUsd={
