@@ -30,6 +30,7 @@ import { TokenView, type TokenMeta } from "@/components/token-view";
 
 const meta = (over: Partial<TokenMeta> = {}): TokenMeta => ({
   title: "Untitled",
+  description: "",
   imageUrl: "",
   tags: [],
   category: null,

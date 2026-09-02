@@ -11,6 +11,7 @@ import { truncateAddress } from "@/lib/stellar";
 
 export type TokenMeta = {
   title: string;
+  description: string;
   imageUrl: string;
   tags: string[];
   category: string | null;
@@ -184,6 +185,12 @@ export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenVie
           </p>
         )}
 
+        {meta.description && (
+          <p className="mb-8 max-w-md whitespace-pre-line text-[15px] leading-relaxed text-[var(--offwhite)]/70">
+            {meta.description}
+          </p>
+        )}
+
         <div className="space-y-3 border-t border-[var(--ember)] pt-6">
           <Row label={t("tokenPage.artist")}>
             <Link
@@ -268,6 +275,9 @@ export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenVie
                 {listing.editions_sold}/{listing.editions_total} {t("tokenPage.editionsSold")}
               </p>
             )}
+            <p className="mt-4 font-mono text-[10px] leading-relaxed text-[var(--smoke)]">
+              {t("tokenPage.buySteps")}
+            </p>
             <div className="mt-4">
               <BuyButton
                 listingId={BigInt(listing.listing_id)}

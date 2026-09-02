@@ -296,6 +296,8 @@ export const en = {
     sensitive: "Sensitive content",
     sensitiveShow: "Tap to view the work",
     flashingWarn: "This work contains flashing that can affect photosensitive people.",
+    buySteps:
+      "Connect your wallet → confirm the payment → the work is yours, with the royalty guaranteed for its maker on every resale.",
   },
   buy: {
     connectPrompt: "Connect your wallet to buy",

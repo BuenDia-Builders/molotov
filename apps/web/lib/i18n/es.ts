@@ -299,6 +299,8 @@ export const es = {
     sensitive: "Contenido sensible",
     sensitiveShow: "Tocá para ver la obra",
     flashingWarn: "Esta obra tiene destellos que pueden afectar a personas fotosensibles.",
+    buySteps:
+      "Conectá tu wallet → confirmá el pago → la obra es tuya, con la regalía asegurada para quien la hizo en cada reventa.",
   },
   buy: {
     connectPrompt: "Conectá tu wallet para comprar",

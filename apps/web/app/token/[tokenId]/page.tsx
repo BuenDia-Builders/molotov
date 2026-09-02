@@ -71,6 +71,7 @@ const getTokenData = cache(async (tokenId: number) => {
 
   const meta: TokenMeta = {
     title: "",
+    description: "",
     imageUrl: "",
     tags: [],
     category: null,
@@ -85,6 +86,7 @@ const getTokenData = cache(async (tokenId: number) => {
       const raw = await res.json();
       if (raw.image) meta.imageUrl = ipfsToGateway(raw.image);
       if (raw.name) meta.title = raw.name;
+      if (typeof raw.description === "string") meta.description = raw.description;
       if (Array.isArray(raw.tags))
         meta.tags = raw.tags.filter((x: unknown) => typeof x === "string");
       if (typeof raw.category === "string") meta.category = raw.category;
