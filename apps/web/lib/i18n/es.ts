@@ -505,6 +505,10 @@ export const es = {
   works: {
     loadError: "No pudimos cargar las obras",
     uploadFirst: "Subí la primera obra",
+    card: {
+      sold: "Vendida",
+      notListed: "No listada",
+    },
   },
   artists: {
     previewUnavailable: "Vista previa no disponible",

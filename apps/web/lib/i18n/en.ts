@@ -485,6 +485,10 @@ export const en = {
   works: {
     loadError: "Could not load works",
     uploadFirst: "Upload the first work",
+    card: {
+      sold: "Sold",
+      notListed: "Not listed",
+    },
   },
   artists: {
     previewUnavailable: "Preview unavailable",

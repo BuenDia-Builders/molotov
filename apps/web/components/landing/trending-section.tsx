@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
-import { truncateAddress } from "@/lib/stellar";
+import { ArtworkCard } from "@/components/artwork-card";
 import type { LandingCollection } from "@/lib/db/landing";
 
 export type TrendingItem = {
@@ -73,48 +72,19 @@ export function TrendingSection({ collections, works }: Props) {
             ))}
           </ol>
         ) : (
-          <ol className="grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-            {works.map((w, i) => (
-              <li key={w.tokenId}>
-                <Link
-                  href={`/token/${w.tokenId}`}
-                  className="group flex items-center gap-4 border-b border-black/5 py-3"
-                >
-                  <span className="w-6 font-[family-name:var(--font-mono)] text-[11px] text-[var(--black)]/35">
-                    {i + 1}
-                  </span>
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-[var(--carbon)]">
-                    {w.image && (
-                      <Image
-                        src={w.image}
-                        alt={w.title}
-                        fill
-                        className="object-cover"
-                        sizes="48px"
-                      />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-[family-name:var(--font-mono)] text-[13px] text-[var(--black)] group-hover:underline">
-                      {w.title}
-                    </p>
-                    <p className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--black)]/45">
-                      {truncateAddress(w.artist, 4, 4)}
-                    </p>
-                  </div>
-                  <span className="shrink-0 font-[family-name:var(--font-mono)] text-[11px]">
-                    {w.priceXlm ? (
-                      <span className="text-[var(--blue)]">{w.priceXlm} XLM</span>
-                    ) : w.sold ? (
-                      <span className="text-[var(--black)]/40">
-                        {t("landing.trending.soldBadge")}
-                      </span>
-                    ) : null}
-                  </span>
-                </Link>
-              </li>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+            {works.map((w) => (
+              <ArtworkCard
+                key={w.tokenId}
+                tokenId={w.tokenId}
+                title={w.title}
+                imageUrl={w.image}
+                artistAddress={w.artist}
+                priceXlm={w.priceXlm}
+                status={w.priceXlm ? "for-sale" : w.sold ? "sold" : "not-listed"}
+              />
             ))}
-          </ol>
+          </div>
         )}
       </div>
     </section>
