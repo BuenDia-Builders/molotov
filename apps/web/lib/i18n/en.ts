@@ -420,6 +420,7 @@ export const en = {
       ctaConnected: "Browse works",
     },
     hero: {
+      headline: "Art pays the one who makes it.",
       forSale: "For sale",
       viewWork: "View work",
       slideLabel: "Go to work",

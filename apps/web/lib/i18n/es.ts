@@ -437,6 +437,8 @@ export const es = {
       ctaConnected: "Ver obras",
     },
     hero: {
+      /** El primer statement del producto — dicho antes de que haya que scrollear */
+      headline: "El arte le paga a quien lo hace.",
       forSale: "En venta",
       viewWork: "Ver obra",
       slideLabel: "Ir a la obra",
