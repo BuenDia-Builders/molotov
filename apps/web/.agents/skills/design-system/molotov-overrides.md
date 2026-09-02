@@ -28,51 +28,58 @@ Cambios respecto de la base que hay que tener presentes:
 
 ---
 
-## 2. Color — tokens (override total de la paleta base)
+## 2. Color — tokens reales (shippeados en `apps/web/app/globals.css`)
 
-Base oscura. Negro como fondo, off-white como texto. Azul Molotov como acento
-puntual, **nunca inundatorio**.
+> **Nota (2026-09):** igual que en §3, esta sección documentaba una paleta
+> (`--color-bg`, `--color-accent-on-dark`, etc.) que nunca se implementó con
+> esos nombres ni esos valores. Reescrita para reflejar los tokens reales de
+> `:root` en `globals.css` — la cadena manda.
+
+Base oscura. Negro casi puro como fondo, off-white como texto. Azul Molotov
+como acento puntual, **nunca inundatorio**.
 
 ```
-/* Núcleo */
---color-bg:            #000000;  /* negro puro: fondo base */
---color-bg-elevated:   #0A0A0B;  /* casi negro: cards y superficies elevadas */
---color-fg:            #F5F4ED;  /* off-white: texto primario */
---color-fg-muted:      rgba(245, 244, 237, 0.64);  /* texto secundario */
---color-fg-subtle:     rgba(245, 244, 237, 0.40);  /* labels, metadata */
---color-border:        rgba(245, 244, 237, 0.12);  /* hairlines, divisores */
+/* Núcleo (apps/web/app/globals.css:68-77) */
+--black:      #0A0A0A;  /* fondo base (no #000000 puro) */
+--carbon:     #141414;  /* superficies elevadas: cards, watermarks */
+--ember:      #222222;  /* bordes, dividers, skeletons de loading */
+--smoke:      #8E8E8E;  /* texto/labels mudos — el más usado de los dos */
+--ash:        #A8A8A8;  /* texto secundario, un tono más claro que smoke */
+--offwhite:   #F5F4ED;  /* texto primario */
 
-/* Acento Molotov — azul de la llama del logo oficial (ver nota abajo) */
---color-accent:          #0178DE;  /* azul llama: fills, bordes, focus, dots, underlines */
---color-accent-on-dark:  #0178DE;  /* mismo hex: pasa AA sobre #000 (4.74:1), no necesita tint */
---color-accent-hover:    #3493E5;  /* estado hover de elementos accent (tint +20% blanco) */
-
-/* Semánticos funcionales (heredados de la base, sólo para estados de sistema) */
---color-success: #16A34A;
---color-warning: #D97706;
---color-danger:  #DC2626;
+/* Acento Molotov */
+--blue:       #1564FF;  /* fills, bordes, focus, dots, underlines */
+--blue-deep:  #0D3FA8;  /* extremo oscuro de gradientes placeholder (cards) */
+--blue-light: #4A8AFF;  /* estado hover del acento */
+--blue-muted: #1A3060;  /* definido en globals.css; sin uso detectado en componentes hoy */
 ```
+
+No hay tokens `--color-success/warning/danger` en el código — si se necesitan
+estados semánticos de sistema, quedan por definir.
 
 **Reglas de color:**
 
-- El acento `--color-accent` (#0178DE) **must** usarse de forma puntual:
-  underlines, dots, focus rings, fills de botón primario, bordes activos. No
-  pintar bloques grandes ni fondos enteros con él.
-- **Contraste del acento como texto:** #0178DE sobre #000000 da **4.74:1**, que
-  **sí pasa WCAG AA** para texto normal (≥4.5:1). Por eso:
-  - `--color-accent-on-dark` es el **mismo hex** que `--color-accent` (no hace
-    falta un tint más claro como antes). Usarlo para links y palabras resaltadas
-    sobre fondo oscuro (H1, "2,5%", "Royalty 10%", "vivir de su obra"). ✅
-  - El margen es ajustado (4.74:1): para texto **muy** chico sobre negro,
-    preferir `--color-fg`; el acento queda para palabras o números destacados.
-
-> **Nota — cambio de acento (Paso 5.7):** el acento pasó de `#2D43FF` (azul
-> provisional) a **`#0178DE`**, muestreado del azul de la llama del logo oficial
-> (`apps/web/public/brand/logo_sinfondo.png`, promedio de ~23k px del centro de
-> la llama). Unifica la identidad: el color del sistema ahora sale de la marca,
-> no de un valor inventado. Hover `#3493E5` (canon +20% blanco). El antiguo
-> `#5B6CFF` (tint accent-on-dark) y `#4B5EFF` (hover) quedan obsoletos.
-
+- El acento `--blue` **debe** usarse de forma puntual: underlines, dots, focus
+  rings, fills de botón primario, bordes activos. No pintar bloques grandes ni
+  fondos enteros con él.
+- **Contraste del acento como texto — hallazgo, no resuelto acá:** `--blue`
+  (#1564FF) sobre `--black` (#0A0A0A) da **~4.05:1**. Pasa WCAG AA para texto
+  **grande** (≥3:1) pero **no pasa** para texto normal (necesita ≥4.5:1). El
+  código de hoy sí usa `--blue` como color de texto a tamaños chicos (ej.
+  `text-[11px]` en precios/precios destacados) — es un gap de accesibilidad
+  real, no cubierto por este doc-sync. Para texto chico sobre `--black`,
+  preferir `--offwhite`; `--blue` como texto queda mejor reservado a números o
+  palabras destacadas en tamaños ≥18px, o a fills/bordes en vez de texto.
+- **Inconsistencia detectada, no corregida acá:** `components/buy-button.tsx`
+  usa el hover `#3493E5` hardcodeado en vez de `var(--blue-light)`
+  (`#4A8AFF`) — mismo rol, valor distinto al resto del sitio.
+- **Divergencia más grande, no corregida acá:** `apps/web/app/my-work/[tokenId]/page.tsx`
+  todavía usa una paleta y tipografía previas por completo (`#0178DE`/`#3493E5`
+  hardcodeados, `var(--font-geist-mono)` — variable que no existe en
+  `layout.tsx`, así que ese texto cae al font body en vez de mono). Es la única
+  página que quedó en el sistema de diseño anterior; una migración a los
+  tokens de arriba es un cambio de UI en código real, más grande que este
+  doc-sync — señalado para una pasada aparte.
 - **Prohibido** todo gradiente purple→pink o variantes (cliché de marketplaces
   NFT). Si se usa gradiente, que sea monocromo sutil (negro→casi-negro) o
   basado en el acento azul a baja opacidad.
@@ -117,8 +124,8 @@ copy, y quedan como están.
 
 ## 4. Background, textura y layout
 
-- **Fondo base oscuro** siempre: `--color-bg` (#000000) o `--color-bg-elevated`
-  (#0A0A0B) para zonas/cards.
+- **Fondo base oscuro** siempre: `--black` (#0A0A0A) o `--carbon` (#141414)
+  para zonas/cards elevadas.
 - **Grain / noise overlay** permitido y recomendado, sutil: `opacity ~0.04`,
   `position: fixed`, `pointer-events: none`, por encima del fondo y debajo del
   contenido. Implementación sugerida: SVG `feTurbulence` (no imagen rasterizada
@@ -128,18 +135,18 @@ copy, y quedan como están.
   columna). Mantener el baseline grid de 8pt de la base para el ritmo vertical.
 - **Cards de obra:** foto/media **grande arriba**, info **abajo** (artista,
   título, precio dual XLM+USD en `--font-mono`, badge de royalty). El media es
-  el protagonista; la metadata es secundaria y discreta (`--color-fg-muted`/
-  `--color-fg-subtle`).
+  el protagonista; la metadata es secundaria y discreta (`--smoke`/`--ash`).
 
 ---
 
 ## 5. Accesibilidad (acceptance criteria, sobre base oscura)
 
 - Mantener **WCAG 2.2 AA**. Texto normal ≥4.5:1, texto grande ≥3:1.
-  - `--color-fg` sobre `--color-bg`: ✅ alto contraste.
-  - Acento como texto sobre oscuro → usar `--color-accent-on-dark` (§2).
-- **Focus visible** sobre fondo oscuro: ring de 2px con `--color-accent` +
-  `outline-offset: 2px`. Si el elemento ya es azul, usar `--color-fg` para el
+  - `--offwhite` sobre `--black`: ✅ alto contraste.
+  - `--blue` como texto sobre `--black` sólo pasa AA en tamaño grande
+    (~4.05:1, ver el hallazgo en §2) — no lo uses como color de texto chico.
+- **Focus visible** sobre fondo oscuro: ring de 2px con `--blue` +
+  `outline-offset: 2px`. Si el elemento ya es azul, usar `--offwhite` para el
   ring. Nunca eliminar el focus.
 - Touch targets ≥44px. Soporte `prefers-reduced-motion` para marquee, hero
   motion y grain animado. Semántica HTML antes que ARIA.
@@ -164,21 +171,26 @@ moon`, `WAGMI`, `GM`, `ape in` (y equivalentes).
 - Gradientes purple→pink o cualquier paleta "NFT genérica".
 - Fondos claros / surfaces blancas heredadas de la base.
 - Inter, Roboto o Arial.
-- El acento (#0178DE) como texto **muy** chico sobre negro (margen AA ajustado,
-  4.74:1); para texto fino usar `--color-fg`.
+- El acento (`--blue`, #1564FF) como texto chico sobre negro (~4.05:1, no pasa
+  AA normal); para texto fino usar `--offwhite`.
 - Acento azul inundando bloques grandes o fondos.
-- Reintroducir el viejo #2D43FF / #5B6CFF / #4B5EFF (obsoletos desde Paso 5.7).
+- **Nota:** este documento antes marcaba `#2D43FF`/`#5B6CFF`/`#4B5EFF` como
+  "obsoletos" y `#0178DE` como el acento vigente — ninguno de los dos es
+  exacto: el acento real shippeado es `--blue` (#1564FF, ver §2), y `#2D43FF`
+  sigue en uso hoy en `providers/privy-provider.tsx` (color del modal de
+  Privy) — no está removido. Encontrado al sincronizar este doc, no corregido
+  acá (ver §2).
 - Lenguaje cripto-bro o emojis de cohete/fuego/dinero/gemas.
 
 ---
 
 ## 8. QA checklist (ejecutable en code review)
 
-- [ ] Fondo oscuro (`--color-bg`/`--color-bg-elevated`); no hay surfaces blancas.
-- [ ] Sólo Fraunces / Geist / Geist Mono; no aparece Inter/Roboto/Arial.
+- [ ] Fondo oscuro (`--black`/`--carbon`); no hay surfaces blancas.
+- [ ] Sólo Syne / DM Sans / Space Mono; no aparece Inter/Roboto/Arial.
 - [ ] Precios, wallets, hashes y bps van en `--font-mono`.
-- [ ] El acento azul es puntual; texto de acento sobre oscuro usa
-      `--color-accent-on-dark`.
+- [ ] El acento azul (`--blue`) es puntual; no se usa como texto en tamaños
+      chicos (no pasa AA normal, ver §2).
 - [ ] No hay gradientes purple-pink.
 - [ ] Contraste verificado (≥4.5:1 normal / ≥3:1 grande).
 - [ ] Focus visible en todos los interactivos; touch targets ≥44px.
@@ -192,11 +204,9 @@ moon`, `WAGMI`, `GM`, `ape in` (y equivalentes).
 
 No bloquean; revisar cuando se vea la landing en pantalla.
 
-- **`--color-bg` en #000000 puro:** defendible (matchea lo agresivo/contrastado de
-  "Molotov"), pero el negro absoluto puede sentirse áspero en OLED. Muchos dark
-  themes modernos warman el negro (Vercel ~#0A0A0A, Linear similar). Si al ver la
-  landing se siente demasiado duro, considerar bajar `--color-bg` también a
-  `#0A0A0B` (ajuste de 5 min). Por ahora se mantiene #000000.
+- ~~`--color-bg` en #000000 puro...~~ **Resuelto, ya estaba así:** el fondo
+  real (`--black` en `globals.css`) siempre fue `#0A0A0A`, no `#000000` puro —
+  este watchpoint describía un valor que el código nunca tuvo. Ver §2.
 - ~~`--text-base` en 18px...~~ **Resuelto (2026-09):** no se implementó un
   token custom de 18px — el body copy usa `text-base` (16px, default de
   Tailwind) y los subtítulos `text-xl` (20px). Ver §3.
