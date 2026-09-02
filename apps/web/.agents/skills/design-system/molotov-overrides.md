@@ -72,6 +72,7 @@ puntual, **nunca inundatorio**.
 > la llama). Unifica la identidad: el color del sistema ahora sale de la marca,
 > no de un valor inventado. Hover `#3493E5` (canon +20% blanco). El antiguo
 > `#5B6CFF` (tint accent-on-dark) y `#4B5EFF` (hover) quedan obsoletos.
+
 - **Prohibido** todo gradiente purple→pink o variantes (cliché de marketplaces
   NFT). Si se usa gradiente, que sea monocromo sutil (negro→casi-negro) o
   basado en el acento azul a baja opacidad.
@@ -81,39 +82,36 @@ puntual, **nunca inundatorio**.
 
 ## 3. Tipografía — tokens (override de fuentes y escala)
 
+> **Nota (2026-09):** esta sección documentaba Fraunces/Geist/Geist Mono como
+> intención previa a la implementación. El código shippeado usa otra familia
+> (ver abajo) — la cadena manda, se corrige acá para dejar de divergir. El
+> resto de este documento (§1–2, §4–8: tokens de color `--color-bg`,
+> `--color-accent-on-dark`, etc.) sigue siendo un doc de intención anterior a
+> la implementación real y **no** se corrigió en esta pasada — es un trabajo
+> aparte, más grande que un ajuste de tipografía.
+
 ```
---font-display: "Fraunces", Georgia, "Times New Roman", serif;
---font-body:    "Geist", "IBM Plex Sans", system-ui, sans-serif;
---font-mono:    "Geist Mono", "IBM Plex Mono", ui-monospace, monospace;
+--font-display: "Syne", sans-serif;      /* apps/web/app/layout.tsx */
+--font-body:    "DM Sans", sans-serif;
+--font-mono:    "Space Mono", ui-monospace, monospace;
 ```
 
-- **Display = Fraunces** (Google Fonts, variable). Aprovechar el eje `opsz`
-  (optical size) de forma dinámica y permitir `italic` para resaltar palabras
-  clave.
-- **Body = Geist**; si Geist no está disponible, **IBM Plex Sans**.
-- **Mono = Geist Mono** (fallback IBM Plex Mono): obligatorio para **precios,
-  direcciones de wallet, hashes y basis points**.
+- **Display = Syne** (Google Fonts, pesos 600/700/800).
+- **Body = DM Sans** (pesos 300/400/500/600).
+- **Mono = Space Mono** (pesos 400/700): usado en todo el sitio para
+  **precios, direcciones de wallet, hashes, basis points y como idioma de
+  labels/badges en mayúsculas** — no solo para datos on-chain.
 - **Prohibido** usar Inter, Roboto o Arial en cualquier contexto.
 
-**Escala tipográfica** (la base 14/16/18/24/32/40 se mantiene para body/UI y se
-extiende hacia arriba para display):
-
-```
-/* body / UI (heredado) */
---text-xs: 14px;  --text-sm: 16px;  --text-base: 18px;
---text-lg: 24px;  --text-xl: 32px;  --text-2xl: 40px;
-/* display (extensión Molotov, para hero y manifiesto) */
---text-3xl: 56px; --text-4xl: 72px; --text-5xl: 96px; --text-6xl: 128px;
-```
-
-**Mapeo `opsz` de Fraunces** (recomendado):
-
-- `--text-5xl`/`--text-6xl` (hero): `opsz` 144 (máximo), weight 300–500.
-- `--text-3xl`/`--text-4xl`: `opsz` ~72.
-- ≤ `--text-2xl`: `opsz` 24–40.
-
-Italics de Fraunces: should reservarse para 1–2 palabras clave por bloque, no
-para frases enteras.
+**Escala tipográfica:** no hay tokens `--text-*` custom en `globals.css` — se
+usa la escala default de Tailwind. Para **body copy legible** (párrafos,
+bajadas, descripciones), usar `text-base` (16px) en vez de un valor arbitrario
+`text-[15px]`/`text-[16px]`; para **subtítulos** (encabezados de sección,
+etc.), `text-xl` (20px). Esto resuelve el watchpoint de §9 (18px sentía grande
+en mobile) fijando la base en el estándar de 16px en vez de un token custom.
+Esto **no** aplica a los labels mono en mayúsculas (`text-[9px]`–`text-[11px]`
+tracking ancho) — son un idioma tipográfico distinto (UI/metadata), no body
+copy, y quedan como están.
 
 ---
 
@@ -153,9 +151,9 @@ para frases enteras.
 - Idioma por default: **español de Argentina**. Tono editorial, curatorial,
   sobrio, latinoamericano.
 - **Prohibido** el vocabulario cripto-bro: `moonshot`, `diamond hands`, `to the
-  moon`, `WAGMI`, `GM`, `ape in` (y equivalentes).
+moon`, `WAGMI`, `GM`, `ape in` (y equivalentes).
 - **Sin emojis** de cohete, fuego, dinero o gemas en copy de producción.
-- Do: "El ingreso vuelve *hacia* el artista." / "Regalías inmutables, grabadas
+- Do: "El ingreso vuelve _hacia_ el artista." / "Regalías inmutables, grabadas
   on-chain."
 - Don't: "🚀 WAGMI fam, esta obra va to the moon 💎🙌".
 
@@ -199,7 +197,6 @@ No bloquean; revisar cuando se vea la landing en pantalla.
   themes modernos warman el negro (Vercel ~#0A0A0A, Linear similar). Si al ver la
   landing se siente demasiado duro, considerar bajar `--color-bg` también a
   `#0A0A0B` (ajuste de 5 min). Por ahora se mantiene #000000.
-- **`--text-base` en 18px** (heredado de la guía de diseño base, > 16px estándar):
-  encaja con la idea de galería/curaduría (lectura más pausada, gravitas), pero
-  en mobile puede sentirse grande de más. Si pasa, ajustar por breakpoint, no el
-  token base.
+- ~~`--text-base` en 18px...~~ **Resuelto (2026-09):** no se implementó un
+  token custom de 18px — el body copy usa `text-base` (16px, default de
+  Tailwind) y los subtítulos `text-xl` (20px). Ver §3.

@@ -100,7 +100,7 @@ export function StatsTagline({ stats }: { stats: LandingStats }) {
         {HEADLINES[headline]}
       </h2>
 
-      <p className="mx-auto mt-6 max-w-xl text-[15px] leading-relaxed text-[var(--black)]/70">
+      <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-[var(--black)]/70">
         {t("landing.tagline.description")}
       </p>
 

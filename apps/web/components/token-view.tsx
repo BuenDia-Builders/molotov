@@ -186,7 +186,7 @@ export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenVie
         )}
 
         {meta.description && (
-          <p className="mb-8 max-w-md whitespace-pre-line text-[15px] leading-relaxed text-[var(--offwhite)]/70">
+          <p className="mb-8 max-w-md whitespace-pre-line text-base leading-relaxed text-[var(--offwhite)]/70">
             {meta.description}
           </p>
         )}

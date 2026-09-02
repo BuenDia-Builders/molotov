@@ -55,7 +55,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
           <h1 className="font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3.25rem)] font-bold leading-[1.05] text-white">
             {t("landing.hero.headline")}
           </h1>
-          <p className="max-w-md text-[15px] leading-relaxed text-white/70">
+          <p className="max-w-md text-base leading-relaxed text-white/70">
             {t("landing.tagline.description")}
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
