@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Suspense, cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -13,6 +12,7 @@ import { Nav } from "@/components/nav";
 import { ReferralCapture } from "@/components/referral-capture";
 import { TokenView, type TokenMeta } from "@/components/token-view";
 import { WorkViewTracker } from "@/components/work-view-tracker";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
 import { getXlmUsdRate, formatUsdEstimate } from "@/lib/price";
@@ -127,12 +127,9 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
           <p className="mt-3 font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--smoke)]">
             On-chain data is unavailable right now.
           </p>
-          <Link
-            href="/works"
-            className="mt-6 font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--offwhite)] underline-offset-4 hover:underline"
-          >
-            ← Discover
-          </Link>
+          <div className="mt-6">
+            <Breadcrumbs trail={[{ label: "Discover", href: "/works" }]} />
+          </div>
         </div>
       </div>
     );

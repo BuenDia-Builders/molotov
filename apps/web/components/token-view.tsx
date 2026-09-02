@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BuyButton } from "@/components/buy-button";
 import { ShareButton } from "@/components/share-button";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { useI18n } from "@/lib/i18n";
 import { truncateAddress } from "@/lib/stellar";
 
@@ -164,13 +165,8 @@ export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenVie
 
       {/* ── Details ── */}
       <div className="flex flex-col justify-center px-8 py-14 md:px-12 md:py-20 lg:px-16">
-        <div className="mb-8 flex items-center gap-4">
-          <Link
-            href="/works"
-            className="font-mono text-[10px] uppercase tracking-[0.25em] text-[var(--smoke)] transition-colors hover:text-[var(--offwhite)]"
-          >
-            ← {t("tokenPage.back")}
-          </Link>
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <Breadcrumbs trail={[{ label: t("nav.discover"), href: "/works" }, { label: title }]} />
           <span className="font-mono text-[10px] text-[var(--smoke)]/40">
             #{String(token.token_id).padStart(4, "0")}
           </span>
