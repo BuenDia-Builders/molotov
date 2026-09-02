@@ -34,6 +34,7 @@ export type TokenViewProps = {
     editions_sold: number | null;
   } | null;
   priceXlm: string | null;
+  priceUsd: string | null;
   meta: TokenMeta;
 };
 
@@ -103,7 +104,7 @@ function ArtworkPlaceholder({ label }: { label: string }) {
   );
 }
 
-export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
+export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenViewProps) {
   const { t } = useI18n();
   // Sensitive works ship blurred and reveal only on an explicit tap.
   const [revealed, setRevealed] = useState(!meta.nsfw);
@@ -261,6 +262,9 @@ export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
             </p>
             <p className="mb-1 font-mono text-2xl text-[var(--offwhite)]">
               {priceXlm} <span className="text-sm text-[var(--smoke)]">XLM</span>
+              {priceUsd && (
+                <span className="ml-2 text-sm text-[var(--smoke)]/60">~US$ {priceUsd}</span>
+              )}
             </p>
             {listing.kind === "open_edition" && (
               <p className="mb-4 font-mono text-[10px] text-[var(--smoke)]">

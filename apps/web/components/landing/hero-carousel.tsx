@@ -12,6 +12,7 @@ export type HeroSlide = {
   title: string;
   artist: string;
   priceXlm: string | null;
+  priceUsd: string | null;
 };
 
 const ADVANCE_MS = 6000;
@@ -110,6 +111,9 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 {active.priceXlm && (
                   <span className="ml-3 text-[var(--blue-light)]">
                     {t("landing.hero.forSale")} · {active.priceXlm} XLM
+                    {active.priceUsd && (
+                      <span className="text-white/50"> · ~US$ {active.priceUsd}</span>
+                    )}
                   </span>
                 )}
               </span>

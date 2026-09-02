@@ -18,6 +18,7 @@ import {
   type LandingStats,
 } from "@/lib/db";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
+import { getXlmUsdRate, formatUsdEstimate } from "@/lib/price";
 
 export const revalidate = 300;
 
@@ -56,13 +57,14 @@ async function getLandingData() {
     };
   }
 
-  const [stats, works, collections, rawSales, creators, collectors] = await Promise.all([
+  const [stats, works, collections, rawSales, creators, collectors, usdRate] = await Promise.all([
     getLandingStats(),
     getTrendingWorks(10),
     getLandingCollections(10),
     getLandingSales(6),
     getFeaturedCreators(6),
     getTopCollectors(6),
+    getXlmUsdRate(),
   ]);
 
   // One hydration pass for everything the sections need.
@@ -92,6 +94,7 @@ async function getLandingData() {
     artist: w.artist,
     image: metaByToken.get(w.tokenId)?.image ?? null,
     priceXlm: w.priceXlm,
+    priceUsd: w.priceXlm ? formatUsdEstimate(w.priceXlm, usdRate) : null,
     sold: w.sold,
   }));
 
@@ -104,6 +107,7 @@ async function getLandingData() {
       title: w.title,
       artist: w.artist,
       priceXlm: w.priceXlm,
+      priceUsd: w.priceUsd,
     }));
 
   const sales: SaleCard[] = rawSales.map((s) => ({

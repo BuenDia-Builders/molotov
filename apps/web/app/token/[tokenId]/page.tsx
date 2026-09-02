@@ -9,6 +9,7 @@ import { TokenView, type TokenMeta } from "@/components/token-view";
 import { WorkViewTracker } from "@/components/work-view-tracker";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
+import { getXlmUsdRate, formatUsdEstimate } from "@/lib/price";
 
 export async function generateMetadata({
   params,
@@ -132,6 +133,8 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
   }
 
   const { token, listing, meta } = data;
+  const priceXlm = listing ? stroopsToXlm(listing.price) : null;
+  const priceUsd = priceXlm ? formatUsdEstimate(priceXlm, await getXlmUsdRate()) : null;
 
   return (
     <div className="min-h-screen bg-[var(--black)]">
@@ -158,7 +161,8 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
               }
             : null
         }
-        priceXlm={listing ? stroopsToXlm(listing.price) : null}
+        priceXlm={priceXlm}
+        priceUsd={priceUsd}
         meta={meta}
       />
     </div>

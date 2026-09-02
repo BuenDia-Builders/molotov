@@ -55,6 +55,13 @@ export type LandingCollection = {
 
 type SaleRow = { token_id: number; buyer: string; price: string };
 
+/** Which of these token ids have at least one completed sale. */
+export async function getSoldTokenIds(tokenIds: number[]): Promise<Set<number>> {
+  if (tokenIds.length === 0) return new Set();
+  const { data } = await getDb().from("sales").select("token_id").in("token_id", tokenIds);
+  return new Set((data ?? []).map((s) => s.token_id as number));
+}
+
 /** Sales restricted to the curated token set — one fetch, shared by callers. */
 async function getVisibleContext() {
   const tokens = await getAllTokens(); // already curation-filtered

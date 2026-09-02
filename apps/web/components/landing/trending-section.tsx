@@ -11,6 +11,7 @@ export type TrendingItem = {
   artist: string;
   image: string | null;
   priceXlm: string | null;
+  priceUsd: string | null;
   sold: boolean;
 };
 
@@ -81,6 +82,7 @@ export function TrendingSection({ collections, works }: Props) {
                 imageUrl={w.image}
                 artistAddress={w.artist}
                 priceXlm={w.priceXlm}
+                priceUsd={w.priceUsd}
                 status={w.priceXlm ? "for-sale" : w.sold ? "sold" : "not-listed"}
               />
             ))}

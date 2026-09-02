@@ -3,6 +3,8 @@ import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { isDbConfigured, getRecentTokens, getActivePricesByTokenId } from "@/lib/db";
+import { getSoldTokenIds } from "@/lib/db/landing";
+import { getXlmUsdRate, formatUsdEstimate } from "@/lib/price";
 import { BrowsePageHeader } from "@/components/browse-page-header";
 import { BrowsePageStates } from "@/components/browse-page-states";
 import { ArtworkCard } from "@/components/artwork-card";
@@ -18,18 +20,28 @@ type Work = {
   artist: string;
   royalty_bps: number;
   price_xlm?: string;
+  sold: boolean;
   image?: string;
 };
 
-type WorksResult = { status: "ok"; works: Work[] } | { status: "empty" } | { status: "error" };
+type WorksResult =
+  | { status: "ok"; works: Work[]; usdRate: number | null }
+  | { status: "empty" }
+  | { status: "error" };
 
 async function getWorks(): Promise<WorksResult> {
   if (!isDbConfigured()) return { status: "error" };
 
   let tokens: Awaited<ReturnType<typeof getRecentTokens>>;
   let priceByToken: Awaited<ReturnType<typeof getActivePricesByTokenId>>;
+  let soldIds: Set<number>;
+  let usdRate: number | null;
   try {
     [tokens, priceByToken] = await Promise.all([getRecentTokens(48), getActivePricesByTokenId()]);
+    [soldIds, usdRate] = await Promise.all([
+      getSoldTokenIds(tokens.map((t) => t.token_id)),
+      getXlmUsdRate(),
+    ]);
   } catch {
     return { status: "error" };
   }
@@ -56,12 +68,13 @@ async function getWorks(): Promise<WorksResult> {
         artist: t.artist,
         royalty_bps: t.royalty_bps,
         price_xlm: priceByToken.get(t.token_id),
+        sold: soldIds.has(t.token_id),
         image,
       };
     }),
   );
 
-  return { status: "ok", works };
+  return { status: "ok", works, usdRate };
 }
 
 export default async function WorksPage() {
@@ -96,7 +109,10 @@ export default async function WorksPage() {
                   artistAddress={work.artist}
                   royaltyPct={royaltyPct}
                   priceXlm={work.price_xlm ?? null}
-                  status={work.price_xlm ? "for-sale" : "not-listed"}
+                  priceUsd={
+                    work.price_xlm ? formatUsdEstimate(work.price_xlm, result.usdRate) : null
+                  }
+                  status={work.price_xlm ? "for-sale" : work.sold ? "sold" : "not-listed"}
                 />
               );
             })}

@@ -49,7 +49,9 @@ const token = {
 };
 
 function renderView(over: Partial<TokenMeta> = {}) {
-  render(<TokenView token={token} listing={null} priceXlm={null} meta={meta(over)} />);
+  render(
+    <TokenView token={token} listing={null} priceXlm={null} priceUsd={null} meta={meta(over)} />,
+  );
 }
 
 afterEach(() => {
