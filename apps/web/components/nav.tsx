@@ -71,7 +71,7 @@ export function Nav() {
               {t("nav.artists")}
             </Link>
             <Link
-              href="/#manifesto"
+              href="/manifiesto"
               className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--black)]/60 transition-colors hover:text-[var(--black)]"
             >
               {t("nav.manifesto")}

@@ -1,6 +1,6 @@
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import { Manifesto } from "@/components/manifesto";
+import { ManifestoTeaser } from "@/components/manifesto-teaser";
 import { FinalCta } from "@/components/final-cta";
 import { HeroCarousel, type HeroSlide } from "@/components/landing/hero-carousel";
 import { StatsTagline } from "@/components/landing/stats-tagline";
@@ -140,7 +140,7 @@ export default async function Home() {
         <TrendingSection collections={collections} works={trending} />
         <RecentSales sales={sales} />
         <FeaturedPeople creators={creators} collectors={collectors} />
-        <Manifesto />
+        <ManifestoTeaser />
         <FinalCta />
       </main>
       <Footer />

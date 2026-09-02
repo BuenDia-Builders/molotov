@@ -11,7 +11,7 @@ const PRODUCT_LINKS = [
   { href: "/artists", labelKey: "footer.artists" },
   { href: "/my-work", labelKey: "nav.myWork" },
   { href: "/earnings", labelKey: "nav.earnings" },
-  { href: "/#manifesto", labelKey: "nav.manifesto" },
+  { href: "/manifiesto", labelKey: "nav.manifesto" },
   { href: "/get-started", labelKey: "nav.faq" },
   { href: "/about", labelKey: "nav.about" },
   { href: "/team", labelKey: "nav.team" },
