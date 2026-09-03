@@ -671,6 +671,26 @@ impl MockNft {
             .persistent()
             .set(&(symbol_short!("ROY"), token_id), &(artist, royalty_bps));
     }
+    /// Mint with a real multi-recipient royalty config, for tests that need to
+    /// exercise `royalty_recipients` beyond the single-recipient shape `mint`
+    /// above always produces.
+    pub fn mint_multi(
+        e: &Env,
+        to: Address,
+        token_id: u32,
+        artist: Address,
+        recipients: Vec<RoyaltyRecipient>,
+    ) {
+        e.storage()
+            .persistent()
+            .set(&(symbol_short!("OWN"), token_id), &to);
+        e.storage()
+            .persistent()
+            .set(&(symbol_short!("MINT"), token_id), &artist);
+        e.storage()
+            .persistent()
+            .set(&(symbol_short!("ROYM"), token_id), &recipients);
+    }
     /// Mint a legacy token: ownership + royalty but NO minter recorded — mirrors a
     /// token minted before the NFT tracked its creator (`minter_of` → None).
     pub fn mint_legacy(e: &Env, to: Address, token_id: u32, artist: Address, royalty_bps: u32) {
@@ -722,6 +742,31 @@ impl MockNft {
             .get(&(symbol_short!("ROY"), token_id))
             .unwrap();
         bps
+    }
+    /// `mint_multi` tokens return their real recipients set; plain `mint`
+    /// tokens only ever tracked a single recipient — the whole royalty pool
+    /// goes to them, hence 10000 (100% of that pool, not of the sale price —
+    /// matches how `get_royalty_info` computes it above).
+    pub fn royalty_recipients(e: &Env, token_id: u32) -> Vec<RoyaltyRecipient> {
+        if let Some(recipients) = e
+            .storage()
+            .persistent()
+            .get::<_, Vec<RoyaltyRecipient>>(&(symbol_short!("ROYM"), token_id))
+        {
+            return recipients;
+        }
+        let (artist, _bps): (Address, u32) = e
+            .storage()
+            .persistent()
+            .get(&(symbol_short!("ROY"), token_id))
+            .unwrap();
+        vec![
+            e,
+            RoyaltyRecipient {
+                address: artist,
+                share_bps: 10_000,
+            },
+        ]
     }
 }
 
@@ -888,15 +933,15 @@ fn b1_reseller_primary_split_rejected_at_list() {
     assert_eq!(nft_owner(&c, 0), c.seller);
 }
 
-/// PASO 3 (no regression) — the minter listing with a primary split still works:
-/// `c.seller` minted token 0 (minter == seller), so the split is allowed, the split
-/// wallet is paid after fee, and no royalty is charged (genuine first sale).
+/// PASO 3 (no regression) — the minter listing with a primary split matching the
+/// token's own royalty config still works: `c.seller` minted token 0 (minter ==
+/// seller) with a single-recipient config naming `c.seller`, so a matching split
+/// is allowed, is paid after fee, and no royalty is charged (genuine first sale).
 #[test]
 fn b1_minter_primary_split_still_allowed() {
     let c = setup();
     MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.seller, &1000u32);
-    let w = Address::generate(&c.e);
-    let split = vec![&c.e, RoyaltyRecipient { address: w.clone(), share_bps: 10_000 }];
+    let split = vec![&c.e, RoyaltyRecipient { address: c.seller.clone(), share_bps: 10_000 }];
     let id = mkt_client(&c).list(
         &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
         &ListingKind::FixedPrice, &1u32, &0u64, &Some(split), &0u32,
@@ -905,7 +950,96 @@ fn b1_minter_primary_split_still_allowed() {
     mkt_client(&c).buy(&c.buyer, &id, &no_ref);
 
     assert_eq!(bal(&c, &c.treasury), 50_000_000); // 5% fee
-    assert_eq!(bal(&c, &w), 950_000_000); // rest to the split wallet
+    assert_eq!(bal(&c, &c.seller), 950_000_000); // rest to the minter
+    assert_eq!(bal(&c, &c.mkt), 0);
+    assert_eq!(nft_owner(&c, 0), c.buyer);
+}
+
+/// H-1 (2026-09 adversarial audit) — a primary split that does NOT match the
+/// token's royalty config is rejected, even though the seller genuinely is the
+/// minter. Before this gate, a minter could route a primary sale's entire
+/// proceeds to any wallet regardless of what the royalty config promised.
+#[test]
+fn h1_primary_split_must_match_royalty_config() {
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.seller, &1000u32);
+    let unrelated = Address::generate(&c.e);
+    let split = vec![&c.e, RoyaltyRecipient { address: unrelated, share_bps: 10_000 }];
+    let r = mkt_client(&c).try_list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &Some(split), &0u32,
+    );
+    assert_eq!(r, Err(Ok(MarketError::PrimarySplitMustMatchRoyaltyConfig.into())));
+    // Nothing was escrowed — the token stays with the seller.
+    assert_eq!(nft_owner(&c, 0), c.seller);
+}
+
+/// H-1 hardening: a split that duplicates the artist's own entry instead of
+/// including the co-recipient must still be rejected. A naive "every split
+/// entry appears somewhere in the config" check (rather than a true multiset
+/// match) would wrongly accept this, since {artist,6000} does appear in the
+/// config — just not twice.
+#[test]
+fn h1_primary_split_cannot_duplicate_a_recipient_to_hide_a_drop() {
+    let c = setup();
+    let coartist = Address::generate(&c.e);
+    let config = vec![
+        &c.e,
+        RoyaltyRecipient { address: c.artist.clone(), share_bps: 6_000 },
+        RoyaltyRecipient { address: coartist, share_bps: 4_000 },
+    ];
+    MockNftClient::new(&c.e, &c.nft).mint_multi(&c.artist, &0u32, &c.artist, &config);
+
+    let gamed_split = vec![
+        &c.e,
+        RoyaltyRecipient { address: c.artist.clone(), share_bps: 6_000 },
+        RoyaltyRecipient { address: c.artist.clone(), share_bps: 4_000 },
+    ];
+    let r = mkt_client(&c).try_list(
+        &c.artist, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &Some(gamed_split), &0u32,
+    );
+    assert_eq!(r, Err(Ok(MarketError::PrimarySplitMustMatchRoyaltyConfig.into())));
+    assert_eq!(nft_owner(&c, 0), c.artist);
+}
+
+/// H-1, the exact exploit shape: a multi-recipient royalty config (artist +
+/// collaborator) must be fully honored on the primary sale, not just "some
+/// split the seller is the minter for". A split that pays only the artist,
+/// dropping the collaborator, is rejected outright.
+#[test]
+fn h1_primary_split_cannot_drop_a_configured_co_recipient() {
+    let c = setup();
+    let coartist = Address::generate(&c.e);
+    let config = vec![
+        &c.e,
+        RoyaltyRecipient { address: c.artist.clone(), share_bps: 6_000 },
+        RoyaltyRecipient { address: coartist.clone(), share_bps: 4_000 },
+    ];
+    MockNftClient::new(&c.e, &c.nft).mint_multi(&c.artist, &0u32, &c.artist, &config);
+
+    // Attacker (the minter) tries to route the primary sale 100% to themselves.
+    let bad_split = vec![&c.e, RoyaltyRecipient { address: c.artist.clone(), share_bps: 10_000 }];
+    let r = mkt_client(&c).try_list(
+        &c.artist, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &Some(bad_split), &0u32,
+    );
+    assert_eq!(r, Err(Ok(MarketError::PrimarySplitMustMatchRoyaltyConfig.into())));
+    assert_eq!(nft_owner(&c, 0), c.artist); // nothing escrowed
+
+    // The correct split — matching the config exactly — is accepted and pays
+    // both recipients their configured share of the post-fee proceeds.
+    let good_split = config.clone();
+    let id = mkt_client(&c).list(
+        &c.artist, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &Some(good_split), &0u32,
+    );
+    let no_ref: Option<Address> = None;
+    mkt_client(&c).buy(&c.buyer, &id, &no_ref);
+
+    assert_eq!(bal(&c, &c.treasury), 50_000_000); // 5% fee
+    assert_eq!(bal(&c, &c.artist), 570_000_000); // 60% of the 950M distributable
+    assert_eq!(bal(&c, &coartist), 380_000_000); // 40% of the 950M distributable
     assert_eq!(bal(&c, &c.mkt), 0);
     assert_eq!(nft_owner(&c, 0), c.buyer);
 }
@@ -1462,8 +1596,9 @@ fn open_edition_sell_through() {
     for tid in 0u32..3 {
         MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &tid, &c.seller, &1000u32);
     }
-    // Primary split: 100% to the artist.
-    let split = vec![&c.e, RoyaltyRecipient { address: c.artist.clone(), share_bps: 10_000 }];
+    // Primary split: 100% to the minter (must match the mint's own recorded
+    // artist — c.seller here, since that's who `mint` was called with above).
+    let split = vec![&c.e, RoyaltyRecipient { address: c.seller.clone(), share_bps: 10_000 }];
     let id = mkt_client(&c).list(
         &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
         &ListingKind::OpenEdition, &3u32, &0u64, &Some(split), &0u32,
@@ -1481,9 +1616,10 @@ fn open_edition_sell_through() {
     assert_eq!(nft_owner(&c, 0), c.buyer);
     assert_eq!(nft_owner(&c, 1), c.buyer);
     assert_eq!(nft_owner(&c, 2), c.buyer);
-    // Conservation across 3 sales: distributable 950M each → artist, 50M fee each.
+    // Conservation across 3 sales: distributable 950M each → seller (the
+    // minter, per the split above), 50M fee each.
     assert_eq!(bal(&c, &c.treasury), 150_000_000);
-    assert_eq!(bal(&c, &c.artist), 2_850_000_000);
+    assert_eq!(bal(&c, &c.seller), 2_850_000_000);
     assert_eq!(bal(&c, &c.buyer), FUND - 3 * PRICE);
     assert_eq!(bal(&c, &c.mkt), 0);
     // Inventory exhausted → further buys fail.
@@ -1497,7 +1633,7 @@ fn open_edition_cancel_returns_unsold() {
     for tid in 0u32..3 {
         MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &tid, &c.seller, &1000u32);
     }
-    let split = vec![&c.e, RoyaltyRecipient { address: c.artist.clone(), share_bps: 10_000 }];
+    let split = vec![&c.e, RoyaltyRecipient { address: c.seller.clone(), share_bps: 10_000 }];
     let id = mkt_client(&c).list(
         &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
         &ListingKind::OpenEdition, &3u32, &0u64, &Some(split), &0u32,
@@ -1567,7 +1703,8 @@ fn list_oe(c: &Ctx, editions: u32, ends_at: u64) -> u64 {
     for tid in 0..editions {
         MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &tid, &c.seller, &1000u32);
     }
-    let split = vec![&c.e, RoyaltyRecipient { address: c.artist.clone(), share_bps: 10_000 }];
+    // Split must match the mint's recorded artist (c.seller) — see B1 gate.
+    let split = vec![&c.e, RoyaltyRecipient { address: c.seller.clone(), share_bps: 10_000 }];
     mkt_client(c).list(
         &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
         &ListingKind::OpenEdition, &editions, &ends_at, &Some(split), &0u32,

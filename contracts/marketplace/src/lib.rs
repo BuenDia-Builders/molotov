@@ -89,6 +89,12 @@ pub enum MarketError {
     /// contract could no-op `transfer` and point `get_royalty_info` at its own
     /// wallets, taking the buyer's payment while delivering nothing.
     NftNotAllowed = 21,
+    /// A primary-sale split whose recipients don't match the token's actual
+    /// royalty config. Without this, the minter could set up a multi-recipient
+    /// royalty (promising a collaborator a cut) and then route a primary sale's
+    /// full proceeds to themselves alone via an unrelated split — see H-1 in
+    /// the 2026-09 adversarial audit.
+    PrimarySplitMustMatchRoyaltyConfig = 22,
 }
 
 /// One wallet of a primary-sale split: a share of the post-fee proceeds in bps.
@@ -168,6 +174,9 @@ pub trait NftInterface {
     fn royalty_bps(e: Env, token_id: u32) -> u32;
     /// The token's creator (`None` for legacy tokens). Used to gate primary splits.
     fn minter_of(e: Env, token_id: u32) -> Option<Address>;
+    /// The raw royalty recipients set at mint. A primary-sale split must match
+    /// this set exactly — see the B1/primary-split gate in `list`.
+    fn royalty_recipients(e: Env, token_id: u32) -> Vec<RoyaltyRecipient>;
 }
 
 /// Emitted when a listing is created. Carries the full listing so the indexer can
@@ -225,6 +234,31 @@ pub enum DistMode {
 }
 
 /// `a * b / denom` with checked mul/div; never wraps.
+/// Whether `a` and `b` are the same *multiset* of (address, share_bps) pairs,
+/// independent of order — a duplicated entry in `a` must match a distinct
+/// entry in `b`, not the same one twice. O(n²) is fine — both are capped at
+/// `MAX_RECIPIENTS` (10).
+fn recipients_match(a: &Vec<RoyaltyRecipient>, b: &Vec<RoyaltyRecipient>) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    let mut used = [false; MAX_RECIPIENTS as usize];
+    for r in a.iter() {
+        let mut found = false;
+        for (i, c) in b.iter().enumerate() {
+            if !used[i] && c == r {
+                used[i] = true;
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            return false;
+        }
+    }
+    true
+}
+
 fn mul_div(a: i128, b: i128, denom: i128) -> Result<i128, MarketError> {
     a.checked_mul(b)
         .ok_or(MarketError::MathOverflow)?
@@ -543,6 +577,18 @@ impl MolotovMarketplace {
             match NftClient::new(e, &nft).minter_of(&token_id) {
                 Some(minter) if minter == seller => {}
                 _ => panic_with_error!(e, MarketError::SplitNotAllowedForReseller),
+            }
+            // A primary sale must pay out to exactly the recipients the token's
+            // royalty config already promises — otherwise the minter could set up
+            // a multi-recipient royalty (e.g. a collaborator at 40%) and then list
+            // with a split that pays only themselves, on the one sale a co-recipient
+            // has no other way to be paid from (a primary sale never consults
+            // get_royalty_info at all). Order doesn't matter — dust from rounding
+            // always lands on whoever `split` lists last, which is the lister's own
+            // choice among the same fixed set of people, not a way to add or drop one.
+            let config_recipients = NftClient::new(e, &nft).royalty_recipients(&token_id);
+            if !recipients_match(split, &config_recipients) {
+                panic_with_error!(e, MarketError::PrimarySplitMustMatchRoyaltyConfig);
             }
             // Validate the primary split up-front by dry-running the audited
             // distributor (cap, positivity, shares summing to 10000) — no duplicated
