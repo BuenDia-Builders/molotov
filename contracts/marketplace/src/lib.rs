@@ -418,6 +418,12 @@ impl MolotovMarketplace {
     /// Initializes the marketplace with `admin` as owner, the platform `fee_bps`,
     /// and the `treasury` that collects `fee − referral` on every sale.
     pub fn __constructor(e: &Env, admin: Address, fee_bps: u32, treasury: Address) {
+        // fee_bps has no setter anywhere in this contract — a bad value here is
+        // permanent, so reject it loudly at deploy time rather than let every
+        // subsequent list() fail on it one listing at a time.
+        if fee_bps > BPS_DENOMINATOR as u32 {
+            panic_with_error!(e, MarketError::FeePlusRoyaltyTooHigh);
+        }
         set_owner(e, &admin);
         e.storage().instance().set(&DataKey::FeeBps, &fee_bps);
         e.storage().instance().set(&DataKey::Treasury, &treasury);

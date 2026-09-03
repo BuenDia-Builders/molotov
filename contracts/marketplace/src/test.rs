@@ -1474,6 +1474,28 @@ fn set_allowed_nft_requires_owner_auth() {
     MolotovMarketplaceClient::new(&e, &mkt).set_allowed_nft(&nft, &true);
 }
 
+/// `fee_bps` has no setter anywhere in this contract — a bad value at deploy
+/// is permanent, so the constructor rejects one above 100% immediately
+/// rather than let every subsequent `list()` fail on it one listing at a
+/// time. See L-6 in the 2026-09 adversarial audit.
+#[test]
+#[should_panic]
+fn constructor_rejects_fee_bps_above_100_percent() {
+    let e = Env::default();
+    let admin = Address::generate(&e);
+    let treasury = Address::generate(&e);
+    e.register(MolotovMarketplace, (admin, 10_001u32, treasury));
+}
+
+/// The boundary itself — exactly 100% fee — is still accepted.
+#[test]
+fn constructor_accepts_fee_bps_at_100_percent() {
+    let e = Env::default();
+    let admin = Address::generate(&e);
+    let treasury = Address::generate(&e);
+    e.register(MolotovMarketplace, (admin, 10_000u32, treasury));
+}
+
 #[test]
 fn list_rejects_bad_editions() {
     let c = setup();
