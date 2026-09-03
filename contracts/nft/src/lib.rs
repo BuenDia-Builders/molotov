@@ -275,7 +275,19 @@ impl MolotovNft {
     /// tracking existed. The marketplace uses this to allow a primary-sale split
     /// only when the seller is the minter.
     pub fn minter_of(e: &Env, token_id: u32) -> Option<Address> {
-        e.storage().persistent().get(&DataKey::Minter(token_id))
+        let minter = e.storage().persistent().get(&DataKey::Minter(token_id));
+        // Keep the minter entry alive on access: an artist who mints once and
+        // never resells could otherwise let this entry's TTL lapse, silently
+        // turning every future primary-sale listing into a rejected reseller
+        // split once the record expires.
+        if minter.is_some() {
+            e.storage().persistent().extend_ttl(
+                &DataKey::Minter(token_id),
+                TTL_BUMP_THRESHOLD,
+                TTL_BUMP_AMOUNT,
+            );
+        }
+        minter
     }
 
     pub fn registry(e: &Env) -> Address {

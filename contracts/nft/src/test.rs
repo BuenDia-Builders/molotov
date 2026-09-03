@@ -400,6 +400,41 @@ fn test_minter_of_returns_creator() {
     assert_eq!(client.minter_of(&999u32), None);
 }
 
+/// `minter_of` bumps its entry's TTL on read, the same as `token_uri` — an
+/// artist who mints once and never resells shouldn't have this entry lapse
+/// and silently turn a later primary-sale listing into a rejected reseller
+/// split.
+#[test]
+fn test_minter_of_bumps_ttl_on_read() {
+    use crate::{DataKey, TTL_BUMP_AMOUNT};
+    use soroban_sdk::testutils::storage::Persistent as _;
+    use soroban_sdk::testutils::Ledger as _;
+
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+
+    let artist = Address::generate(&e);
+    let token_id = client.mint(
+        &artist,
+        &artist,
+        &String::from_str(&e, "ipfs://minter-ttl-bump"),
+        &1000u32,
+        &one_recipient(&e, &artist),
+    );
+
+    let id = client.address.clone();
+    e.ledger().with_mut(|l| l.sequence_number += TTL_BUMP_AMOUNT - 100);
+
+    let result = client.minter_of(&token_id);
+    assert_eq!(result, Some(artist));
+
+    e.as_contract(&id, || {
+        let ttl = e.storage().persistent().get_ttl(&DataKey::Minter(token_id));
+        assert!(ttl >= TTL_BUMP_AMOUNT - 16, "minter ttl too low after bump: {}", ttl);
+    });
+}
+
 /// `get_royalty_info` rejects a negative sale price: a third-party integrator
 /// passing garbage gets a clean panic instead of a negative payout vector.
 #[test]
