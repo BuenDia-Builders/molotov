@@ -303,6 +303,8 @@ export const en = {
     connectPrompt: "Connect your wallet to buy",
     ctaPrefix: "Buy now —",
     confirming: "Confirm the transaction in your wallet…",
+    processing: "The contract is processing…",
+    reconciling: "Checking whether the purchase went through…",
     confirmed: "Purchase confirmed",
     confirmedDetail: "Your purchase is already on the network.",
     confirmedDelay: "It can take a few hours to show up in your collection.",

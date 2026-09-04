@@ -36,10 +36,16 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
     );
   }
 
-  if (state === "buying") {
+  if (state === "buying" || state === "confirming" || state === "reconciling") {
+    const message =
+      state === "buying"
+        ? t("buy.confirming")
+        : state === "confirming"
+          ? t("buy.processing")
+          : t("buy.reconciling");
     return (
       <div className="flex flex-col gap-2">
-        <p className="font-mono text-[10px] text-[var(--smoke)]">{t("buy.confirming")}</p>
+        <p className="font-mono text-[10px] text-[var(--smoke)]">{message}</p>
         <div className="relative h-0.5 w-full overflow-hidden bg-white/12">
           <span className="progress-fill" />
         </div>
