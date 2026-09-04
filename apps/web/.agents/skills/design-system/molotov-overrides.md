@@ -90,25 +90,48 @@ estados semánticos de sistema, quedan por definir.
 ## 3. Tipografía — tokens (override de fuentes y escala)
 
 > **Nota (2026-09):** esta sección documentaba Fraunces/Geist/Geist Mono como
-> intención previa a la implementación. El código shippeado usa otra familia
-> (ver abajo) — la cadena manda, se corrige acá para dejar de divergir. El
-> resto de este documento (§1–2, §4–8: tokens de color `--color-bg`,
-> `--color-accent-on-dark`, etc.) sigue siendo un doc de intención anterior a
-> la implementación real y **no** se corrigió en esta pasada — es un trabajo
-> aparte, más grande que un ajuste de tipografía.
+> intención previa a la implementación. El código shippeado usaba otra familia
+> — la cadena manda, se corrigió acá para dejar de divergir. El resto de este
+> documento (§1–2, §4–8: tokens de color `--color-bg`, `--color-accent-on-dark`,
+> etc.) sigue siendo un doc de intención anterior a la implementación real y
+> **no** se corrigió en esa pasada — es un trabajo aparte, más grande que un
+> ajuste de tipografía.
+>
+> **Actualización (pasada de "ablandar el lenguaje visual"):** Fraunces volvió,
+> pero no como reemplazo de Syne — como una **segunda voz, solo editorial**
+> (ver más abajo). La divergencia que esta nota señalaba está resuelta: ya no
+> es "intención sin implementar", es una decisión activa con un rol acotado.
 
 ```
---font-display: "Syne", sans-serif;      /* apps/web/app/layout.tsx */
---font-body:    "DM Sans", sans-serif;
---font-mono:    "Space Mono", ui-monospace, monospace;
+--font-display:  "Syne", sans-serif;      /* apps/web/app/layout.tsx */
+--font-body:     "DM Sans", sans-serif;
+--font-mono:     "Space Mono", ui-monospace, monospace;
+--font-editorial: "Fraunces", serif;      /* solo editorial, ver abajo */
 ```
 
-- **Display = Syne** (Google Fonts, pesos 600/700/800).
+- **Display = Syne** (Google Fonts, pesos 600/700/800). Voz de UI: nav, botones,
+  headline principal, labels.
 - **Body = DM Sans** (pesos 300/400/500/600).
-- **Mono = Space Mono** (pesos 400/700): usado en todo el sitio para
-  **precios, direcciones de wallet, hashes, basis points y como idioma de
-  labels/badges en mayúsculas** — no solo para datos on-chain.
+- **Mono = Space Mono** (pesos 400/700): **precios, direcciones de wallet,
+  hashes, basis points**. También labels/badges en mayúsculas, pero con
+  criterio — ver el ajuste de densidad más abajo.
+- **Editorial = Fraunces** (pesos 400/500/600, variable, con itálica): **segunda
+  voz, exclusivamente para momentos editoriales** — el cuerpo del manifiesto
+  (`manifesto.tsx`) y un acento puntual dentro del headline del hero (la
+  palabra "paga"/"pays", en itálica azul, `hero-carousel.tsx`). **Nunca** en
+  chrome de UI: nav, botones, CTAs y labels siguen en Syne/DM Sans/Space Mono
+  sin excepción. La idea es una voz curatorial ocasional, no un segundo
+  sistema tipográfico paralelo.
 - **Prohibido** usar Inter, Roboto o Arial en cualquier contexto.
+
+**Densidad del mono-mayúsculas cerca de la obra:** el patrón label/valor en
+mono-mayúsculas-tracked es la voz de todo el sitio (nav, footer, badges,
+CTAs) y sigue así — **pero** se aflojó específicamente donde competía con la
+obra: la caption de `artwork-card.tsx` (ya no tiene una regla horizontal
+separando título de precio, tracking más suave) y las filas de datos de
+`token-view.tsx` (label más chico y más apagado, mismo criterio). En esos dos
+lugares puntuales el objetivo es que se lea como un pie de foto, no como una
+fila de tabla. En nav/footer/CTAs no cambió nada.
 
 **Escala tipográfica:** no hay tokens `--text-*` custom en `globals.css` — se
 usa la escala default de Tailwind. Para **body copy legible** (párrafos,
@@ -136,6 +159,26 @@ copy, y quedan como están.
 - **Cards de obra:** foto/media **grande arriba**, info **abajo** (artista,
   título, precio dual XLM+USD en `--font-mono`, badge de royalty). El media es
   el protagonista; la metadata es secundaria y discreta (`--smoke`/`--ash`).
+- **Bordes: `border-radius: 0` por default en todo (`globals.css`, `* { }`)** —
+  es la mirada de galería para cards, imágenes y frames, y se mantiene.
+  `rounded-soft` (`--radius-soft`, 4px) es la **única** excepción: chrome
+  interactivo puntual — botones/CTAs, el input de búsqueda, badges/pills. Nunca
+  en cards, imágenes o cualquier contenedor de layout. Una clase propia del
+  componente ya gana sobre el reset universal, así que no hace falta pelear
+  con `!important` para optar por el radius suave en un elemento puntual.
+- **Grilla del catálogo:** por default uniforme (`grid-cols-1 sm:grid-cols-2
+lg:grid-cols-3`), pero el primer ítem puede ser "destacado" —
+  `ArtworkCard`'s prop `featured` (imagen más ancha 16:11, título más grande)
+  combinada con `sm:col-span-2` en el contenedor de grilla del padre. Usado hoy
+  en la sección de tendencias de home y en `/works`, siempre sobre el mismo
+  orden ya existente (en venta → vendidas → más nuevas), nunca como curaduría
+  inventada. No agregar más de un ítem destacado por grilla sin una razón real
+  para hacerlo — la idea es una excepción ocasional, no un segundo patrón de
+  grilla.
+- **Placeholder sin imagen:** `ArtworkPlaceholder` (`components/artwork-placeholder.tsx`)
+  — ícono de "imagen rota" + label mono discreto, monocromo. Es el único
+  tratamiento para un token sin imagen real; no hay watermark de token ID en
+  ningún lado (se sacó: leía como decoración cripto-tech, no como contenido).
 
 ---
 
@@ -174,6 +217,15 @@ moon`, `WAGMI`, `GM`, `ape in` (y equivalentes).
 - El acento (`--blue`, #1564FF) como texto chico sobre negro (~4.05:1, no pasa
   AA normal); para texto fino usar `--offwhite`.
 - Acento azul inundando bloques grandes o fondos.
+- Redondear cards, imágenes o cualquier contenedor de layout — `rounded-soft`
+  es solo para chrome interactivo puntual (ver §4). Todo redondeado convierte
+  a Molotov en un SaaS genérico, que es exactamente lo que la base oscura +
+  bordes duros evita.
+- Fraunces fuera de un momento editorial (manifiesto, el acento del hero) —
+  usarlo en nav, botones, CTAs o labels lo convierte en un segundo sistema de
+  UI en vez de una voz curatorial ocasional.
+- Watermark de token ID (u otro dato interno) como decoración de card —
+  ver `ArtworkPlaceholder` en §4 para el tratamiento correcto de "sin imagen".
 - **Nota:** este documento antes marcaba `#2D43FF`/`#5B6CFF`/`#4B5EFF` como
   "obsoletos" y `#0178DE` como el acento vigente — ninguno de los dos es
   exacto: el acento real shippeado es `--blue` (#1564FF, ver §2), y `#2D43FF`
@@ -187,16 +239,21 @@ moon`, `WAGMI`, `GM`, `ape in` (y equivalentes).
 ## 8. QA checklist (ejecutable en code review)
 
 - [ ] Fondo oscuro (`--black`/`--carbon`); no hay surfaces blancas.
-- [ ] Sólo Syne / DM Sans / Space Mono; no aparece Inter/Roboto/Arial.
+- [ ] Syne / DM Sans / Space Mono para UI; Fraunces solo en manifiesto y el
+      acento del headline del hero — nunca en nav, botones, CTAs o labels. No
+      aparece Inter/Roboto/Arial.
 - [ ] Precios, wallets, hashes y bps van en `--font-mono`.
 - [ ] El acento azul (`--blue`) es puntual; no se usa como texto en tamaños
       chicos (no pasa AA normal, ver §2).
 - [ ] No hay gradientes purple-pink.
+- [ ] Cards, imágenes y contenedores de layout sin `border-radius` (0 por
+      default); `rounded-soft` solo en botones, inputs y badges/pills.
 - [ ] Contraste verificado (≥4.5:1 normal / ≥3:1 grande).
 - [ ] Focus visible en todos los interactivos; touch targets ≥44px.
 - [ ] Copy en es-AR, sin jerga cripto-bro ni emojis prohibidos.
 - [ ] Grain overlay ≤4% opacity y respeta reduced-motion.
-- [ ] Cards de obra: media grande arriba, metadata discreta abajo.
+- [ ] Cards de obra: media grande arriba, metadata discreta abajo, sin
+      watermark de token ID.
 
 ---
 
