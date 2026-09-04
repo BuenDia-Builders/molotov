@@ -43,7 +43,7 @@ export function BrowsePageStates({
         </p>
         <a
           href="/create"
-          className="mt-5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] uppercase text-[var(--offwhite)] underline-offset-4 hover:underline"
+          className="mt-5 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.2em] uppercase text-[var(--offwhite)] underline underline-offset-4"
         >
           {t("works.uploadFirst")} →
         </a>

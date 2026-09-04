@@ -165,7 +165,7 @@ function ProfileActivityFeed({ rows }: { rows: ProfileActivity[] }) {
             </span>
             <Link
               href={`/token/${event.tokenId}`}
-              className="font-mono text-[11px] text-[var(--offwhite)] underline-offset-4 hover:underline"
+              className="font-mono text-[11px] text-[var(--offwhite)] underline underline-offset-4"
             >
               #{String(event.tokenId).padStart(4, "0")}
             </Link>
@@ -192,7 +192,7 @@ function ProfileActivityFeed({ rows }: { rows: ProfileActivity[] }) {
               href={txExplorerUrl(event.txHash)}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto font-mono text-[10px] text-[var(--smoke)] underline-offset-2 hover:underline"
+              className="ml-auto font-mono text-[10px] text-[var(--smoke)] underline underline-offset-2"
             >
               {t("artistProfile.saleTx")} →
             </a>

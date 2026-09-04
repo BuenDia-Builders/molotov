@@ -122,7 +122,7 @@ function PerTokenTable({ rows }: { rows: TokenEarnings[] }) {
           {sold.map((row) => (
             <tr key={row.tokenId} className="border-b border-white/8">
               <td className={`${MONO} py-4 text-left text-sm text-[var(--offwhite)]`}>
-                <a href={`/token/${row.tokenId}`} className="hover:underline">
+                <a href={`/token/${row.tokenId}`} className="underline underline-offset-2">
                   #{row.tokenId}
                 </a>
                 <span className="ml-2 text-[10px] text-[var(--smoke)]">
@@ -180,7 +180,7 @@ function ActivityRow({ event }: { event: EarningEvent }) {
 
       <a
         href={`/token/${event.tokenId}`}
-        className={`${MONO} text-sm text-[var(--offwhite)] hover:underline`}
+        className={`${MONO} text-sm text-[var(--offwhite)] underline underline-offset-2`}
       >
         #{event.tokenId}
       </a>

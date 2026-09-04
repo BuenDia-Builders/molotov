@@ -32,7 +32,7 @@ export function RecentSales({ sales }: { sales: SaleCard[] }) {
             {t("landing.sales.empty")}
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {sales.map((sale) => (
               <div key={sale.txHash} className="flex flex-col bg-[var(--carbon)]">
                 <Link href={`/token/${sale.tokenId}`} className="relative block aspect-square">
@@ -42,7 +42,7 @@ export function RecentSales({ sales }: { sales: SaleCard[] }) {
                       alt={sale.title}
                       fill
                       className="object-cover"
-                      sizes="(max-width: 640px) 50vw, 16vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 16vw"
                     />
                   ) : (
                     <div className="h-full w-full bg-gradient-to-br from-[var(--blue-deep)] to-[var(--blue)]" />
@@ -51,7 +51,7 @@ export function RecentSales({ sales }: { sales: SaleCard[] }) {
                 <div className="flex flex-col gap-1 px-3 py-2.5">
                   <Link
                     href={`/token/${sale.tokenId}`}
-                    className="truncate font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)] hover:underline"
+                    className="truncate font-[family-name:var(--font-mono)] text-[11px] text-[var(--offwhite)] underline underline-offset-2"
                   >
                     {sale.title}
                   </Link>
