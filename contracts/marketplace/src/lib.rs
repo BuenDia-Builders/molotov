@@ -5,7 +5,7 @@
 //! buyer→recipient transfers and holds a zero balance after every sale. Settles
 //! in a SAC token from an admin allowlist.
 //!
-//! Money model (objkt, locked in `marketplace-invariants.md`): `fee`, `referral`
+//! Money model (objkt, locked in `doc/marketplace-invariants.md`): `fee`, `referral`
 //! and `royalty` are all computed on the **gross** sale price `P`. The referral is
 //! carved **out of** the fee, never added on top — the seller always pays a flat
 //! `fee`; on a referred sale the treasury keeps `fee − referral` and the referrer
