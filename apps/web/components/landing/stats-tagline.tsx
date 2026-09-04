@@ -78,7 +78,7 @@ export function StatsTagline({ stats }: { stats: LandingStats }) {
     <section className="bg-[var(--offwhite)] px-6 py-16 text-center md:py-24">
       {/* Real numbers, small and true */}
       {showCounters && (
-        <div className="mx-auto flex max-w-3xl items-start justify-center gap-10 md:gap-20">
+        <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 sm:flex-row sm:items-start sm:justify-center sm:gap-10 md:gap-20">
           {counters.map((c) => (
             <div key={c.label} className="flex flex-col gap-1">
               <span className="font-[family-name:var(--font-display)] text-3xl font-bold text-[var(--black)] md:text-4xl">
