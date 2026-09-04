@@ -62,6 +62,12 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Deliberately independent of --radius (0, kept at 0 for cards/images/frames —
+     see the `* { border-radius: 0 }` reset below). This is the one opt-in softening
+     for interactive chrome only: buttons, inputs, badges/pills. Generates
+     `rounded-soft`. */
+  --radius-soft: 4px;
 }
 
 :root {
@@ -323,6 +329,10 @@ img {
 }
 
 @layer base {
+  /* Square by default — the gallery-frame look for cards, images and layout
+     chrome. `rounded-soft` (interactive chrome only: buttons, inputs, badges)
+     opts back in on a per-element basis; a class selector already wins over
+     this universal reset. */
   * {
     box-shadow: none;
     border-radius: 0;

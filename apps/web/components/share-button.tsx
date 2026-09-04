@@ -53,7 +53,7 @@ export function ShareButton({ path }: Props) {
     <div className="flex flex-col gap-2">
       <button
         onClick={() => void share()}
-        className="inline-flex min-h-11 w-fit items-center gap-2 border border-white/15 px-5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--offwhite)] transition-colors hover:border-white/40"
+        className="inline-flex min-h-11 w-fit items-center gap-2 rounded-soft border border-white/15 px-5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--offwhite)] transition-colors hover:border-white/40"
       >
         {copied ? t("share.copied") : t("share.cta")}
       </button>

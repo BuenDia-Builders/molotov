@@ -99,7 +99,7 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
           // error state handled by hook
         }
       }}
-      className="w-full bg-[var(--blue)] text-white font-bold text-xs tracking-widest uppercase px-8 py-4 transition-colors hover:bg-[#3493E5]"
+      className="w-full rounded-soft bg-[var(--blue)] text-white font-bold text-xs tracking-widest uppercase px-8 py-4 transition-colors hover:bg-[#3493E5]"
     >
       {t("buy.ctaPrefix")} {priceXlm} XLM
     </button>

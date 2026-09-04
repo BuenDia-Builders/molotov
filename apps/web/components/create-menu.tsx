@@ -77,7 +77,7 @@ export function CreateMenu() {
 
             {/* ── Collections — honestly not yet ── */}
             <div className="relative cursor-default border border-white/10 opacity-70">
-              <span className="absolute right-3 top-3 z-10 bg-[var(--blue)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.2em] text-white">
+              <span className="absolute right-3 top-3 z-10 rounded-soft bg-[var(--blue)] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.2em] text-white">
                 {t("nav.createMenu.soon")}
               </span>
               <CollectionArt />

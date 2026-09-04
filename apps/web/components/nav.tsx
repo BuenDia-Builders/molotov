@@ -49,7 +49,7 @@ export function Nav() {
           {!isSignedIn && (
             <Link
               href={START_HREF}
-              className="inline-flex h-8 items-center bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-[var(--blue-light)]"
+              className="inline-flex h-8 items-center rounded-soft bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-[var(--blue-light)]"
             >
               {t("nav.start")}
             </Link>
