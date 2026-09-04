@@ -1044,6 +1044,26 @@ fn h1_primary_split_cannot_drop_a_configured_co_recipient() {
     assert_eq!(nft_owner(&c, 0), c.buyer);
 }
 
+/// L-2 — a secondary listing gets the same up-front dry-run primary listings
+/// already had: list() must succeed for a normal, well-formed secondary
+/// listing (the dry-run doesn't spuriously reject it), and the money it
+/// computes matches what buy() actually pays out later.
+#[test]
+fn l2_secondary_dry_run_at_list_matches_buy() {
+    let c = setup();
+    MockNftClient::new(&c.e, &c.nft).mint(&c.seller, &0u32, &c.artist, &2000u32);
+    let no_split: Option<Vec<RoyaltyRecipient>> = None;
+    let id = mkt_client(&c).list(
+        &c.seller, &c.nft, &0u32, &PRICE, &c.sac,
+        &ListingKind::FixedPrice, &1u32, &0u64, &no_split, &0u32,
+    );
+    let no_ref: Option<Address> = None;
+    mkt_client(&c).buy(&c.buyer, &id, &no_ref);
+    assert_eq!(bal(&c, &c.artist), 200_000_000); // 20% royalty
+    assert_eq!(bal(&c, &c.mkt), 0);
+    assert_eq!(nft_owner(&c, 0), c.buyer);
+}
+
 /// PASO 3 — a reseller listing WITHOUT a split pays the full royalty: the normal
 /// secondary path is unaffected by the gate, so the artist still collects 20%.
 #[test]
