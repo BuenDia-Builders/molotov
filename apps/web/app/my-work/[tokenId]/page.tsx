@@ -387,12 +387,10 @@ export default function MyWorkPage() {
                     </div>
                   )}
 
-                  {(listState === "approving" || listState === "listing") && (
+                  {listState === "listing" && (
                     <div className="flex flex-col gap-2">
                       <p className="font-[family-name:var(--font-geist-mono)] text-[12px] text-[#F5F4ED]/60">
-                        {listState === "approving"
-                          ? "Step 1/2 — Approve marketplace… sign in your wallet"
-                          : "Step 2/2 — Creating listing… sign in your wallet"}
+                        Creating listing… sign in your wallet
                       </p>
                       <div className="relative h-0.5 w-full overflow-hidden bg-white/12">
                         <span className="progress-fill" />

@@ -70,22 +70,27 @@ export function StatsTagline({ stats }: { stats: LandingStats }) {
     { value: stats.artists, label: t("landing.counters.artists") },
     { value: stats.collected, label: t("landing.counters.collected") },
   ];
+  // An empty catalog rendering "0 obras / 0 artistas" undercuts the trust
+  // this page is trying to build — skip the row entirely rather than show it.
+  const showCounters = stats.works > 0;
 
   return (
     <section className="bg-[var(--offwhite)] px-6 py-16 text-center md:py-24">
       {/* Real numbers, small and true */}
-      <div className="mx-auto flex max-w-3xl items-start justify-center gap-10 md:gap-20">
-        {counters.map((c) => (
-          <div key={c.label} className="flex flex-col gap-1">
-            <span className="font-[family-name:var(--font-display)] text-3xl font-bold text-[var(--black)] md:text-4xl">
-              <CountUp value={c.value} />
-            </span>
-            <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--black)]/45">
-              {c.label}
-            </span>
-          </div>
-        ))}
-      </div>
+      {showCounters && (
+        <div className="mx-auto flex max-w-3xl items-start justify-center gap-10 md:gap-20">
+          {counters.map((c) => (
+            <div key={c.label} className="flex flex-col gap-1">
+              <span className="font-[family-name:var(--font-display)] text-3xl font-bold text-[var(--black)] md:text-4xl">
+                <CountUp value={c.value} />
+              </span>
+              <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--black)]/45">
+                {c.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Rotating headline */}
       <h2
@@ -95,7 +100,7 @@ export function StatsTagline({ stats }: { stats: LandingStats }) {
         {HEADLINES[headline]}
       </h2>
 
-      <p className="mx-auto mt-6 max-w-xl text-[15px] leading-relaxed text-[var(--black)]/70">
+      <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-[var(--black)]/70">
         {t("landing.tagline.description")}
       </p>
 

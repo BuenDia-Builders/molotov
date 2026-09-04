@@ -61,7 +61,7 @@ function upsertMetaDescription(content: string) {
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  // ES is the default locale (docs/i18n.md); a stored preference overrides it.
+  // ES is the default locale (doc/i18n.md); a stored preference overrides it.
   const [locale, setLocaleState] = useState<Locale>("es");
 
   useEffect(() => {

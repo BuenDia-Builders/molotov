@@ -8,6 +8,7 @@ import {
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
+import { truncateAddress } from "@/lib/stellar";
 import { BrowsePageHeader } from "@/components/browse-page-header";
 import { BrowsePageStates } from "@/components/browse-page-states";
 import { ArtistCard, type ArtistCard as ArtistCardType } from "@/components/artist-card";
@@ -73,7 +74,7 @@ async function getArtists(): Promise<ArtistsResult> {
 
       return {
         address,
-        short: `${address.slice(0, 6)}…${address.slice(-6)}`,
+        short: truncateAddress(address, 6, 6),
         handle: handles.get(address) ?? null,
         tokenCount: artistTokens.length,
         latestTokenId: latest?.token_id ?? null,

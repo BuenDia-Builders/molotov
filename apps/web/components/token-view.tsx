@@ -5,11 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { BuyButton } from "@/components/buy-button";
 import { ShareButton } from "@/components/share-button";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { useI18n } from "@/lib/i18n";
 import { truncateAddress } from "@/lib/stellar";
 
 export type TokenMeta = {
   title: string;
+  description: string;
   imageUrl: string;
   tags: string[];
   category: string | null;
@@ -23,6 +25,7 @@ export type TokenViewProps = {
   token: {
     token_id: number;
     artist: string;
+    artistHandle: string | null;
     owner: string;
     royalty_bps: number;
     recipients_count: number;
@@ -34,6 +37,7 @@ export type TokenViewProps = {
     editions_sold: number | null;
   } | null;
   priceXlm: string | null;
+  priceUsd: string | null;
   meta: TokenMeta;
 };
 
@@ -103,7 +107,7 @@ function ArtworkPlaceholder({ label }: { label: string }) {
   );
 }
 
-export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
+export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenViewProps) {
   const { t } = useI18n();
   // Sensitive works ship blurred and reveal only on an explicit tap.
   const [revealed, setRevealed] = useState(!meta.nsfw);
@@ -162,13 +166,8 @@ export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
 
       {/* ── Details ── */}
       <div className="flex flex-col justify-center px-8 py-14 md:px-12 md:py-20 lg:px-16">
-        <div className="mb-8 flex items-center gap-4">
-          <Link
-            href="/works"
-            className="font-mono text-[10px] uppercase tracking-[0.25em] text-[var(--smoke)] transition-colors hover:text-[var(--offwhite)]"
-          >
-            ← {t("tokenPage.back")}
-          </Link>
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <Breadcrumbs trail={[{ label: t("nav.discover"), href: "/works" }, { label: title }]} />
           <span className="font-mono text-[10px] text-[var(--smoke)]/40">
             #{String(token.token_id).padStart(4, "0")}
           </span>
@@ -186,13 +185,19 @@ export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
           </p>
         )}
 
+        {meta.description && (
+          <p className="mb-8 max-w-md whitespace-pre-line text-base leading-relaxed text-[var(--offwhite)]/70">
+            {meta.description}
+          </p>
+        )}
+
         <div className="space-y-3 border-t border-[var(--ember)] pt-6">
           <Row label={t("tokenPage.artist")}>
             <Link
               href={`/artist/${token.artist}`}
               className="font-mono text-[10px] text-[var(--offwhite)] underline-offset-4 hover:underline"
             >
-              {truncateAddress(token.artist)}
+              {token.artistHandle ?? truncateAddress(token.artist)}
             </Link>
           </Row>
           <Row label={t("tokenPage.owner")}>
@@ -261,12 +266,18 @@ export function TokenView({ token, listing, priceXlm, meta }: TokenViewProps) {
             </p>
             <p className="mb-1 font-mono text-2xl text-[var(--offwhite)]">
               {priceXlm} <span className="text-sm text-[var(--smoke)]">XLM</span>
+              {priceUsd && (
+                <span className="ml-2 text-sm text-[var(--smoke)]/60">~US$ {priceUsd}</span>
+              )}
             </p>
             {listing.kind === "open_edition" && (
               <p className="mb-4 font-mono text-[10px] text-[var(--smoke)]">
                 {listing.editions_sold}/{listing.editions_total} {t("tokenPage.editionsSold")}
               </p>
             )}
+            <p className="mt-4 font-mono text-[10px] leading-relaxed text-[var(--smoke)]">
+              {t("tokenPage.buySteps")}
+            </p>
             <div className="mt-4">
               <BuyButton
                 listingId={BigInt(listing.listing_id)}

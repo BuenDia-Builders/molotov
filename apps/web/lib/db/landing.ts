@@ -53,7 +53,14 @@ export type LandingCollection = {
   tokenCount: number;
 };
 
-type SaleRow = { token_id: number; buyer: string; price: string };
+type SaleRow = { token_id: number; buyer: string; seller: string; price: string };
+
+/** Which of these token ids have at least one completed sale. */
+export async function getSoldTokenIds(tokenIds: number[]): Promise<Set<number>> {
+  if (tokenIds.length === 0) return new Set();
+  const { data } = await getDb().from("sales").select("token_id").in("token_id", tokenIds);
+  return new Set((data ?? []).map((s) => s.token_id as number));
+}
 
 /** Sales restricted to the curated token set — one fetch, shared by callers. */
 async function getVisibleContext() {
@@ -62,7 +69,7 @@ async function getVisibleContext() {
 
   const { data } = await getDb()
     .from("sales")
-    .select("token_id, buyer, price")
+    .select("token_id, buyer, seller, price")
     .in("token_id", [...visibleIds]);
   const sales = (data ?? []) as SaleRow[];
 
@@ -142,7 +149,12 @@ export async function getFeaturedCreators(limit = 6): Promise<FeaturedCreator[]>
     entry.works += 1;
     byArtist.set(t.artist, entry);
   }
+  // A seller buying their own listing back is a real on-chain sale (the
+  // contract has no reason to forbid it — see doc/marketplace-invariants.md)
+  // but it is never a real transaction between two people, so it doesn't
+  // count toward this leaderboard.
   for (const s of sales) {
+    if (s.buyer === s.seller) continue;
     const artist = artistOf.get(s.token_id);
     if (!artist) continue;
     const entry = byArtist.get(artist);
@@ -169,7 +181,10 @@ export async function getFeaturedCreators(limit = 6): Promise<FeaturedCreator[]>
 export async function getTopCollectors(limit = 6): Promise<TopCollector[]> {
   const { sales } = await getVisibleContext();
   const byBuyer = new Map<string, { purchases: number; spent: bigint }>();
+  // Same wash-sale exclusion as getFeaturedCreators — buying your own listing
+  // back shouldn't count as a purchase for this leaderboard either.
   for (const s of sales) {
+    if (s.buyer === s.seller) continue;
     const entry = byBuyer.get(s.buyer) ?? { purchases: 0, spent: BigInt(0) };
     entry.purchases += 1;
     entry.spent += BigInt(s.price);

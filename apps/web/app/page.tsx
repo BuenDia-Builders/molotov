@@ -1,6 +1,6 @@
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import { Manifesto } from "@/components/manifesto";
+import { ManifestoTeaser } from "@/components/manifesto-teaser";
 import { FinalCta } from "@/components/final-cta";
 import { HeroCarousel, type HeroSlide } from "@/components/landing/hero-carousel";
 import { StatsTagline } from "@/components/landing/stats-tagline";
@@ -15,9 +15,11 @@ import {
   getFeaturedCreators,
   getTopCollectors,
   getLandingCollections,
+  getHandlesByAddress,
   type LandingStats,
 } from "@/lib/db";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
+import { getXlmUsdRate, formatUsdEstimate } from "@/lib/price";
 
 export const revalidate = 300;
 
@@ -56,14 +58,16 @@ async function getLandingData() {
     };
   }
 
-  const [stats, works, collections, rawSales, creators, collectors] = await Promise.all([
+  const [stats, works, collections, rawSales, creators, collectors, usdRate] = await Promise.all([
     getLandingStats(),
     getTrendingWorks(10),
     getLandingCollections(10),
     getLandingSales(6),
     getFeaturedCreators(6),
     getTopCollectors(6),
+    getXlmUsdRate(),
   ]);
+  const handleByAddress = await getHandlesByAddress([...new Set(works.map((w) => w.artist))]);
 
   // One hydration pass for everything the sections need.
   const uriByToken = new Map(works.map((w) => [w.tokenId, w.tokenUri]));
@@ -90,8 +94,10 @@ async function getLandingData() {
     tokenId: w.tokenId,
     title: titled(w.tokenId),
     artist: w.artist,
+    artistHandle: handleByAddress.get(w.artist) ?? null,
     image: metaByToken.get(w.tokenId)?.image ?? null,
     priceXlm: w.priceXlm,
+    priceUsd: w.priceXlm ? formatUsdEstimate(w.priceXlm, usdRate) : null,
     sold: w.sold,
   }));
 
@@ -103,7 +109,9 @@ async function getLandingData() {
       image: w.image as string,
       title: w.title,
       artist: w.artist,
+      artistHandle: w.artistHandle,
       priceXlm: w.priceXlm,
+      priceUsd: w.priceUsd,
     }));
 
   const sales: SaleCard[] = rawSales.map((s) => ({
@@ -132,7 +140,7 @@ export default async function Home() {
         <TrendingSection collections={collections} works={trending} />
         <RecentSales sales={sales} />
         <FeaturedPeople creators={creators} collectors={collectors} />
-        <Manifesto />
+        <ManifestoTeaser />
         <FinalCta />
       </main>
       <Footer />

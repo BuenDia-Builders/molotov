@@ -30,6 +30,7 @@ import { TokenView, type TokenMeta } from "@/components/token-view";
 
 const meta = (over: Partial<TokenMeta> = {}): TokenMeta => ({
   title: "Untitled",
+  description: "",
   imageUrl: "",
   tags: [],
   category: null,
@@ -43,13 +44,16 @@ const meta = (over: Partial<TokenMeta> = {}): TokenMeta => ({
 const token = {
   token_id: 7,
   artist: "GARTIST",
+  artistHandle: null,
   owner: "GOWNER",
   royalty_bps: 1000,
   recipients_count: 1,
 };
 
 function renderView(over: Partial<TokenMeta> = {}) {
-  render(<TokenView token={token} listing={null} priceXlm={null} meta={meta(over)} />);
+  render(
+    <TokenView token={token} listing={null} priceXlm={null} priceUsd={null} meta={meta(over)} />,
+  );
 }
 
 afterEach(() => {

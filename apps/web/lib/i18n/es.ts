@@ -299,6 +299,8 @@ export const es = {
     sensitive: "Contenido sensible",
     sensitiveShow: "Tocá para ver la obra",
     flashingWarn: "Esta obra tiene destellos que pueden afectar a personas fotosensibles.",
+    buySteps:
+      "Conectá tu wallet → confirmá el pago → la obra es tuya, con la regalía asegurada para quien la hizo en cada reventa.",
   },
   buy: {
     connectPrompt: "Conectá tu wallet para comprar",
@@ -437,6 +439,8 @@ export const es = {
       ctaConnected: "Ver obras",
     },
     hero: {
+      /** El primer statement del producto — dicho antes de que haya que scrollear */
+      headline: "El arte le paga a quien lo hace.",
       forSale: "En venta",
       viewWork: "Ver obra",
       slideLabel: "Ir a la obra",
@@ -503,6 +507,10 @@ export const es = {
   works: {
     loadError: "No pudimos cargar las obras",
     uploadFirst: "Subí la primera obra",
+    card: {
+      sold: "Vendida",
+      notListed: "No listada",
+    },
   },
   artists: {
     previewUnavailable: "Vista previa no disponible",

@@ -296,6 +296,8 @@ export const en = {
     sensitive: "Sensitive content",
     sensitiveShow: "Tap to view the work",
     flashingWarn: "This work contains flashing that can affect photosensitive people.",
+    buySteps:
+      "Connect your wallet → confirm the payment → the work is yours, with the royalty guaranteed for its maker on every resale.",
   },
   buy: {
     connectPrompt: "Connect your wallet to buy",
@@ -420,6 +422,7 @@ export const en = {
       ctaConnected: "Browse works",
     },
     hero: {
+      headline: "Art pays the one who makes it.",
       forSale: "For sale",
       viewWork: "View work",
       slideLabel: "Go to work",
@@ -484,6 +487,10 @@ export const en = {
   works: {
     loadError: "Could not load works",
     uploadFirst: "Upload the first work",
+    card: {
+      sold: "Sold",
+      notListed: "Not listed",
+    },
   },
   artists: {
     previewUnavailable: "Preview unavailable",

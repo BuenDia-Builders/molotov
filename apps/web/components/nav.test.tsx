@@ -56,6 +56,6 @@ describe("Nav", () => {
     const artists = screen.getByRole("link", { name: "nav.artists" });
     expect(artists.getAttribute("href")).toBe("/artists");
     const manifesto = screen.getByRole("link", { name: "nav.manifesto" });
-    expect(manifesto.getAttribute("href")).toBe("/#manifesto");
+    expect(manifesto.getAttribute("href")).toBe("/manifiesto");
   });
 });

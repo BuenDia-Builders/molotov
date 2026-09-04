@@ -1,14 +1,21 @@
-import Link from "next/link";
 import { Suspense, cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { isDbConfigured, findTokenById, findActiveListingByToken, stroopsToXlm } from "@/lib/db";
+import {
+  isDbConfigured,
+  findTokenById,
+  findActiveListingByToken,
+  getHandlesByAddress,
+  stroopsToXlm,
+} from "@/lib/db";
 import { Nav } from "@/components/nav";
 import { ReferralCapture } from "@/components/referral-capture";
 import { TokenView, type TokenMeta } from "@/components/token-view";
 import { WorkViewTracker } from "@/components/work-view-tracker";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { fetchIpfs, ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
+import { getXlmUsdRate, formatUsdEstimate } from "@/lib/price";
 
 export async function generateMetadata({
   params,
@@ -64,6 +71,7 @@ const getTokenData = cache(async (tokenId: number) => {
 
   const meta: TokenMeta = {
     title: "",
+    description: "",
     imageUrl: "",
     tags: [],
     category: null,
@@ -78,6 +86,7 @@ const getTokenData = cache(async (tokenId: number) => {
       const raw = await res.json();
       if (raw.image) meta.imageUrl = ipfsToGateway(raw.image);
       if (raw.name) meta.title = raw.name;
+      if (typeof raw.description === "string") meta.description = raw.description;
       if (Array.isArray(raw.tags))
         meta.tags = raw.tags.filter((x: unknown) => typeof x === "string");
       if (typeof raw.category === "string") meta.category = raw.category;
@@ -120,18 +129,20 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
           <p className="mt-3 font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--smoke)]">
             On-chain data is unavailable right now.
           </p>
-          <Link
-            href="/works"
-            className="mt-6 font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--offwhite)] underline-offset-4 hover:underline"
-          >
-            ← Discover
-          </Link>
+          <div className="mt-6">
+            <Breadcrumbs trail={[{ label: "Discover", href: "/works" }]} />
+          </div>
         </div>
       </div>
     );
   }
 
   const { token, listing, meta } = data;
+  const priceXlm = listing ? stroopsToXlm(listing.price) : null;
+  const [priceUsd, handles] = await Promise.all([
+    priceXlm ? getXlmUsdRate().then((rate) => formatUsdEstimate(priceXlm, rate)) : null,
+    getHandlesByAddress([token.artist]),
+  ]);
 
   return (
     <div className="min-h-screen bg-[var(--black)]">
@@ -144,6 +155,7 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
         token={{
           token_id: token.token_id,
           artist: token.artist,
+          artistHandle: handles.get(token.artist) ?? null,
           owner: token.owner,
           royalty_bps: token.royalty_bps,
           recipients_count: token.recipients_count,
@@ -158,7 +170,8 @@ export default async function TokenPage({ params }: { params: Promise<{ tokenId:
               }
             : null
         }
-        priceXlm={listing ? stroopsToXlm(listing.price) : null}
+        priceXlm={priceXlm}
+        priceUsd={priceUsd}
         meta={meta}
       />
     </div>

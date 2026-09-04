@@ -37,13 +37,13 @@ regenerate — never hand-edit them.
 Docs in this repo drift behind the code. **When a doc disagrees with the code, the code
 wins — say so instead of following the doc.**
 
-| Question                            | Read                                                                         |
-| ----------------------------------- | ---------------------------------------------------------------------------- |
-| What is actually live right now     | `doc/status.md`                                                              |
-| Royalty and marketplace invariants  | `doc/marketplace-invariants.md` (the copy under `contracts/` is a duplicate) |
-| Why a decision was made             | `doc/adr/`                                                                   |
-| Deployed contract IDs, network, RPC | `apps/web/lib/stellar.ts`                                                    |
-| Whether a feature exists            | the code — **not** the README roadmap, which lists shipped work as pending   |
+| Question                            | Read                                                                       |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| What is actually live right now     | `doc/status.md`                                                            |
+| Royalty and marketplace invariants  | `doc/marketplace-invariants.md`                                            |
+| Why a decision was made             | `doc/adr/`                                                                 |
+| Deployed contract IDs, network, RPC | `apps/web/lib/stellar.ts`                                                  |
+| Whether a feature exists            | the code — **not** the README roadmap, which lists shipped work as pending |
 
 `README.md` and `doc/architecture.md` are written for humans arriving at the project.
 Treat them as intent, not as current state.
@@ -82,7 +82,7 @@ Read `doc/marketplace-invariants.md` before touching `contracts/marketplace` or
 - **Legacy exceptions, in Spanish:** `doc/flows.md`, `doc/contracts.md`,
   `doc/migration-map.md`. Leave them as they are; do not translate unless asked.
 - **Product copy is Rioplatense Spanish** (voseo: _contá_, _mirá_, _tenés_). The UI
-  dictionaries live in `apps/web/lib/i18n/` (ES + EN peers); see `docs/i18n.md`.
+  dictionaries live in `apps/web/lib/i18n/` (ES + EN peers); see `doc/i18n.md`.
 - **Voice: deliberately anti-crypto-bro.** No moon/gm/wagmi, no hype, no jargon as
   decoration. Speak to artists, not to traders — if a sentence would only land with
   someone already in crypto, rewrite it.

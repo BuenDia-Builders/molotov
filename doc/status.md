@@ -18,6 +18,7 @@ facts — link to it instead.
 | `doc/indexer-operations.md`                                | The indexer **operations runbook** — retention window, scheduling, health, cursor recovery.           |
 | `doc/analytics.md`                                         | The **analytics** spec (PostHog events and tracking).                                                 |
 | `doc/adr/`                                                 | **Architecture decision records** — why a decision was made.                                          |
+| `doc/i18n.md`                                              | **i18n conventions** for the ES/EN UI dictionaries.                                                   |
 | `doc/wave-moderation.md`                                   | The **contribution / wave moderation** log.                                                           |
 | `doc/branding/`                                            | **Brand assets** and design tokens.                                                                   |
 | `doc/flows.md`, `doc/contracts.md`, `doc/migration-map.md` | Legacy Spanish references (product flows, contracts, migration map); kept as-is, may have drifted.    |
