@@ -16,7 +16,7 @@ type Props = {
 
 export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
   const { isConnected } = useWallet();
-  const { buy, state, errorKey, txHash, reset } = useBuy();
+  const { buy, state, errorKey, txHash, feeXlm, estimateFee, reset } = useBuy();
   const { t } = useI18n();
 
   useEffect(() => {
@@ -26,6 +26,12 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
       clearReferralAttribution(tokenId);
     }
   }, [state, tokenId]);
+
+  // A quiet, best-effort fee estimate shown before the buyer ever signs
+  // anything — a plain simulation, no wallet prompt.
+  useEffect(() => {
+    if (isConnected && state === "idle") estimateFee(listingId);
+  }, [isConnected, state, listingId, estimateFee]);
 
   if (!isConnected) {
     return (
@@ -97,17 +103,24 @@ export function BuyButton({ listingId, priceXlm, tokenId }: Props) {
   }
 
   return (
-    <button
-      onClick={async () => {
-        try {
-          await buy({ listingId, referrer: getReferralAttribution(tokenId) });
-        } catch {
-          // error state handled by hook
-        }
-      }}
-      className="w-full rounded-soft bg-[var(--blue)] text-white font-bold text-xs tracking-widest uppercase px-8 py-4 transition-colors hover:bg-[#3493E5]"
-    >
-      {t("buy.ctaPrefix")} {priceXlm} XLM
-    </button>
+    <div className="flex flex-col gap-2">
+      <button
+        onClick={async () => {
+          try {
+            await buy({ listingId, referrer: getReferralAttribution(tokenId) });
+          } catch {
+            // error state handled by hook
+          }
+        }}
+        className="w-full rounded-soft bg-[var(--blue)] text-white font-bold text-xs tracking-widest uppercase px-8 py-4 transition-colors hover:bg-[#3493E5]"
+      >
+        {t("buy.ctaPrefix")} {priceXlm} XLM
+      </button>
+      {feeXlm && (
+        <p className="font-mono text-[10px] text-[var(--smoke)]">
+          {t("buy.estimatedFee")}: ~{feeXlm} XLM
+        </p>
+      )}
+    </div>
   );
 }

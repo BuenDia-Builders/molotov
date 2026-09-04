@@ -9,6 +9,7 @@ import { useWallet } from "@/hooks/use-wallet";
 import { RPC_URL, isUserRejection, reconcileTransaction } from "@/lib/stellar";
 import { contractErrorKey, type ContractErrorKey } from "@/lib/contract-errors";
 import { track } from "@/lib/analytics";
+import { stroopsToXlm } from "@/lib/stroops";
 
 export type BuyState = "idle" | "buying" | "confirming" | "reconciling" | "success" | "error";
 
@@ -73,6 +74,38 @@ export function useBuy() {
   const [state, setState] = useState<BuyState>("idle");
   const [errorKey, setErrorKey] = useState<ContractErrorKey | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [feeXlm, setFeeXlm] = useState<string | null>(null);
+
+  /* A quiet, best-effort network-fee estimate shown before the buyer ever signs
+     anything — a plain simulation (client.buy() simulates by default), no
+     wallet prompt. Never surfaced as an error: if it fails, the price is
+     still correct, we just don't have a fee number to show. Re-estimated from
+     scratch on the real click rather than reused, since simulation is cheap
+     and the two calls don't need to be the same object. */
+  const estimateFee = useCallback(
+    async (listingId: bigint) => {
+      if (!address) return;
+      try {
+        const client = new MarketClient({
+          contractId: marketNetworks.testnet.contractId,
+          networkPassphrase: marketNetworks.testnet.networkPassphrase,
+          rpcUrl: RPC_URL,
+          publicKey: address,
+          signTransaction: async (xdr: string) =>
+            signTransaction(xdr, { networkPassphrase: marketNetworks.testnet.networkPassphrase }),
+        });
+        const tx = await client.buy({
+          buyer: address,
+          listing_id: listingId,
+          referrer: undefined,
+        });
+        setFeeXlm(tx.built?.fee ? stroopsToXlm(tx.built.fee) : null);
+      } catch {
+        setFeeXlm(null);
+      }
+    },
+    [address, signTransaction],
+  );
 
   /* Mount-time recovery: a buy from a previous session whose hash was
      persisted but never resolved (reload mid-confirmation) is reconciled
@@ -211,5 +244,5 @@ export function useBuy() {
     [address, signTransaction],
   );
 
-  return { buy, state, errorKey, txHash, reset };
+  return { buy, state, errorKey, txHash, feeXlm, estimateFee, reset };
 }
