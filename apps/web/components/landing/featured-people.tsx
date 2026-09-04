@@ -27,7 +27,7 @@ export function FeaturedPeople({ creators, collectors }: Props) {
             </h2>
             <Link
               href="/artists"
-              className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--black)]/50 underline-offset-4 hover:text-[var(--black)] hover:underline"
+              className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.2em] text-[var(--black)]/50 underline underline-offset-4 hover:text-[var(--black)]"
             >
               {t("landing.people.viewArtists")} ↗
             </Link>

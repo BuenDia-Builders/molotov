@@ -11,7 +11,7 @@ export function ManifestoTeaser() {
     <section className="border-t border-black/10 bg-[var(--offwhite)] px-6 py-10 text-center">
       <Link
         href="/manifiesto"
-        className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.25em] text-[var(--black)]/60 underline-offset-4 transition-colors hover:text-[var(--black)] hover:underline"
+        className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.25em] text-[var(--black)]/60 underline underline-offset-4 transition-colors hover:text-[var(--black)]"
       >
         {t("nav.manifesto")} ↗
       </Link>
