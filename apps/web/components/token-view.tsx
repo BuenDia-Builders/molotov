@@ -146,6 +146,38 @@ export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenVie
           </h1>
         )}
 
+        {/* Mobile-only quick summary: artist · price/status · buy — the path
+            to purchase shouldn't require scrolling past the full detail list
+            first. Desktop already gets this from the sticky image column +
+            the detailed price block below; this block is redundant there,
+            so it's hidden from md: up. */}
+        <div className="mb-8 flex flex-col gap-3 md:hidden">
+          <div className="flex items-center justify-between gap-4">
+            <Link
+              href={`/artist/${token.artist}`}
+              className="truncate font-mono text-[11px] text-[var(--offwhite)]/70 underline underline-offset-4"
+            >
+              {token.artistHandle ?? truncateAddress(token.artist)}
+            </Link>
+            {listing && priceXlm ? (
+              <span className="shrink-0 font-mono text-lg text-[var(--offwhite)]">
+                {priceXlm} <span className="text-xs text-[var(--smoke)]">XLM</span>
+              </span>
+            ) : (
+              <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--smoke)]/60">
+                {t("works.card.notListed")}
+              </span>
+            )}
+          </div>
+          {listing && priceXlm && (
+            <BuyButton
+              listingId={BigInt(listing.listing_id)}
+              priceXlm={priceXlm}
+              tokenId={token.token_id}
+            />
+          )}
+        </div>
+
         {meta.flashing && (
           <p className="mb-6 max-w-md border border-yellow-500/30 px-3 py-2 font-mono text-[10px] leading-relaxed text-yellow-200/80">
             ⚠ {t("tokenPage.flashingWarn")}
@@ -162,7 +194,7 @@ export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenVie
           <Row label={t("tokenPage.artist")}>
             <Link
               href={`/artist/${token.artist}`}
-              className="font-mono text-[10px] text-[var(--offwhite)] underline-offset-4 hover:underline"
+              className="font-mono text-[10px] text-[var(--offwhite)] underline underline-offset-4"
             >
               {token.artistHandle ?? truncateAddress(token.artist)}
             </Link>
@@ -219,7 +251,7 @@ export function TokenView({ token, listing, priceXlm, priceUsd, meta }: TokenVie
           <div className="mt-6">
             <Link
               href={`/my-work/${token.token_id}`}
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)] underline-offset-4 transition-colors hover:text-[var(--offwhite)] hover:underline"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)] underline underline-offset-4 transition-colors hover:text-[var(--offwhite)]"
             >
               {t("tokenPage.listForSale")}
             </Link>
