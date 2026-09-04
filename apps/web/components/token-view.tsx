@@ -61,10 +61,11 @@ const LICENSE_LABEL_KEY = {
   "CC0-1.0": "mint.form.licenses.cc0",
 } as const;
 
+/** A caption line, not a table row: quiet, gently-tracked label, no per-row rule. */
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
+      <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--smoke)]/70">
         {label}
       </span>
       {children}

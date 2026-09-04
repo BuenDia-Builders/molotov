@@ -61,17 +61,18 @@ export function ArtworkCard({
         </span>
       </div>
 
-      {/* Caption */}
+      {/* Caption — a label under the work, not a spec sheet: one quiet metadata
+          line, gentler tracking, no ruled row separating title from price. */}
       <div className="px-5 py-5 flex flex-col gap-1.5">
-        <p className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.22em] uppercase text-[var(--smoke)] truncate">
+        <p className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.14em] uppercase text-[var(--smoke)]/80 truncate">
           {artistLabel}
         </p>
         <p className="font-[family-name:var(--font-display)] font-bold text-[var(--offwhite)] text-[1.05rem] leading-snug truncate">
           {title}
         </p>
-        <div className="flex items-center justify-between mt-2 pt-2.5 border-t border-white/8">
+        <div className="flex items-center justify-between mt-2.5">
           {royaltyPct !== undefined ? (
-            <span className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.15em] uppercase text-[var(--smoke)]/60">
+            <span className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.1em] uppercase text-[var(--smoke)]/50">
               {royaltyPct}% royalty
             </span>
           ) : (
@@ -83,11 +84,11 @@ export function ArtworkCard({
               {priceUsd && <span className="ml-1.5 text-[var(--smoke)]/60">~US$ {priceUsd}</span>}
             </span>
           ) : status === "sold" ? (
-            <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.12em] text-[var(--smoke)]/60">
+            <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.1em] text-[var(--smoke)]/60">
               {t("works.card.sold")}
             </span>
           ) : (
-            <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.12em] text-[var(--smoke)]/35">
+            <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.1em] text-[var(--smoke)]/35">
               {t("works.card.notListed")}
             </span>
           )}
