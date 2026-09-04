@@ -23,6 +23,11 @@ export type ArtworkCardProps = {
   priceXlm: string | null;
   priceUsd?: string | null;
   status: ArtworkCardStatus;
+  /** A grid can mark one card as the lead — wider image, bigger title — so a
+   * catalog reads as curated rather than N identical tiles. Purely visual:
+   * callers still control the grid span (e.g. `sm:col-span-2`) via className. */
+  featured?: boolean;
+  className?: string;
 };
 
 export function ArtworkCard({
@@ -35,6 +40,8 @@ export function ArtworkCard({
   priceXlm,
   priceUsd,
   status,
+  featured = false,
+  className,
 }: ArtworkCardProps) {
   const { t } = useI18n();
   const artistLabel = artistHandle ?? truncateAddress(artistAddress, 4, 4);
@@ -42,17 +49,23 @@ export function ArtworkCard({
   return (
     <Link
       href={`/token/${tokenId}`}
-      className="group flex flex-col bg-[var(--carbon)] overflow-hidden transition-transform duration-300 hover:-translate-y-0.5"
+      className={`group flex flex-col bg-[var(--carbon)] overflow-hidden transition-transform duration-300 hover:-translate-y-0.5${className ? ` ${className}` : ""}`}
     >
       {/* Image */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-[var(--blue-deep)] to-[var(--blue)]">
+      <div
+        className={`relative overflow-hidden bg-gradient-to-br from-[var(--blue-deep)] to-[var(--blue)] ${featured ? "aspect-[16/11]" : "aspect-[4/5]"}`}
+      >
         {imageUrl && (
           <Image
             src={imageUrl}
             alt={title}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes={
+              featured
+                ? "(max-width: 640px) 100vw, 66vw"
+                : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            }
           />
         )}
         {/* subtle token number watermark */}
@@ -67,7 +80,9 @@ export function ArtworkCard({
         <p className="font-[family-name:var(--font-mono)] text-[9px] tracking-[0.14em] uppercase text-[var(--smoke)]/80 truncate">
           {artistLabel}
         </p>
-        <p className="font-[family-name:var(--font-display)] font-bold text-[var(--offwhite)] text-[1.05rem] leading-snug truncate">
+        <p
+          className={`font-[family-name:var(--font-display)] font-bold text-[var(--offwhite)] leading-snug truncate ${featured ? "text-2xl" : "text-[1.05rem]"}`}
+        >
           {title}
         </p>
         <div className="flex items-center justify-between mt-2.5">

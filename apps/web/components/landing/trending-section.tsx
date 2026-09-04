@@ -75,7 +75,11 @@ export function TrendingSection({ collections, works }: Props) {
           </ol>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            {works.map((w) => (
+            {/* First slot leads — bigger, spanning two columns — instead of N
+                identical tiles, so the grid reads as curated. It's still the
+                same honest ordering (on sale, then sold, then newest), just
+                given room to be seen first. */}
+            {works.map((w, i) => (
               <ArtworkCard
                 key={w.tokenId}
                 tokenId={w.tokenId}
@@ -86,6 +90,8 @@ export function TrendingSection({ collections, works }: Props) {
                 priceXlm={w.priceXlm}
                 priceUsd={w.priceUsd}
                 status={w.priceXlm ? "for-sale" : w.sold ? "sold" : "not-listed"}
+                featured={i === 0}
+                className={i === 0 ? "sm:col-span-2" : undefined}
               />
             ))}
           </div>
