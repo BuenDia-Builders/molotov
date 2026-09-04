@@ -16,13 +16,13 @@ export function FinalCta() {
         <div className="mt-16 flex flex-col gap-4 sm:flex-row sm:items-center">
           <Link
             href="/create"
-            className="inline-flex h-12 items-center justify-center bg-[var(--blue)] px-7 text-[15px] font-medium text-white transition-colors hover:bg-[var(--blue-light)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--offwhite)]"
+            className="inline-flex h-12 items-center justify-center rounded-soft bg-[var(--blue)] px-7 text-[15px] font-medium text-white transition-colors hover:bg-[var(--blue-light)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--offwhite)]"
           >
             {t("common.mintFirst")}
           </Link>
           <Link
             href="/works"
-            className="inline-flex h-12 items-center px-2 font-[family-name:var(--font-mono)] text-[14px] text-[var(--offwhite)]/70 underline-offset-4 transition-colors hover:text-[var(--offwhite)] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue)]"
+            className="inline-flex h-12 items-center px-2 font-[family-name:var(--font-mono)] text-[14px] text-[var(--offwhite)]/70 underline underline-offset-4 transition-colors hover:text-[var(--offwhite)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue)]"
           >
             {t("common.collectorsSeeWorks")}
           </Link>
