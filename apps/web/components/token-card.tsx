@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ipfsToGateway } from "@/lib/ipfs";
 import { truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
+import { ArtworkPlaceholder } from "@/components/artwork-placeholder";
 
 export interface TokenCardProps {
   token_id: number;
@@ -75,13 +76,8 @@ export function TokenCard({ token_id, token_uri, artist, royalty_bps, price }: T
             className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center font-[family-name:var(--font-mono)] text-[10px] text-white/40 uppercase tracking-widest p-4 text-center">
-            {t("artwork.imageFallback")}
-          </div>
+          <ArtworkPlaceholder label={t("artwork.imageFallback")} />
         )}
-        <div className="tc-image-num absolute bottom-4 right-4 font-[family-name:var(--font-mono)] text-[48px] font-bold text-white/5 tracking-tight leading-none pointer-events-none select-none">
-          {String(token_id).padStart(2, "0")}
-        </div>
       </div>
 
       {/* Body container */}

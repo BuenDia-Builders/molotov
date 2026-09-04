@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { truncateAddress } from "@/lib/stellar";
 import { useI18n } from "@/lib/i18n";
+import { ArtworkPlaceholder } from "@/components/artwork-placeholder";
 
 /**
  * Shared with /works: the home page's "trending" grid and the discover grid
@@ -68,10 +69,11 @@ export function ArtworkCard({
             }
           />
         )}
-        {/* subtle token number watermark */}
-        <span className="absolute bottom-3 right-4 font-[family-name:var(--font-mono)] text-[40px] font-bold text-white/4 leading-none select-none pointer-events-none">
-          {String(tokenId).padStart(2, "0")}
-        </span>
+        {!imageUrl && (
+          <div className="absolute inset-0">
+            <ArtworkPlaceholder label={t("artwork.imageFallback")} />
+          </div>
+        )}
       </div>
 
       {/* Caption — a label under the work, not a spec sheet: one quiet metadata
