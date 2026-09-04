@@ -70,10 +70,12 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
           onClick={() => setMenuOpen((open) => !open)}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
-          className={`min-h-[44px] bg-transparent font-[family-name:var(--font-mono)] ${chipClass}`}
+          className={`min-h-[44px] rounded-soft bg-transparent font-[family-name:var(--font-mono)] ${chipClass}`}
         >
           {IS_TESTNET && (
-            <span className={`mr-2 border px-1.5 py-0.5 text-[12px] uppercase ${badgeClass}`}>
+            <span
+              className={`mr-2 rounded-soft border px-1.5 py-0.5 text-[12px] uppercase ${badgeClass}`}
+            >
               {t("wallet.testnetBadge")}
             </span>
           )}
@@ -146,7 +148,7 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
                   setMenuOpen(false);
                   void connect();
                 }}
-                className="flex min-h-11 w-full items-center justify-center bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[12px] text-white hover:bg-[var(--blue-light)]"
+                className="flex min-h-11 w-full items-center justify-center rounded-soft bg-[var(--blue)] px-4 font-[family-name:var(--font-mono)] text-[12px] text-white hover:bg-[var(--blue-light)]"
               >
                 {t("wallet.connect")}
               </button>
@@ -177,7 +179,7 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
             setMenuOpen(true);
           }}
           disabled={isConnecting}
-          className="min-h-[44px] bg-[var(--blue)] text-white hover:bg-[var(--blue-light)]"
+          className="min-h-[44px] rounded-soft bg-[var(--blue)] text-white hover:bg-[var(--blue-light)]"
         >
           {isConnecting ? t("wallet.connecting") : t("nav.signIn")}
         </Button>
@@ -190,13 +192,15 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
     <div ref={containerRef} className="relative">
       <Button
         variant="outline"
-        className={`min-h-[44px] bg-transparent font-[family-name:var(--font-mono)] ${chipClass}`}
+        className={`min-h-[44px] rounded-soft bg-transparent font-[family-name:var(--font-mono)] ${chipClass}`}
         onClick={() => setMenuOpen((open) => !open)}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
       >
         {IS_TESTNET && (
-          <span className={`mr-2 border px-1.5 py-0.5 text-[12px] uppercase ${badgeClass}`}>
+          <span
+            className={`mr-2 rounded-soft border px-1.5 py-0.5 text-[12px] uppercase ${badgeClass}`}
+          >
             {t("wallet.testnetBadge")}
           </span>
         )}

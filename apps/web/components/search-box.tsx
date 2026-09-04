@@ -81,7 +81,7 @@ export function SearchBox({ variant = "bar" }: { variant?: "bar" | "block" }) {
         onKeyDown={(e) => e.key === "Enter" && submit()}
         placeholder={t("nav.searchPlaceholder")}
         aria-label={t("nav.searchLabel")}
-        className="h-9 w-full border border-black/15 bg-white/60 px-3 font-[family-name:var(--font-mono)] text-[11px] text-[var(--black)] placeholder:text-[var(--black)]/35 focus:border-[var(--blue)] focus-ring"
+        className="h-9 w-full rounded-soft border border-black/15 bg-white/60 px-3 font-[family-name:var(--font-mono)] text-[11px] text-[var(--black)] placeholder:text-[var(--black)]/35 focus:border-[var(--blue)] focus-ring"
       />
       {open && results && (
         <div className="absolute left-0 right-0 top-full z-50 mt-1 border border-black/10 bg-[var(--offwhite)] shadow-md">

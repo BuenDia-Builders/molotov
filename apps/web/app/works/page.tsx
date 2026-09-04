@@ -105,7 +105,9 @@ export default async function WorksPage() {
 
         {result.status === "ok" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8">
-            {result.works.map((work) => {
+            {/* Lead item spans two columns — same treatment as the home page's
+                trending grid, so the catalog reads as curated, not N tiles. */}
+            {result.works.map((work, i) => {
               const royaltyPct = Number(
                 (work.royalty_bps / 100).toFixed(work.royalty_bps % 100 === 0 ? 0 : 1),
               );
@@ -123,6 +125,8 @@ export default async function WorksPage() {
                     work.price_xlm ? formatUsdEstimate(work.price_xlm, result.usdRate) : null
                   }
                   status={work.price_xlm ? "for-sale" : work.sold ? "sold" : "not-listed"}
+                  featured={i === 0}
+                  className={i === 0 ? "sm:col-span-2" : undefined}
                 />
               );
             })}

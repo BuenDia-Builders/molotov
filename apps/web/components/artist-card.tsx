@@ -48,7 +48,7 @@ export function ArtistCard({ artist }: { artist: ArtistCard }) {
             </span>
           </div>
         )}
-        <span className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm border border-white/15 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.15em] text-white/60">
+        <span className="absolute top-3 right-3 rounded-soft bg-black/40 backdrop-blur-sm border border-white/15 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-[0.15em] text-white/60">
           {artist.tokenCount}{" "}
           {artist.tokenCount === 1
             ? t("landing.trending.piecesSingular")

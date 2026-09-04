@@ -6,6 +6,7 @@ import Link from "next/link";
 import { BuyButton } from "@/components/buy-button";
 import { ShareButton } from "@/components/share-button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { ArtworkPlaceholder } from "@/components/artwork-placeholder";
 import { useI18n } from "@/lib/i18n";
 import { truncateAddress } from "@/lib/stellar";
 
@@ -61,48 +62,14 @@ const LICENSE_LABEL_KEY = {
   "CC0-1.0": "mint.form.licenses.cc0",
 } as const;
 
+/** A caption line, not a table row: quiet, gently-tracked label, no per-row rule. */
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
+      <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--smoke)]/70">
         {label}
       </span>
       {children}
-    </div>
-  );
-}
-
-/**
- * Neutral stand-in for a work whose image is missing or could not be fetched.
- * Deliberately carries no brand mark: the app icon sitting in the artwork frame
- * reads as content an artist chose, not as an empty state. Same copy key as the
- * browse-grid card (components/token-card.tsx), so both surfaces say the same thing.
- */
-function ArtworkPlaceholder({ label }: { label: string }) {
-  return (
-    <div
-      role="img"
-      aria-label={label}
-      className="flex flex-col items-center justify-center gap-4 px-8 py-10 text-center"
-    >
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.25}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-10 w-10 text-white/20"
-      >
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-        <circle cx="8.5" cy="8.5" r="1.5" />
-        <path d="m21 15-5-5L5 21" />
-        <line x1="2.5" y1="2.5" x2="21.5" y2="21.5" />
-      </svg>
-      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--smoke)]">
-        {label}
-      </span>
     </div>
   );
 }
