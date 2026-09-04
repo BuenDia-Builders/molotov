@@ -462,8 +462,8 @@ export const es = {
       empty: "Todavía no hay ventas. La primera queda acá, con su regalía a la vista.",
     },
     people: {
-      creatorsTitle: "Creadores destacados",
-      collectorsTitle: "Compradores destacados",
+      creatorsTitle: "Quiénes crean",
+      collectorsTitle: "Quiénes tienen las obras",
       viewArtists: "Ver artistas",
       soldLabel: "vendido",
       collectedLabel: "comprado",
