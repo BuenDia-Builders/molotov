@@ -609,6 +609,25 @@ impl MolotovMarketplace {
                 &DistMode::Primary(split.clone()),
             )
             .unwrap_or_else(|err| panic_with_error!(e, err));
+        } else {
+            // Secondary path gets the same up-front dry-run as primary — fail at
+            // list() instead of leaving a malformed listing to only be discovered
+            // on the first buy(). Not reachable in practice today (every arm of
+            // distribute uses checked_* arithmetic; a price large enough to
+            // overflow i128 exceeds any real SAC balance), but it's free and it
+            // means `list()` and `buy()` never disagree about whether a listing's
+            // money math is sound.
+            let royalties = NftClient::new(e, &nft).get_royalty_info(&token_id, &price);
+            distribute(
+                e,
+                price,
+                fee_bps,
+                referral_bps,
+                &treasury,
+                &None,
+                &DistMode::Secondary(seller.clone(), royalties),
+            )
+            .unwrap_or_else(|err| panic_with_error!(e, err));
         }
 
         // Escrow IN: move token(s) from the seller into the contract.
