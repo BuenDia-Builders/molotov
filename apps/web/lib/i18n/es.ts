@@ -439,8 +439,11 @@ export const es = {
       ctaConnected: "Ver obras",
     },
     hero: {
-      /** El primer statement del producto — dicho antes de que haya que scrollear */
-      headline: "El arte le paga a quien lo hace.",
+      /** El primer statement del producto — dicho antes de que haya que scrollear.
+       *  Partido en tres para poder destacar "paga" en la voz editorial (Fraunces). */
+      headlineBefore: "El arte le ",
+      headlineEm: "paga",
+      headlineAfter: " a quien lo hace.",
       forSale: "En venta",
       viewWork: "Ver obra",
       slideLabel: "Ir a la obra",

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Syne, DM_Sans, Space_Mono } from "next/font/google";
+import { Syne, DM_Sans, Space_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { WalletProvider } from "@/providers/wallet-provider";
 import { MolotovPrivyProvider } from "@/providers/privy-provider";
@@ -25,6 +25,15 @@ const spaceMono = Space_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
   variable: "--font-mono",
+});
+// Second, editorial-only voice — manifesto, curatorial captions, the
+// occasional alternate headline. Never used for UI chrome: nav, buttons,
+// labels and CTAs stay Syne/DM Sans/Space Mono. See molotov-overrides.md.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-editorial",
 });
 
 export const metadata: Metadata = {
@@ -60,7 +69,7 @@ export default function RootLayout({
   return (
     <html
       lang={en.meta.lang}
-      className={`${syne.variable} ${dmSans.variable} ${spaceMono.variable} h-full antialiased`}
+      className={`${syne.variable} ${dmSans.variable} ${spaceMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="relative min-h-full flex flex-col bg-black text-offwhite font-[family-name:var(--font-body)]">
         {/* Grain overlay: sits above the black background, below content (z-10). */}

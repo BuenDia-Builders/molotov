@@ -18,9 +18,12 @@
   --color-blue-muted: #1A3060;
 
   /* Brand fonts */
-  --font-display: var(--font-display);
-  --font-body:    var(--font-body);
-  --font-mono:    var(--font-mono);
+  --font-display:  var(--font-display);
+  --font-body:     var(--font-body);
+  --font-mono:     var(--font-mono);
+  /* Editorial-only second voice — manifesto, curatorial captions, an
+     occasional alternate headline. Never for UI chrome. */
+  --font-editorial: var(--font-editorial);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

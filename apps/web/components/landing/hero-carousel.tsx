@@ -53,7 +53,11 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
         {/* Text panel — the value prop, stated plainly, always rendered */}
         <div className="flex flex-col gap-6 md:w-[42%] md:shrink-0">
           <h1 className="font-[family-name:var(--font-display)] text-[clamp(2rem,5vw,3.25rem)] font-bold leading-[1.05] text-white">
-            {t("landing.hero.headline")}
+            {t("landing.hero.headlineBefore")}
+            <em className="font-[family-name:var(--font-editorial)] font-medium italic text-[var(--blue)]">
+              {t("landing.hero.headlineEm")}
+            </em>
+            {t("landing.hero.headlineAfter")}
           </h1>
           <p className="max-w-md text-base leading-relaxed text-white/70">
             {t("landing.tagline.description")}
