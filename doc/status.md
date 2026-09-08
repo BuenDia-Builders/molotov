@@ -49,11 +49,13 @@ multisig/timelock yet.
 - **List** a token into marketplace escrow and **buy** it, with the creator's royalty paid before a secondary sale can close.
 - **Enforce the royalty on every _marketplace_ resale** by a non-creator — the only royalty-skipping path (a primary-sale split) is gated to the token's minter.
 - **Settle only in the allowlisted currency** (native XLM SAC); the currency allowlist is checked at both `list` and `buy`.
+- **Settle only through the allowlisted NFT contract** (MolotovNFT); same shape as the currency allowlist, checked at both `list` and `buy` — verified live via a `buy` simulation against real testnet listings.
 - **Take a 2.5% platform fee**, with an optional **referral** carved out of that fee (never added on top).
 - **Project on-chain events** (mint / transfer / burn / listing / sale / registry) into a read-only Supabase mirror via the indexer, with a `/api/indexer/health` endpoint.
 - **Show artist earnings** (royalties, fees, referrals) read from that projection.
 - **Connect a wallet** — Freighter, xBull, Albedo, LOBSTR, Hana, plus WalletConnect; Privy email wallet on testnet only.
 - **Browse** works, artists, token detail and profiles; **search** artists; carry **curatorial metadata** (tags, category, license, sensitive flags, attributes, editions).
+- **Show a pre-signature network-fee estimate** on both mint and buy, read from the simulated transaction; **reconcile a buy against `getTransaction`** on failure or reload instead of assuming it didn't charge; **guide an artist with no prior Stellar knowledge** through mint (why a wallet, identity vs. wallet, a plain-language pre-submit summary, decoded contract errors).
 
 ## 3. Deliberately OFF: the ArtistRegistry mint gate
 
@@ -74,12 +76,6 @@ Activating the gate is one owner call: `NFT.set_registry(<real registry>)`.
 
 ## 4. Known gaps
 
-- **NFT-contract allowlist is implemented but NOT deployed.** Commit `99124b1` added
-  `set_allowed_nft` / `DataKey::AllowedNft`, checked in `list` and `buy` — but the live
-  marketplace WASM predates it (verified: `set_allowed_nft` is an unrecognized subcommand
-  on the deployed contract). On-chain, `list`/`buy` do **not** yet restrict which NFT
-  contract is used. Deploying it needs a SEP-49 `upgrade` followed by
-  `set_allowed_nft(<MolotovNFT>, true)`.
 - **The indexer lags the chain by hours.** It runs on a GitHub Actions cron; scheduled
   events are throttled to ~2–3 h in practice (not the configured `*/5`), so the Supabase
   projection trails on-chain state. `MAX_LEDGER_LAG` (5000 ledgers) is calibrated to that,
@@ -97,4 +93,4 @@ Activating the gate is one owner call: `NFT.set_registry(<real registry>)`.
 
 ---
 
-_Last verified against commit `d872fc8`, 2026-08-16._
+_Last verified against commit `df6d9cc`, 2026-09-07._
