@@ -187,7 +187,7 @@ export const es = {
   create: {
     connectPrompt: "Para subir tu primera obra necesitás conectar tu wallet.",
     connectExplain:
-      "Tu obra queda grabada en Stellar, no en un servidor de Molotov — la wallet es la que firma esa operación, y es adonde te va a llegar la regalía en cada reventa, para siempre.",
+      "Tu obra existe como archivo digital. Lo que vive en Stellar es su certificado: un registro público de quién la creó y quién la tiene hoy, que nadie puede reescribir después. Ese certificado lo firma tu wallet, y ahí te llega la regalía, automática, cada vez que se revende dentro de Molotov.",
   },
   mint: {
     progress: {

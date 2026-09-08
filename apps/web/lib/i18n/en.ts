@@ -188,7 +188,7 @@ export const en = {
   create: {
     connectPrompt: "To upload your first work, connect your wallet.",
     connectExplain:
-      "Your work is recorded on Stellar, not on a Molotov server — the wallet is what signs that operation, and it's where your royalty lands on every resale, permanently.",
+      "Your work exists as a digital file. What lives on Stellar is its certificate: a public record of who created it and who holds it today, one that can never be rewritten afterward. That certificate carries your wallet's signature, and it's where your royalty lands automatically, every time it's resold within Molotov.",
   },
   mint: {
     progress: {
