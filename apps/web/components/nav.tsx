@@ -21,20 +21,21 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-[var(--offwhite)]">
-      <div className="flex h-12 items-center gap-4 px-5 md:gap-6 md:px-10 lg:px-20">
-        {/* Left: wordmark */}
-        <Link href="/" aria-label={t("nav.homeLabel")} className="flex shrink-0 items-center gap-2">
+      <div className="flex h-20 items-center gap-4 px-5 md:gap-6 md:px-10 lg:px-20">
+        {/* Left: wordmark — one mark, not two. logo-lockup.png already spells
+            "molotov" with the flame/bottle built into the "t"/"o"; showing it
+            at real size replaces the old icon+repeated-text pairing (the
+            icon, squeezed into 28px, was too small to read as anything and
+            just competed with the text next to it). */}
+        <Link href="/" aria-label={t("nav.homeLabel")} className="flex shrink-0 items-center">
           <Image
-            src="/brand/logo_sinfondo.png"
-            alt=""
-            width={28}
-            height={28}
-            className="logo-flame h-7 w-7"
+            src="/brand/logo-lockup.png"
+            alt="Molotov"
+            width={831}
+            height={623}
+            className="logo-flame h-14 w-auto md:h-16"
             priority
           />
-          <span className="font-[family-name:var(--font-display)] text-sm font-bold tracking-[0.18em] text-[var(--black)]">
-            MOLOTOV
-          </span>
         </Link>
 
         {/* Center: artist search (md+; mobile gets the row below) */}
