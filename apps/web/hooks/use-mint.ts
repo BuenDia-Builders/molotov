@@ -6,8 +6,18 @@ import { scValToNative } from "@stellar/stellar-sdk";
 import { useWallet } from "@/hooks/use-wallet";
 import { uploadImage, uploadMetadata } from "@/lib/ipfs";
 import { RPC_URL, isUserRejection, reconcileTransaction } from "@/lib/stellar";
+import { contractErrorKey, type ContractErrorKey } from "@/lib/contract-errors";
 import { MolotovError } from "@/lib/errors";
 import { buildTokenMetadata, type AttributeInput } from "@/lib/metadata";
+import { stroopsToXlm } from "@/lib/stroops";
+
+/** Placeholder used only to simulate a mint for a fee estimate — never sent.
+ *  A real `token_uri` isn't known until the image/metadata are uploaded to
+ *  IPFS, which today only happens once the artist actually submits; this
+ *  string is just long enough to be a realistic stand-in for the resource
+ *  fee's sizing, without making the artist wait on an upload just to see a
+ *  number. */
+const FEE_ESTIMATE_TOKEN_URI = "ipfs://bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 /** The contract mints one token per call, one signature each — editions are
  *  sequential mints sharing the same URI, so the cap keeps the signing
@@ -133,8 +143,51 @@ export function useMint() {
   const { address, signTransaction } = useWallet();
   const [state, setState] = useState<MintState>("idle");
   const [errorKind, setErrorKind] = useState<MintErrorKind>(null);
+  /** Specific reason a chain-level ("submit") failure happened, decoded from
+   *  the contract's own error code where possible — e.g. "your wallet isn't
+   *  registered as an artist yet" instead of a flat "something went wrong". */
+  const [errorMessageKey, setErrorMessageKey] = useState<ContractErrorKey | null>(null);
   /** Editions progress: how many copies confirmed, out of how many asked. */
   const [progress, setProgress] = useState<{ minted: number; total: number } | null>(null);
+  const [feeXlm, setFeeXlm] = useState<string | null>(null);
+
+  /* A quiet, best-effort per-signature network-fee estimate, shown before the
+     artist ever signs anything — same idea as useBuy's estimateFee. Simulates
+     a mint with the real royalty config but a placeholder token_uri (the real
+     one isn't known until the artist actually submits and IPFS upload runs),
+     since simulation only needs a same-shaped call, not the final content. */
+  const estimateFee = useCallback(
+    async (params: {
+      royaltyBps: number;
+      royaltyRecipients: Array<{ address: string; shareBps: number }>;
+    }) => {
+      if (!address) return;
+      try {
+        const client = new Client({
+          contractId: networks.testnet.contractId,
+          networkPassphrase: networks.testnet.networkPassphrase,
+          rpcUrl: RPC_URL,
+          publicKey: address,
+          signTransaction: async (xdr: string) =>
+            signTransaction(xdr, { networkPassphrase: networks.testnet.networkPassphrase }),
+        });
+        const tx = await client.mint({
+          artist: address,
+          recipient: address,
+          token_uri: FEE_ESTIMATE_TOKEN_URI,
+          royalty_bps: params.royaltyBps,
+          recipients: params.royaltyRecipients.map((r) => ({
+            address: r.address,
+            share_bps: r.shareBps,
+          })),
+        });
+        setFeeXlm(tx.built?.fee ? stroopsToXlm(tx.built.fee) : null);
+      } catch {
+        setFeeXlm(null);
+      }
+    },
+    [address, signTransaction],
+  );
 
   /* Mount-time recovery: a mint from a previous session whose hash was persisted
      but never resolved (reload mid-confirmation) is reconciled here rather than
@@ -168,6 +221,7 @@ export function useMint() {
   const reset = useCallback(() => {
     setState("idle");
     setErrorKind(null);
+    setErrorMessageKey(null);
     setProgress(null);
   }, []);
 
@@ -305,6 +359,10 @@ export function useMint() {
         const rejected = isUserRejection(err);
         if (rejected) clearPendingTx(pKey);
         setErrorKind(rejected ? "sign" : "submit");
+        // Decode the contract's own error code where the failure reached the
+        // chain at all (e.g. ArtistNotRegistered) — falls back to the generic
+        // "transaction.errors.failed" key when it can't be identified.
+        if (!rejected) setErrorMessageKey(contractErrorKey(err));
         setState("error");
         throw new MolotovError(
           rejected
@@ -319,5 +377,5 @@ export function useMint() {
     [address, signTransaction],
   );
 
-  return { mint, state, errorKind, progress, reset };
+  return { mint, state, errorKind, errorMessageKey, progress, feeXlm, estimateFee, reset };
 }

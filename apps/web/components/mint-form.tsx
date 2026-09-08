@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/use-wallet";
 import { useMint, MAX_EDITIONS, type MintState } from "@/hooks/use-mint";
@@ -67,7 +67,8 @@ function ProgressView({
 export function MintForm() {
   const router = useRouter();
   const { address } = useWallet();
-  const { mint, state, errorKind, progress, reset } = useMint();
+  const { mint, state, errorKind, errorMessageKey, progress, feeXlm, estimateFee, reset } =
+    useMint();
   const { locale, t } = useI18n();
 
   const [file, setFile] = useState<File | null>(null);
@@ -128,6 +129,15 @@ export function MintForm() {
   const royaltyLabel =
     (locale === "es" ? royalty.toFixed(1).replace(".", ",") : royalty.toFixed(1)) + "%";
   const canSubmit = Boolean(file) && title.trim().length > 0;
+
+  // A quiet, best-effort fee estimate shown before the artist ever signs
+  // anything — re-estimated whenever the royalty config (the only part of
+  // the mint call that can change its shape) changes.
+  useEffect(() => {
+    if (address && state === "idle") {
+      estimateFee({ royaltyBps, royaltyRecipients: [{ address, shareBps: 10_000 }] });
+    }
+  }, [address, state, royaltyBps, estimateFee]);
 
   const getDisabledHint = () => {
     if (!file && !title.trim()) return t("mint.form.hintMissingBoth");
@@ -194,12 +204,18 @@ export function MintForm() {
   }
 
   if (state === "error") {
+    // Prefer a specific, decoded reason (e.g. "your wallet isn't registered
+    // as an artist yet") over the generic chain-failure copy — but only when
+    // it's actually specific; the decoder's own generic fallback would be a
+    // worse message than the reassuring "nothing was charged" one below.
     const copy =
       errorKind === "upload"
         ? t("mint.errors.upload")
         : errorKind === "sign"
           ? t("mint.errors.sign")
-          : t("mint.errors.chain");
+          : errorMessageKey && errorMessageKey !== "transaction.errors.failed"
+            ? t(errorMessageKey)
+            : t("mint.errors.chain");
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 text-center">
         <p className="font-[family-name:var(--font-display)] text-3xl leading-tight [font-variation-settings:'opsz'_72] md:text-4xl">
@@ -398,6 +414,11 @@ export function MintForm() {
             <p className="mt-2 font-[family-name:var(--font-mono)] text-sm text-[var(--offwhite)]/70">
               {address ? truncateAddress(address, 6, 6) : t("mint.form.walletFallback")} ·{" "}
               <span className="text-[var(--offwhite)]/40">{t("mint.form.walletReceives")}</span>
+            </p>
+            {/* The identity-vs-wallet distinction, right where the money question
+                actually comes up — not just in the wallet menu, far from here. */}
+            <p className="mt-1.5 max-w-md text-sm leading-relaxed text-[var(--offwhite)]/60">
+              {t("mint.form.receiverExplain")}
             </p>
           </div>
 
@@ -613,6 +634,34 @@ export function MintForm() {
           </div>
 
           <div>
+            {/* A plain-language summary of the one irreversible step, right
+                before the button that triggers it — not buried in a fee line
+                the artist has to already know to look for. */}
+            {canSubmit && (
+              <div className="mb-4 flex flex-col gap-1.5 border border-white/10 p-4">
+                <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--offwhite)]/40">
+                  {t("mint.form.summaryTitle")}
+                </p>
+                <p className="text-sm text-[var(--offwhite)]/70">
+                  {t("mint.form.summaryRoyalty").replace("{pct}", royaltyLabel)}
+                </p>
+                <p className="text-sm text-[var(--offwhite)]/70">
+                  {t("mint.form.summaryWallet").replace(
+                    "{wallet}",
+                    address ? truncateAddress(address, 6, 6) : "—",
+                  )}
+                </p>
+                {feeXlm && (
+                  <p className="text-sm text-[var(--offwhite)]/70">
+                    {t("mint.form.estimatedFee")}: ~{feeXlm} XLM
+                    {editions > 1 ? ` × ${editions}` : ""}
+                  </p>
+                )}
+                <p className="mt-2 text-sm font-medium leading-relaxed text-[var(--offwhite)]">
+                  {t("mint.form.summaryIrreversible")}
+                </p>
+              </div>
+            )}
             <button
               type="button"
               disabled={!canSubmit}

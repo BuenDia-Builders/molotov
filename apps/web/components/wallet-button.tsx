@@ -141,6 +141,11 @@ export function WalletButton({ theme = "dark" }: { theme?: "light" | "dark" }) {
                   lobstr.co
                 </a>
               </p>
+              {/* Closes the loop: Decaf/LOBSTR only explain what to do on their
+                  end — without this, it's not obvious you come back here at all. */}
+              <p className="mt-3 font-[family-name:var(--font-mono)] text-[10px] font-bold leading-relaxed text-[var(--offwhite)]/80">
+                {t("wallet.noWalletGuideReturn")}
+              </p>
             </div>
             <div className="p-2">
               <button

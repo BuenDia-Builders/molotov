@@ -21,6 +21,11 @@ export function CreateClient() {
             <p className="font-[family-name:var(--font-display)] text-3xl leading-tight tracking-[-0.01em] [font-variation-settings:'opsz'_72] md:text-4xl">
               {t("create.connectPrompt")}
             </p>
+            {/* The "why" before the ask: an artist arriving here may have no
+                idea Molotov even involves a wallet at all. */}
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-[var(--offwhite)]/60">
+              {t("create.connectExplain")}
+            </p>
             <div className="mt-10">
               <WalletButton />
             </div>

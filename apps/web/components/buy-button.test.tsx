@@ -40,6 +40,8 @@ function buyCtx(over: Record<string, unknown> = {}) {
     state: "idle" as const,
     errorKey: null,
     txHash: null,
+    feeXlm: null,
+    estimateFee: vi.fn(),
     reset: vi.fn(),
     ...over,
   };
