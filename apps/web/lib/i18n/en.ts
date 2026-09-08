@@ -227,6 +227,7 @@ export const en = {
       walletFallback: "—",
       walletReceives: "your wallet (100%)",
       submit: "Upload work",
+      estimatedFee: "Estimated network fee",
       hintMissingImage: "Upload an image to continue.",
       hintMissingTitle: "The artwork title is missing.",
       hintMissingBoth: "Upload an image and add a title.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/use-wallet";
 import { useMint, MAX_EDITIONS, type MintState } from "@/hooks/use-mint";
@@ -67,7 +67,7 @@ function ProgressView({
 export function MintForm() {
   const router = useRouter();
   const { address } = useWallet();
-  const { mint, state, errorKind, progress, reset } = useMint();
+  const { mint, state, errorKind, progress, feeXlm, estimateFee, reset } = useMint();
   const { locale, t } = useI18n();
 
   const [file, setFile] = useState<File | null>(null);
@@ -128,6 +128,15 @@ export function MintForm() {
   const royaltyLabel =
     (locale === "es" ? royalty.toFixed(1).replace(".", ",") : royalty.toFixed(1)) + "%";
   const canSubmit = Boolean(file) && title.trim().length > 0;
+
+  // A quiet, best-effort fee estimate shown before the artist ever signs
+  // anything — re-estimated whenever the royalty config (the only part of
+  // the mint call that can change its shape) changes.
+  useEffect(() => {
+    if (address && state === "idle") {
+      estimateFee({ royaltyBps, royaltyRecipients: [{ address, shareBps: 10_000 }] });
+    }
+  }, [address, state, royaltyBps, estimateFee]);
 
   const getDisabledHint = () => {
     if (!file && !title.trim()) return t("mint.form.hintMissingBoth");
@@ -624,6 +633,12 @@ export function MintForm() {
             {!canSubmit && (
               <p className="mt-3 font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)]/60">
                 {getDisabledHint()}
+              </p>
+            )}
+            {feeXlm && (
+              <p className="mt-3 font-[family-name:var(--font-mono)] text-[12px] text-[var(--offwhite)]/60">
+                {t("mint.form.estimatedFee")}: ~{feeXlm} XLM
+                {editions > 1 ? ` × ${editions}` : ""}
               </p>
             )}
           </div>

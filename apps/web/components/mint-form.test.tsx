@@ -41,6 +41,8 @@ function mintCtx(over: Record<string, unknown> = {}) {
     state: "idle" as const,
     errorKind: null,
     progress: null,
+    feeXlm: null,
+    estimateFee: vi.fn(),
     reset: vi.fn(),
     ...over,
   };
