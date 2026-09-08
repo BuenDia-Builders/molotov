@@ -49,7 +49,7 @@ multisig/timelock yet.
 - **List** a token into marketplace escrow and **buy** it, with the creator's royalty paid before a secondary sale can close.
 - **Enforce the royalty on every _marketplace_ resale** by a non-creator — the only royalty-skipping path (a primary-sale split) is gated to the token's minter.
 - **Settle only in the allowlisted currency** (native XLM SAC); the currency allowlist is checked at both `list` and `buy`.
-- **Settle only through the allowlisted NFT contract** (MolotovNFT); same shape as the currency allowlist, checked at both `list` and `buy` — verified live via a `buy` simulation against real testnet listings.
+- **Settle only through the allowlisted NFT contract** (MolotovNFT); same shape as the currency allowlist, checked at both `list` and `buy`, proven in the sandboxed contract test suite. A live `buy` simulation against real testnet listings confirmed this once (2026-09-07); a later attempt to reproduce it cleanly did not succeed — see §5.
 - **Take a 2.5% platform fee**, with an optional **referral** carved out of that fee (never added on top).
 - **Project on-chain events** (mint / transfer / burn / listing / sale / registry) into a read-only Supabase mirror via the indexer, with a `/api/indexer/health` endpoint.
 - **Show artist earnings** (royalties, fees, referrals) read from that projection.
@@ -88,9 +88,50 @@ Activating the gate is one owner call: `NFT.set_registry(<real registry>)`.
   manual recovery (same doc).
 - **The database security suite has no CI.** `@molotov/indexer-db-tests` (RLS, the
   `SECURITY DEFINER` writers, `apply_*` idempotency) needs a local Supabase/Docker and is
-  excluded from CI — it runs only when someone runs it by hand.
+  excluded from CI — it runs only when someone runs it by hand. Details in §5.
 - **Testnet only.** No mainnet deployment; `apps/mobile` is an empty placeholder.
+
+## 5. Verification gaps — automated-tested vs. confirmed live
+
+From a ground-truth audit (2026-09-08) that converted every "this works" claim into a
+claim with cited evidence, then went hunting for the ones that only had code, not proof.
+Four gaps came out the other side genuinely open — automated coverage exists and passes,
+but a live, real-infrastructure confirmation does not (yet), and the two should not be
+read as the same thing:
+
+- **NFT-contract allowlist, live.** The gating logic itself is proven in the sandboxed
+  contract test suite (`list_rejects_non_allowlisted_nft`, `set_allowed_nft_requires_owner_auth`).
+  A live `buy` simulation against real testnet listings confirmed it once, cleanly
+  (2026-09-07: listings 5 and 6, full `Sold` events with correct royalty/fee). A second
+  attempt the next day did not reproduce cleanly — a quick scan of listing ids briefly
+  showed two as sellable, but re-checking each individually 10 seconds later found them
+  already consumed. That's the shared testnet having real concurrent activity, not a sign
+  the allowlist regressed — but a flaky read is not evidence, so this stays open rather
+  than getting marked confirmed on the strength of one ambiguous pass.
+- **RLS + indexer idempotency.** All 25 tests in `@molotov/indexer-db-tests` exist and are
+  well-formed, but need a full local Supabase stack (`supabase start`), which needs a
+  container runtime. Confirmed directly: neither `docker` nor `podman` is on `PATH` in a
+  normal dev checkout, and `supabase start` fails immediately with
+  `LegacyDockerLifecycleInspectError`. A local Postgres binary alone isn't sufficient
+  either — `@supabase/supabase-js` (what the tests use) talks to PostgREST, the HTTP layer
+  Supabase's container stack provides, not raw SQL, and no local PostgREST is installed.
+  Closing this needs Docker Desktop or Podman installed on the machine that runs it — not
+  a code change.
+- **Buy fee estimate, end to end.** `hooks/use-buy.test.ts` exercises the real hook —
+  `estimateFee`'s call shape, the fee read off `tx.built.fee`, silent failure on a bad
+  simulation — against a mocked contract client. It has never been confirmed against a
+  real wallet signing a real simulated transaction (the mint side of this was, once, with
+  Freighter connected on testnet). Automated and passing; not yet seen live.
+- **Artist earnings dashboard, end to end.** `earnings-client.test.tsx` and
+  `app/api/earnings/mine/route.test.ts` together prove the chain from a rendered number
+  back to `getArtistEarnings` in `lib/db/sales.ts`, against realistic fixtures shaped
+  exactly like that function's real return type. Nobody has actually loaded `/earnings`
+  as a real artist with real sales and watched the populated screen render — only the
+  logged-out state has been seen live.
+
+None of these four block anything today; they're the honest boundary of what this repo
+can currently prove about itself, not a list of known-broken behavior.
 
 ---
 
-_Last verified against commit `df6d9cc`, 2026-09-07._
+_Last verified against commit `b7c1824`, 2026-09-08._

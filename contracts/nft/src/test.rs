@@ -140,6 +140,50 @@ fn test_transfer() {
 }
 
 #[test]
+fn test_minter_of_survives_transfer() {
+    // The ground-truth audit flagged that test_minter_of_returns_creator only
+    // checks minter_of right after mint — never after the token has actually
+    // changed hands. This is the missing case: mint, transfer twice (through
+    // two different new owners), and confirm minter_of still points at the
+    // original artist every time, never at whoever holds it now.
+    let e = Env::default();
+    e.mock_all_auths();
+    let (client, _admin) = deploy(&e);
+
+    let artist = Address::generate(&e);
+    let collector_a = Address::generate(&e);
+    let collector_b = Address::generate(&e);
+    let token_id = client.mint(
+        &artist,
+        &collector_a,
+        &String::from_str(&e, "ipfs://obra-permanencia"),
+        &1000u32,
+        &one_recipient(&e, &artist),
+    );
+
+    assert_eq!(client.minter_of(&token_id), Some(artist.clone()));
+
+    client.transfer(&collector_a, &collector_b, &token_id);
+    assert_eq!(client.owner_of(&token_id), collector_b);
+    assert_eq!(
+        client.minter_of(&token_id),
+        Some(artist.clone()),
+        "minter_of must not change after the first resale"
+    );
+
+    // A second hop, back to the artist's own address as a plain collector —
+    // minter_of must still read as the artist, not because it currently
+    // matches the owner, but because it was never anything else.
+    client.transfer(&collector_b, &artist, &token_id);
+    assert_eq!(client.owner_of(&token_id), artist);
+    assert_eq!(
+        client.minter_of(&token_id),
+        Some(artist),
+        "minter_of must not change on any later transfer, including back to the original artist"
+    );
+}
+
+#[test]
 fn test_burn() {
     let e = Env::default();
     e.mock_all_auths();
