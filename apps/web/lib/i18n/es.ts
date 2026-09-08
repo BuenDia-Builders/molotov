@@ -54,7 +54,7 @@ export const es = {
     testnetBadge: "TESTNET",
     networkLabel: "Red",
     noWalletHint:
-      "Iniciaste sesión. Podés mirar las obras. Conectá una wallet para mintear o comprar.",
+      "Tu cuenta de Google es solo para identificarte acá adentro — no maneja fondos. Para mintear o comprar necesitás conectar una wallet Stellar de verdad: es donde te van a llegar las regalías, y solo vos tenés acceso a ella.",
     browse: "Ver obras",
     /** Sin wallet: qué app bajar y por qué. Decaf primero, LOBSTR como alternativa. */
     noWalletGuideLead:
@@ -62,6 +62,7 @@ export const es = {
     noWalletGuideDecaf:
       "Si nunca usaste cripto, bajá Decaf: entrás con Gmail o Apple, sin frase que anotar, y cobrás a tu banco en pesos. Desde el celular es lo más rápido.",
     noWalletGuideLobstr: "Si ya usás cripto, LOBSTR: te da una frase de recuperación para guardar.",
+    noWalletGuideReturn: "Cuando la tengas lista, volvé acá y tocá “Conectar wallet”.",
   },
   common: {
     mintFirst: "Subir tu primera obra",
@@ -185,6 +186,8 @@ export const es = {
   },
   create: {
     connectPrompt: "Para subir tu primera obra necesitás conectar tu wallet.",
+    connectExplain:
+      "Tu obra queda grabada en Stellar, no en un servidor de Molotov — la wallet es la que firma esa operación, y es adonde te va a llegar la regalía en cada reventa, para siempre.",
   },
   mint: {
     progress: {
@@ -227,8 +230,15 @@ export const es = {
       receiverLabel: "Recibe la regalía",
       walletFallback: "—",
       walletReceives: "tu wallet (100%)",
+      receiverExplain:
+        "Es la wallet que tenés conectada ahora — no tu cuenta de Google ni ningún dato de Molotov. Una vez que subas la obra, no se puede cambiar.",
       submit: "Subir obra",
       estimatedFee: "Fee de red estimado",
+      summaryTitle: "Antes de confirmar",
+      summaryRoyalty: "Regalía: {pct}, fija para siempre.",
+      summaryWallet: "Le llega a: {wallet}",
+      summaryIrreversible:
+        "Al tocar “Subir obra” esto queda grabado en Stellar. No se puede deshacer ni editar después.",
       hintMissingImage: "Subí una imagen para continuar.",
       hintMissingTitle: "Falta el título de la obra.",
       hintMissingBoth: "Subí una imagen y poné un título.",

@@ -6,6 +6,7 @@ import { scValToNative } from "@stellar/stellar-sdk";
 import { useWallet } from "@/hooks/use-wallet";
 import { uploadImage, uploadMetadata } from "@/lib/ipfs";
 import { RPC_URL, isUserRejection, reconcileTransaction } from "@/lib/stellar";
+import { contractErrorKey, type ContractErrorKey } from "@/lib/contract-errors";
 import { MolotovError } from "@/lib/errors";
 import { buildTokenMetadata, type AttributeInput } from "@/lib/metadata";
 import { stroopsToXlm } from "@/lib/stroops";
@@ -142,6 +143,10 @@ export function useMint() {
   const { address, signTransaction } = useWallet();
   const [state, setState] = useState<MintState>("idle");
   const [errorKind, setErrorKind] = useState<MintErrorKind>(null);
+  /** Specific reason a chain-level ("submit") failure happened, decoded from
+   *  the contract's own error code where possible — e.g. "your wallet isn't
+   *  registered as an artist yet" instead of a flat "something went wrong". */
+  const [errorMessageKey, setErrorMessageKey] = useState<ContractErrorKey | null>(null);
   /** Editions progress: how many copies confirmed, out of how many asked. */
   const [progress, setProgress] = useState<{ minted: number; total: number } | null>(null);
   const [feeXlm, setFeeXlm] = useState<string | null>(null);
@@ -216,6 +221,7 @@ export function useMint() {
   const reset = useCallback(() => {
     setState("idle");
     setErrorKind(null);
+    setErrorMessageKey(null);
     setProgress(null);
   }, []);
 
@@ -353,6 +359,10 @@ export function useMint() {
         const rejected = isUserRejection(err);
         if (rejected) clearPendingTx(pKey);
         setErrorKind(rejected ? "sign" : "submit");
+        // Decode the contract's own error code where the failure reached the
+        // chain at all (e.g. ArtistNotRegistered) — falls back to the generic
+        // "transaction.errors.failed" key when it can't be identified.
+        if (!rejected) setErrorMessageKey(contractErrorKey(err));
         setState("error");
         throw new MolotovError(
           rejected
@@ -367,5 +377,5 @@ export function useMint() {
     [address, signTransaction],
   );
 
-  return { mint, state, errorKind, progress, feeXlm, estimateFee, reset };
+  return { mint, state, errorKind, errorMessageKey, progress, feeXlm, estimateFee, reset };
 }

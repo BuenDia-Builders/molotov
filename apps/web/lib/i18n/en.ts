@@ -53,7 +53,8 @@ export const en = {
     disconnect: "Disconnect",
     testnetBadge: "TESTNET",
     networkLabel: "Network",
-    noWalletHint: "You're signed in. You can browse. Connect a wallet to mint or buy.",
+    noWalletHint:
+      "Your Google account is only your identity in here — it doesn't hold funds. To mint or buy you need to connect a real Stellar wallet: that's where your royalties land, and only you have access to it.",
     browse: "Browse works",
     /** No wallet: which app to get and why. Decaf first, LOBSTR as the alternative. */
     noWalletGuideLead:
@@ -62,6 +63,7 @@ export const en = {
       "If you have never used crypto, get Decaf: sign in with Gmail or Apple, no phrase to write down, and you get paid straight to your bank. Fastest on a phone.",
     noWalletGuideLobstr:
       "If you already use crypto, LOBSTR: it gives you a recovery phrase to keep safe.",
+    noWalletGuideReturn: "Once it's ready, come back here and tap “Connect wallet”.",
   },
   common: {
     mintFirst: "Upload your first work",
@@ -185,6 +187,8 @@ export const en = {
   },
   create: {
     connectPrompt: "To upload your first work, connect your wallet.",
+    connectExplain:
+      "Your work is recorded on Stellar, not on a Molotov server — the wallet is what signs that operation, and it's where your royalty lands on every resale, permanently.",
   },
   mint: {
     progress: {
@@ -226,8 +230,15 @@ export const en = {
       receiverLabel: "Receives the royalty",
       walletFallback: "—",
       walletReceives: "your wallet (100%)",
+      receiverExplain:
+        "This is the wallet you have connected right now — not your Google account, not anything Molotov holds. Once you upload the work, it can't be changed.",
       submit: "Upload work",
       estimatedFee: "Estimated network fee",
+      summaryTitle: "Before you confirm",
+      summaryRoyalty: "Royalty: {pct}, fixed forever.",
+      summaryWallet: "Goes to: {wallet}",
+      summaryIrreversible:
+        "Tapping “Upload work” records this on Stellar. It can't be undone or edited afterwards.",
       hintMissingImage: "Upload an image to continue.",
       hintMissingTitle: "The artwork title is missing.",
       hintMissingBoth: "Upload an image and add a title.",
