@@ -42,6 +42,7 @@ vi.mock("./config", () => ({
   CONTRACT_IDS: ["mock"],
   POLL_LIMIT: 200,
   START_LEDGER: 0,
+  MAX_POISON_RETRIES: 8,
 }));
 
 vi.mock("./decode", () => ({
@@ -163,7 +164,7 @@ describe("pollOnce — a failed apply blocks the cursor", () => {
     await expect(pollOnce()).rejects.toThrow("FK violation");
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      "[poller] failed to apply event — aborting poll",
+      "[poller] failed to apply event",
       expect.objectContaining({
         ledger: 1005,
         txHash: "0x2",
@@ -173,6 +174,78 @@ describe("pollOnce — a failed apply blocks the cursor", () => {
     );
 
     consoleSpy.mockRestore();
+  });
+});
+
+// The actual fix for incident 2026-09-08: a genuinely unresolvable event must
+// eventually stop blocking the cursor instead of retrying forever — but only
+// after MAX_POISON_RETRIES consecutive failures on that *exact* event, never
+// on the first one.
+describe("pollOnce — gives up after MAX_POISON_RETRIES and records a gap", () => {
+  it("records a gap, continues applying the rest of the batch, and advances the cursor", async () => {
+    const events = [
+      makeEvent({ txHash: "0x1", ledger: 1005, _mockKind: "Transfer" } as any),
+      makeEvent({ txHash: "0x2", ledger: 1005, _mockKind: "ListingCreated" } as any),
+      makeEvent({ txHash: "0x3", ledger: 1005, _mockKind: "Sold" } as any),
+    ];
+
+    mocks.mockGetEvents.mockResolvedValueOnce({
+      events,
+      latestLedger: 1005,
+      cursor: "cursor-1",
+    });
+
+    mocks.mockDbRpc
+      .mockResolvedValueOnce({ error: null }) // apply_transfer
+      .mockRejectedValueOnce(new Error("FK violation")) // apply_listing_created
+      .mockResolvedValueOnce({ data: 8, error: null }) // record_indexer_error → hit the limit
+      .mockResolvedValueOnce({ error: null }) // record_indexer_gap
+      .mockResolvedValueOnce({ error: null }) // apply_sold — the batch continues
+      .mockResolvedValueOnce({ error: null }); // advance_cursor
+
+    const result = await pollOnce();
+
+    expect(result.processedEvents).toBe(3);
+    const called = mocks.mockDbRpc.mock.calls.map((c) => c[0]);
+    expect(called).toEqual([
+      "apply_transfer",
+      "apply_listing_created",
+      "record_indexer_error",
+      "record_indexer_gap",
+      "apply_sold",
+      "advance_cursor",
+    ]);
+    expect(mocks.mockDbRpc).toHaveBeenCalledWith(
+      "record_indexer_gap",
+      expect.objectContaining({
+        p_ledger: 1005,
+        // event_index is counted per (ledger, txHash), and each event here has
+        // its own distinct txHash — so this is 0, not its position in the array.
+        p_event_index: 0,
+        p_kind: "ListingCreated",
+        p_retry_count: 8,
+      }),
+    );
+  });
+
+  it("keeps retrying (no gap, still throws) below the retry limit", async () => {
+    const events = [makeEvent({ txHash: "0x2", ledger: 1005, _mockKind: "ListingCreated" } as any)];
+
+    mocks.mockGetEvents.mockResolvedValueOnce({
+      events,
+      latestLedger: 1005,
+      cursor: "cursor-1",
+    });
+
+    mocks.mockDbRpc
+      .mockRejectedValueOnce(new Error("FK violation")) // apply_listing_created
+      .mockResolvedValueOnce({ data: 3, error: null }); // record_indexer_error — below the limit of 8
+
+    await expect(pollOnce()).rejects.toThrow("FK violation");
+
+    const called = mocks.mockDbRpc.mock.calls.map((c) => c[0]);
+    expect(called).not.toContain("record_indexer_gap");
+    expect(called).not.toContain("advance_cursor");
   });
 });
 

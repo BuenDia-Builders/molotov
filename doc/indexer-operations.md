@@ -231,16 +231,44 @@ Reports and thresholds (both defined in `apps/web/app/api/indexer/config.ts`):
 Returns **503** when any threshold is breached or an apply error is recorded, **200**
 otherwise. Point an uptime monitor at it.
 
-## Poison events — why the poller can block
+## Poison events — retry, then give up loudly, not forever
 
-A failed `apply_*` is **not** skipped: the poller records which event failed
-(`record_indexer_error` → surfaced by `/health` as `lastError`) and **rethrows before
-advancing the cursor**, so the poll aborts and the cursor stays put. This is
-deliberate — skipping the event and advancing would drop it from the projection
-forever. The trade-off is that a genuinely poison event (an `apply_*` bug, not an
-infra blip) **blocks the indexer until fixed**. `/health` tells you exactly which
-event so you can debug without log-diving; fix the cause and the next run clears the
-error and proceeds.
+A failed `apply_*` is **not** skipped on the first try: the poller records which
+event failed (`record_indexer_error` → surfaced by `/health` as `lastError`) and
+**rethrows before advancing the cursor**, so the poll aborts and the cursor stays
+put. This is correct for a transient failure (a Supabase blip, an RPC hiccup) —
+the next run retries the same event and usually just succeeds.
+
+**Incident 2026-09-08–2026-10-01:** before this changed, a failed apply blocked the
+cursor _unconditionally_, with no upper bound. A `Sold` event hit a foreign-key
+violation because its listing's own `ListingCreated` had never been projected (a
+pre-existing, silent gap, unrelated to the event itself) — a genuinely unresolvable
+error, not a transient one. Nobody noticed for 23 days. By the time it was found,
+the cursor had fallen out of the RPC's ~7-day retention window, turning one bad
+event into an unrecoverable ~16-day hole in the projection. Root cause and the fix
+applied to that specific gap: `doc/status.md` §5 (if still present) and the
+2026-10-01 incident notes; the row-level fix used `apply_minted_event` /
+`apply_listing_created` directly with on-chain-verified values to reconstruct the
+missing rows.
+
+**Current behavior:** `record_indexer_error` now tracks a consecutive-failure streak
+per exact `(ledger, event_index)` (`last_error_retry_count` on `indexer_cursor`).
+Once the _same_ event has failed `MAX_POISON_RETRIES` (8, ~16–24h at the real cron
+cadence — see `config.ts`) times in a row, the poller stops retrying it, calls
+`record_indexer_gap` instead — which inserts a permanent row into `indexer_gaps` and
+clears the cursor's error slot — and **continues applying the rest of the batch**
+rather than blocking on it. `/health`'s `gaps` array lists every unresolved one;
+`healthy` stays `false` while any exist, by design — a gap is not something the
+system should quietly stop mentioning just because it stopped blocking. An operator
+reviews each gap, backfills it if possible (see the SQL approach above), and marks it
+`resolved_at` — gaps are never auto-deleted, only ever marked resolved by a human.
+
+This mirrors the `Gap` pattern in Trustless Work's Stellar indexer
+(`github.com/Trustless-Work/trustlesswork-indexer-go`, `internal/state/store.go` /
+`internal/ingest/start_ledger.go`), written after their own near-identical incident —
+cited here, not copied: that project's indexer publishes to a queue and doesn't touch
+Postgres directly, so only the _principle_ (record the gap, don't block forever)
+carried over, not the architecture.
 
 ## Recovery: cursor fell out of the retention window
 

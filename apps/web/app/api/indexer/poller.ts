@@ -30,6 +30,7 @@ import {
   CONTRACT_IDS,
   POLL_LIMIT,
   START_LEDGER,
+  MAX_POISON_RETRIES,
 } from "./config";
 import { decodeEvent } from "./decode";
 import type { DecodedEvent } from "./decode";
@@ -88,15 +89,55 @@ async function advanceCursor(lastLedger: number, lastCursor: string | null) {
 }
 
 /** Best-effort record of the event that blocked the poll, surfaced by /health.
- *  Never throws — the original apply error is what matters and is rethrown by the
- *  caller. Cleared automatically by advance_cursor on the next successful run. */
-async function recordIndexerError(ledger: number, eventIndex: number, message: string) {
-  const { error } = await db.rpc("record_indexer_error", {
+ *  Never throws — the original apply error is what matters and is handled by the
+ *  caller. Returns the resulting consecutive-failure count for this exact
+ *  (ledger, event_index) — null if the record itself couldn't be written, in
+ *  which case the caller treats it as "not yet at the retry limit" and retries
+ *  again next run rather than risk skipping on a write failure. */
+// Exported so the retry/gap path can be verified for real against a live
+// Supabase project (a synthetic, non-colliding ledger number) without having
+// to wait for — or manufacture — an actual poison event in production.
+export async function recordIndexerError(
+  ledger: number,
+  eventIndex: number,
+  message: string,
+): Promise<number | null> {
+  const { data, error } = await db.rpc("record_indexer_error", {
     p_ledger: ledger,
     p_event_index: eventIndex,
     p_message: message.slice(0, 2000),
   });
-  if (error) console.error("[poller] record_indexer_error failed:", error.message);
+  if (error) {
+    console.error("[poller] record_indexer_error failed:", error.message);
+    return null;
+  }
+  return data as number;
+}
+
+/** Gives up on an event that has failed MAX_POISON_RETRIES times in a row:
+ *  records it as a permanent, operator-reviewed gap (never auto-deleted) and
+ *  clears the cursor's current-error slot. Never throws — if this itself
+ *  fails, the caller falls back to the old behavior (rethrow and keep
+ *  blocking) rather than silently lose the event with no record at all. */
+export async function recordIndexerGap(
+  ledger: number,
+  eventIndex: number,
+  kind: string,
+  message: string,
+  retryCount: number,
+): Promise<boolean> {
+  const { error } = await db.rpc("record_indexer_gap", {
+    p_ledger: ledger,
+    p_event_index: eventIndex,
+    p_kind: kind,
+    p_message: message.slice(0, 2000),
+    p_retry_count: retryCount,
+  });
+  if (error) {
+    console.error("[poller] record_indexer_gap failed:", error.message);
+    return false;
+  }
+  return true;
 }
 
 // ── token_uri hydration ───────────────────────────────────────────────────────
@@ -371,20 +412,52 @@ export async function pollOnce(): Promise<PollResult> {
           closedAt: raw.ledgerClosedAt ?? null,
         });
       } catch (err) {
-        // A failed apply must NOT be skipped: skipping it and advancing the cursor
-        // past it would drop the event from the projection forever. Record which
-        // event failed (surfaced by /api/indexer/health) and rethrow so the poll
-        // aborts BEFORE advanceCursor — the cursor stays put and the next run
-        // retries the same event.
+        // A failed apply is not skipped lightly: skipping it and advancing the
+        // cursor past it drops the event from the projection forever. The default
+        // is still to record which event failed (surfaced by /api/indexer/health)
+        // and rethrow so the poll aborts BEFORE advanceCursor — the cursor stays
+        // put and the next run retries the same event, which is exactly right for
+        // a transient failure (a Supabase blip, an RPC hiccup).
+        //
+        // But "retry forever" has a failure mode of its own: incident 2026-09-08,
+        // a genuinely unresolvable event (a pre-existing data gap, not a transient
+        // one) blocked the cursor for 23 days, unnoticed, until it fell out of the
+        // RPC's retention window and turned into an unrecoverable ~16-day hole.
+        // Retrying was the right call for the first N attempts and the wrong one
+        // for the 100th. Past MAX_POISON_RETRIES on this *same* (ledger,
+        // event_index), give up retrying and record it as a permanent, visible
+        // gap instead — then continue applying the rest of this batch.
         const message = err instanceof Error ? err.message : String(err);
-        console.error("[poller] failed to apply event — aborting poll", {
+        console.error("[poller] failed to apply event", {
           ledger: raw.ledger,
           txHash: raw.txHash,
           eventIndex,
           kind: decoded.kind,
           message,
         });
-        await recordIndexerError(raw.ledger, eventIndex, `${decoded.kind}: ${message}`);
+        const retryCount = await recordIndexerError(
+          raw.ledger,
+          eventIndex,
+          `${decoded.kind}: ${message}`,
+        );
+
+        if (retryCount !== null && retryCount >= MAX_POISON_RETRIES) {
+          const gapped = await recordIndexerGap(
+            raw.ledger,
+            eventIndex,
+            decoded.kind,
+            message,
+            retryCount,
+          );
+          if (gapped) {
+            console.error(
+              `[poller] giving up on ledger ${raw.ledger} event ${eventIndex} after ` +
+                `${retryCount} failed attempts — recorded as a gap, continuing past it`,
+            );
+            continue;
+          }
+        }
+
         throw err;
       }
     }
