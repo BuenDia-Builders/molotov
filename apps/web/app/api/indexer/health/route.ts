@@ -8,10 +8,16 @@
  *   - lastAppliedAt: when the cursor last advanced successfully.
  *   - lastError: the event (ledger + index) currently blocking the poll, if any —
  *     so a poison event is diagnosable without log-diving. Cleared on the next
- *     successful advance.
+ *     successful advance, or once it's given up on and recorded as a gap (below).
+ *   - gaps: events the poller gave up retrying (past MAX_POISON_RETRIES) and
+ *     skipped rather than block on forever — see indexer_gaps / poller.ts. Stays
+ *     non-empty, and unhealthy, until a human reviews each one and marks it
+ *     resolved_at — this is deliberately not something advancing the cursor alone
+ *     can clear.
  *
  * Returns 503 (unhealthy) if the lag exceeds MAX_LEDGER_LAG, the retention margin
- * drops below MIN_RETENTION_MARGIN, or an apply error is recorded; 200 otherwise.
+ * drops below MIN_RETENTION_MARGIN, an apply error is recorded, or any gap is
+ * still unresolved; 200 otherwise.
  */
 
 import { NextResponse } from "next/server";
@@ -41,9 +47,18 @@ type CursorRow = {
   last_error_at: string | null;
 };
 
+type GapRow = {
+  ledger: number;
+  event_index: number;
+  kind: string;
+  message: string;
+  retry_count: number;
+  detected_at: string;
+};
+
 export async function GET() {
   try {
-    const [cursorRes, latest, oldestRetained] = await Promise.all([
+    const [cursorRes, gapsRes, latest, oldestRetained] = await Promise.all([
       db
         .from("indexer_cursor")
         .select(
@@ -51,12 +66,20 @@ export async function GET() {
         )
         .eq("id", 1)
         .single(),
+      db
+        .from("indexer_gaps")
+        .select("ledger, event_index, kind, message, retry_count, detected_at")
+        .is("resolved_at", null)
+        .order("detected_at", { ascending: false })
+        .limit(20),
       server.getLatestLedger(),
       resolveOldestLedger(),
     ]);
 
     if (cursorRes.error) throw new Error(`cursor read: ${cursorRes.error.message}`);
+    if (gapsRes.error) throw new Error(`gaps read: ${gapsRes.error.message}`);
     const c = cursorRes.data as CursorRow;
+    const gaps = gapsRes.data as GapRow[];
 
     const lagLedgers = latest.sequence - c.last_ledger;
     const retentionMarginLedgers = c.last_ledger - oldestRetained;
@@ -74,6 +97,11 @@ export async function GET() {
     if (hasApplyError) {
       reasons.push(
         `apply error at ledger ${c.last_error_ledger} event_index ${c.last_error_event_index}`,
+      );
+    }
+    if (gaps.length > 0) {
+      reasons.push(
+        `${gaps.length} unresolved gap(s) recorded — events skipped after repeated failure, see gaps[]`,
       );
     }
 
@@ -95,6 +123,14 @@ export async function GET() {
               at: c.last_error_at,
             }
           : null,
+        gaps: gaps.map((g) => ({
+          ledger: g.ledger,
+          eventIndex: g.event_index,
+          kind: g.kind,
+          message: g.message,
+          retryCount: g.retry_count,
+          detectedAt: g.detected_at,
+        })),
         reasons,
       },
       { status: healthy ? 200 : 503 },

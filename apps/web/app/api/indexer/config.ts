@@ -49,3 +49,15 @@ export const MAX_LEDGER_LAG = 5000;
 // being fetchable and only a manual reset recovers. 20000 ledgers * 5s ≈ ~28h of
 // lead time to react (this is exactly the failure that just bit us).
 export const MIN_RETENTION_MARGIN = 20000;
+
+// How many consecutive poll attempts must fail on the exact same event before
+// the poller gives up retrying it, records it as a permanent gap
+// (indexer_gaps), and advances past it instead of blocking forever.
+//
+// This is deliberately generous: at the observed 2–3 h real cron cadence, 8
+// retries is ~16–24 h of sustained failure before anything is skipped — ample
+// room for a transient Supabase blip or RPC hiccup to resolve on its own,
+// while still bounded well below the ~7-day RPC retention window (unlike no
+// limit at all, which is what let a single bad event block the cursor for 23
+// days on 2026-09-08 until it aged out of that window entirely).
+export const MAX_POISON_RETRIES = 8;
