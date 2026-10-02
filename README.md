@@ -351,3 +351,8 @@ Nothing in this section exists yet.
 ---
 
 _Molotov — digital art where creating earns you a permanent stake in what you made._
+
+
+## Contributing
+
+Please check [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and development workflow.
